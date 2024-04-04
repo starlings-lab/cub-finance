@@ -1,6 +1,4 @@
-import { to } from "mathjs";
-
-const alchemyUrl = `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY_ETH_MAINNET}`;
+import { ALCHEMY_API_URL } from "../constants";
 
 /**
  * Provides a list of tokens with non-zero balance owned by an address
@@ -19,7 +17,7 @@ export async function getTokensOwnedByAddress(address: string): Promise<any> {
     }),
   };
 
-  const responseJson = await fetch(alchemyUrl, options);
+  const responseJson = await fetch(ALCHEMY_API_URL, options);
   const response = await responseJson.json();
   const tokenBalances = response.result.tokenBalances;
   // console.log(tokenBalances);
@@ -71,7 +69,7 @@ export async function getTokenMetadata(contractAddress: string) {
     }),
   };
 
-  return await fetch(alchemyUrl, options)
+  return await fetch(ALCHEMY_API_URL, options)
     .then((response: any) => response.json())
     .then((response: any) => response.result);
 }
