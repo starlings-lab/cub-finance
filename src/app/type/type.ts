@@ -1,8 +1,7 @@
 import { Address } from "abitype";
 
-export interface Token{
+export interface Token {
   address: Address;
-  name: string;
   symbol: string;
   decimals: number;
 }
@@ -18,7 +17,14 @@ export interface DebtPosition {
   debtToken: Token;
   collateralAmount: BigInt;
   borrowAmount: BigInt;
-  ltv: BigIntWithDecimals; // borrowAmount / collateralAmount
+  LTV: BigIntWithDecimals; // borrowAmount / collateralAmount
+}
+
+export interface Market {
+  marketId: string;
+  collateralToken: Token[];
+  debtToken: Token;
+  maxLTV: BigIntWithDecimals;
   lendingAPY: BigIntWithDecimals;
   borrowingAPY: BigIntWithDecimals;
 }
