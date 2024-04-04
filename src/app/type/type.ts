@@ -18,7 +18,7 @@ export interface DebtPosition {
   debtToken: Token;
   collateralAmount: BigInt;
   borrowAmount: BigInt;
-  ltv: BigIntWithDecimals;
+  ltv: BigIntWithDecimals; // borrowAmount / collateralAmount
   lendingAPY: BigIntWithDecimals;
   borrowingAPY: BigIntWithDecimals;
 }
