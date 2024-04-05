@@ -6,14 +6,9 @@ export interface Token {
   symbol: string;
 }
 
-export interface BigIntWithDecimals {
-  value: BigInt;
-  decimals: number;
-}
-
 export interface DebtPosition {
   marketId: string;
-  collateralToken: Token[];
+  collateralTokens: Token[];
   debtToken: Token;
   collateralAmount: BigInt;
   borrowAmount: BigInt;
@@ -22,9 +17,9 @@ export interface DebtPosition {
 
 export interface Market {
   marketId: string;
-  collateralToken: Token[];
-  debtToken: Token;
-  maxLTV: BigIntWithDecimals;
+  supportedCollateralTokens: Token[];
+  supportedDebtToken: Token;
+  maxLTV: number;
   lendingAPY: number;
   borrowingAPY: number;
 }
