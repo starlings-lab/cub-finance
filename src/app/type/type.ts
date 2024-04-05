@@ -18,7 +18,6 @@ export interface DebtPosition {
 export interface Market {
   marketId: string;
   supportedCollateralTokens: Token[];
-  supportedDebtToken: Token;
   maxLTV: number;
   lendingAPY: number;
   borrowingAPY: number;
