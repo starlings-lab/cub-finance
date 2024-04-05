@@ -10,8 +10,8 @@ export interface DebtPosition {
   collateralTokens: Token[];
   debtToken: Token;
   collateralAmount: BigInt;
-  borrowAmount: BigInt;
-  LTV: number; // borrowAmount / collateralAmount
+  debtAmount: BigInt;
+  LTV: number; // debtAmount / collateralAmount
 }
 
 export interface Market {
