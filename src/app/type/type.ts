@@ -42,6 +42,4 @@ export interface Protocol {
 
 export interface ILendingMarketService {
   getProtocol(): Promise<Protocol>;
-  getMarkets(): Promise<Market[]>;
-  getUserDebtPositions(userAddress: Address): Promise<DebtPosition[]>;
 }
