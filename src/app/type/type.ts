@@ -15,10 +15,19 @@ export interface DebtPosition {
 }
 
 export interface Market {
+  Trailing30DaysBorrowingAPY: number; // borrowing cost of a debt token or an underling asset.
+  maxLTV: number; // the maximum LTV in this market.
+}
+
+export interface MorphoBlue extends Market {
+  marketId: string; // This is required because two markets with the same collateral token and a debt token can have different borrowing APY and maxLTV.
+  collateralToken: Token;
+  debtToken: Token;
+}
+
+export interface AaveV3 extends Market {
   underlyingAsset: Token;
-  Trailing30DaysBorrowingAPY: number; // borrowing cost of an underlying asset
-  Trailing30DaysLendingAPY: number; // yields from an underlying asset
-  maxLTV: number; // the maximum LTV when an underlying asset is used as collateral
+  Trailing30DaysLendingAPY: number;
 }
 
 export interface Protocol {
