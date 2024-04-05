@@ -74,7 +74,7 @@ export async function getTokenMetadata(
     }),
   };
 
-  return await fetch(ALCHEMY_API_URL, options)
+  return fetch(ALCHEMY_API_URL, options)
     .then((response: any) => response.json())
     .then((response: any) => {
       return {

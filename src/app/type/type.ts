@@ -2,6 +2,7 @@ import { Address } from "abitype";
 
 export interface Token {
   address: Address;
+  name: string;
   decimals: number;
   symbol: string;
 }
