@@ -7,7 +7,6 @@ export interface Token {
 }
 
 export interface DebtPosition {
-  marketId: string;
   collateralTokens: Token[];
   debtToken: Token;
   collateralAmount: BigInt;
@@ -16,9 +15,14 @@ export interface DebtPosition {
 }
 
 export interface Market {
-  marketId: string;
+  underlyingAsset: Token;
+  Trailing30DaysBorrowingAPY: number; // borrowing cost of an underlying asset
+  Trailing30DaysLendingAPY: number; // yields from an underlying asset
+  maxLTV: number; // the maximum LTV when an underlying asset is used as collateral
+}
+
+export interface Protocol {
+  name: string;
+  supportedDebtTokens: Token[];
   supportedCollateralTokens: Token[];
-  maxLTV: number;
-  lendingAPY: number;
-  borrowingAPY: number;
 }
