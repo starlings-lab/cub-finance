@@ -26,3 +26,9 @@ export interface Protocol {
   supportedDebtTokens: Token[];
   supportedCollateralTokens: Token[];
 }
+
+export interface ILendingMarketService {
+  getProtocol(): Promise<Protocol>;
+  getMarkets(): Promise<Market[]>;
+  getUserDebtPositions(userAddress: Address): Promise<DebtPosition[]>;
+}

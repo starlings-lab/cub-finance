@@ -1,4 +1,7 @@
+import { Address } from "abitype";
 import { ALCHEMY_API_URL } from "../constants";
+import { Token } from "../type/type";
+import { ethers } from "ethers";
 
 /**
  * Provides a list of tokens with non-zero balance owned by an address
@@ -57,7 +60,9 @@ export async function getTokensOwnedByAddress(address: string): Promise<any> {
   return tokens;
 }
 
-export async function getTokenMetadata(contractAddress: string) {
+export async function getTokenMetadata(
+  contractAddress: Address
+): Promise<Token> {
   const options = {
     method: "POST",
     headers: { accept: "application/json", "content-type": "application/json" },
@@ -71,5 +76,12 @@ export async function getTokenMetadata(contractAddress: string) {
 
   return await fetch(ALCHEMY_API_URL, options)
     .then((response: any) => response.json())
-    .then((response: any) => response.result);
+    .then((response: any) => {
+      return {
+        address: contractAddress,
+        name: response.result.name,
+        symbol: response.result.symbol,
+        decimals: response.result.decimals,
+      };
+    });
 }
