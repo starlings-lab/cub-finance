@@ -1,13 +1,21 @@
 "use client";
 import React, { useState } from "react";
+import { getDebtPositionTableRows } from "./service/morphoBlueService";
 
-export default function Home() {
+export default async function Home() {
   const [value, setValue] = useState<string>(
     "0xd8da6bf26964af9d7eed9e03e53415d37aa96045"
   );
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setValue(event.target.value);
   };
+
+  // test getDebtPositionTableRows from morpho blue service
+  const debtPositionTableRows = await getDebtPositionTableRows(
+    1,
+    "0xf603265f91f58F1EfA4fAd57694Fb3B77b25fC18"
+  );
+  console.log(debtPositionTableRows);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">

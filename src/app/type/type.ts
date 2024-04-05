@@ -7,6 +7,17 @@ export interface Token {
   symbol: string;
 }
 
+export interface DebtPositionTableRow {
+  name: string;
+  debtToken: Token;
+  collateralTokens: Token[];
+  debtAmount: BigInt;
+  collateralAmount: BigInt;
+  LTV: number; // debtAmount / collateralAmount
+  maxLTV: number;
+  Trailing30DaysBorrowingAPY: number;
+}
+
 export interface DebtPosition {
   collateralTokens: Token[];
   debtToken: Token;
