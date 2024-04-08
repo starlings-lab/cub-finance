@@ -8,7 +8,7 @@ export interface Token {
 }
 
 export interface DebtPositionTableRow {
-  name: string;
+  protocol: string;
   debtToken: Token;
   collateralTokens: Token[];
   debtAmount: BigInt;
