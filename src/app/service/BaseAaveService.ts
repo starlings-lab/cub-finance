@@ -5,7 +5,7 @@ import {
   POOL_ABI,
   POOL_ADDRESS_PROVIDER_ABI,
   UI_POOL_DATA_PROVIDER_V3_ABI,
-} from "./aaveAbi";
+} from "../contracts/aaveV3";
 import { request, gql } from "graphql-request";
 import { MESSARI_GRAPHQL_URL } from "../constants";
 import { getTokenMetadata } from "./tokenService";
