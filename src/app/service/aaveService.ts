@@ -9,6 +9,8 @@ import {
   POOL_ADDRESS_PROVIDER_ABI,
   UI_POOL_DATA_PROVIDER_V3_ABI,
 } from "./aaveAbi";
+import { request, gql } from "graphql-request";
+import { MESSARI_GRAPHQL_URL } from "../constants";
 
 const provider = new AlchemyProvider(
   ChainId.mainnet,
@@ -210,6 +212,39 @@ export async function getUserAccountData(userAddress: Address) {
     ltv: userData.ltv,
     healthFactor: userData.healthFactor,
   };
+}
+
+export async function getInterestRates(marketAddress: Address): Promise<any[]> {
+  const query = gql`
+    query {
+      marketHourlySnapshots(
+        where: { market: "${marketAddress}" }
+        orderBy: blockNumber
+        orderDirection: desc
+      ) {
+        rates {
+          rate
+          side
+          type
+        }
+        blockNumber
+        timestamp
+      }
+    }
+  `;
+  try {
+    const queryResult: any = await request(MESSARI_GRAPHQL_URL, query);
+    console.log(
+      "Query result count: ",
+      queryResult.marketHourlySnapshots.length
+    );
+    // const debtPositionTableRows = parseQueryResult(queryResult);
+    // return debtPositionTableRows;
+    return [queryResult];
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
 }
 
 function calculateDebtAmount(
