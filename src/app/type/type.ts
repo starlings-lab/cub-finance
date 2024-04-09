@@ -1,5 +1,10 @@
 import { Address } from "abitype";
 
+export interface SupportedCollateral {
+  name: string;
+  address: Address;
+}
+
 export interface Token {
   address: Address;
   name: string;
