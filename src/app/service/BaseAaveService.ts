@@ -2,6 +2,7 @@ import { AlchemyProvider, Contract } from "ethers";
 import { DebtPosition, Token } from "../type/type";
 import { Address } from "abitype";
 import {
+  AAVE_ORACLE_ABI,
   POOL_ABI,
   POOL_ADDRESS_PROVIDER_ABI,
   UI_POOL_DATA_PROVIDER_V3_ABI,
@@ -9,6 +10,7 @@ import {
 import { request, gql } from "graphql-request";
 import { MESSARI_GRAPHQL_URL } from "../constants";
 import { getTokenMetadata } from "./tokenService";
+import { e } from "mathjs";
 
 export class BaseAaveService {
   private poolAddressProvider: Address;
@@ -82,37 +84,40 @@ export class BaseAaveService {
       const userAccountData = await this.getUserAccountData(userAddress);
       // console.log("User account data: ", userAccountData);
 
-      // TODO: how do we get specific debt amount when user has multiple debt tokens?
-      for (let i = 0; i < debtTokens.length; i++) {
-        const debtToken = debtTokens[i];
-        const debtAssetReserve = userReservesMap.get(debtToken.address);
+      // Add an aggregated debt position for user with total collateral and debt
+      debtPositions.push({
+        collateralTokens: collateralTokens,
+        debtToken: debtTokens[0],
+        collateralAmount: userAccountData.totalCollateralBase,
+        debtAmount: userAccountData.totalDebtBase,
+        LTV: 0,
+      });
 
-        // TODO: Need to figure out collateral amount for multiple collateral tokens
-        // const collateralAssetReserve = userReservesMap.get(
-        //   collateralTokens[0].address
-        // );
-        // console.log("User debt asset reserve: ", debtAssetReserve);
-        // console.log("User collateral reserve: ", collateralAssetReserve);
-        // console.log(
-        //   "Collateral Reserve data: ",
-        //   reservesMap.get(collateralTokens[0].address)
-        // );
-        // console.log("Debt Reserve data: ", reservesMap.get(debtToken.address));
+      if (debtTokens.length > 1) {
+        console.log(
+          `User has multiple debts (${debtTokens.length}), need to create debt position for each token`
+        );
+        // Add a position per debt token when user has multiple debts
+        for (let i = 0; i < debtTokens.length; i++) {
+          const debtToken = debtTokens[i];
+          console.log(
+            "Debt Reserve data: ",
+            reservesMap.get(debtToken.address)
+          );
 
-        debtPositions.push({
-          collateralTokens: collateralTokens,
-          debtToken,
-          collateralAmount: userAccountData.totalCollateralBase,
-          debtAmount: userAccountData.totalDebtBase,
-          LTV: 0,
-        });
+          debtPositions.push({
+            collateralTokens: collateralTokens,
+            debtToken,
+            collateralAmount: userAccountData.totalCollateralBase,
+            debtAmount: this.calculateDebtAmount(
+              userReservesMap.get(debtToken.address).scaledVariableDebt,
+              reservesMap.get(debtToken.address)
+            ),
+            LTV: 0,
+          });
+        }
       }
     }
-
-    // console.log(
-    //   "Pool User Data: ",
-    //   await poolContract.getUserAccountData(userAddress)
-    // );
 
     return debtPositions;
   }
@@ -133,6 +138,39 @@ export class BaseAaveService {
       ltv: userData.ltv,
       healthFactor: userData.healthFactor,
     };
+  }
+
+  public async getInterestRates(marketAddress: Address): Promise<any[]> {
+    const query = gql`
+    query {
+      marketHourlySnapshots(
+        where: { market: "${marketAddress}" }
+        orderBy: blockNumber
+        orderDirection: desc
+      ) {
+        rates {
+          rate
+          side
+          type
+        }
+        blockNumber
+        timestamp
+      }
+    }
+  `;
+    try {
+      const queryResult: any = await request(MESSARI_GRAPHQL_URL, query);
+      console.log(
+        "Query result count: ",
+        queryResult.marketHourlySnapshots.length
+      );
+      // const debtPositionTableRows = parseQueryResult(queryResult);
+      // return debtPositionTableRows;
+      return [queryResult];
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
   private async getUserReservesMap(
@@ -234,52 +272,35 @@ export class BaseAaveService {
     return reservesMap;
   }
 
-  public async getInterestRates(marketAddress: Address): Promise<any[]> {
-    const query = gql`
-    query {
-      marketHourlySnapshots(
-        where: { market: "${marketAddress}" }
-        orderBy: blockNumber
-        orderDirection: desc
-      ) {
-        rates {
-          rate
-          side
-          type
-        }
-        blockNumber
-        timestamp
-      }
-    }
-  `;
-    try {
-      const queryResult: any = await request(MESSARI_GRAPHQL_URL, query);
-      console.log(
-        "Query result count: ",
-        queryResult.marketHourlySnapshots.length
-      );
-      // const debtPositionTableRows = parseQueryResult(queryResult);
-      // return debtPositionTableRows;
-      return [queryResult];
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  }
-}
+  // private async getAssetPrice(
+  //   assetAddress: Address
+  // ): Promise<{ price: bigint; currencyUnit: bigint }> {
+  //   // get asset price which is in base currency & its unit
+  //   const pricePromise = this.aaveOracleContract.getAssetPrice(assetAddress);
+  //   const currencyUnitPromise = this.aaveOracleContract.BASE_CURRENCY_UNIT();
 
-function calculateDebtAmount(
-  scaledVariableDebt: bigint,
-  assetReserveData: any
-): bigint {
-  let borrowAmount: bigint = BigInt(0);
-  // Ref: https://docs.aave.com/developers/guides/rates-guide#variable-borrow-balances
-  // Variable borrow balance =
-  // VariableDebtToken.balanceOf(user) = VariableDebtToken.scaledBalanceOf(user) * Pool.getReserveData(underlyingTokenAddress).variableBorrowIndex
-  borrowAmount =
-    (scaledVariableDebt * assetReserveData.variableBorrowIndex) /
-    BigInt(10 ** 27); // borrow index uses ray decimals, see https://docs.aave.com/developers/v/2.0/glossary
-  return borrowAmount;
+  //   return Promise.all([pricePromise, currencyUnitPromise]).then((values) => {
+  //     console.log("Currency unit: ", values[0]);
+  //     console.log("Asset price: ", values[1]);
+
+  //     return { price: values[0], currencyUnit: values[1] };
+  //   });
+  // }
+
+  private calculateDebtAmount(
+    scaledVariableDebt: bigint,
+    assetReserveData: any
+  ): bigint {
+    // Ref: https://docs.aave.com/developers/guides/rates-guide#variable-borrow-balances
+    // Variable borrow balance =
+    // VariableDebtToken.balanceOf(user) = VariableDebtToken.scaledBalanceOf(user) * Pool.getReserveData(underlyingTokenAddress).variableBorrowIndex
+    const borrowAmountInBaseCurrency =
+      (scaledVariableDebt *
+        assetReserveData.variableBorrowIndex *
+        assetReserveData.priceInMarketReferenceCurrency) /
+      (BigInt(10 ** 27) * BigInt(10 ** Number(assetReserveData.decimals))); // borrow index uses ray decimals, see https://docs.aave.com/developers/v/2.0/glossary
+    return borrowAmountInBaseCurrency;
+  }
 }
 
 function calculateCollateralAmount(
