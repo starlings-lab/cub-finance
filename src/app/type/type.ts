@@ -33,6 +33,7 @@ export interface DebtPositionTableRow {
 
 export interface UserDebtDetailsBase {
   protocol: Protocol;
+  userAddress: Address;
   debtPositions: DebtPosition[];
 }
 
@@ -42,10 +43,11 @@ export interface MorphoBlueUserDebtDetails extends UserDebtDetailsBase {
 
 export interface UserDebtDetails extends UserDebtDetailsBase {
   markets: Market[];
+  weightedMaxLTV: number; // weighted average of maxLTV of user's collateral markets
 }
 
 export interface DebtPosition {
-  debt: TokenAmount[];
+  debt: TokenAmount[]; // if debt count > 0, the debt position is an aggregate of multiple debt positions.
   collateral: TokenAmount[];
   LTV: number; // debtAmountInUSD / sum of collateralAmountInUSD array
 }
@@ -75,5 +77,5 @@ export enum Protocol {
   AaveV3 = "AaveV3",
   CompoundV3 = "CompoundV3",
   MorphoBlue = "MorphoBlue",
-  Spark = "Spark"
+  Spark = "Spark",
 }

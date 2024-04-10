@@ -1,8 +1,14 @@
 import { AlchemyProvider, Contract } from "ethers";
-import { DebtPosition, Token } from "../type/type";
+import {
+  DebtPosition,
+  Market,
+  Protocol,
+  Token,
+  TokenAmount,
+  UserDebtDetails,
+} from "../type/type";
 import { Address } from "abitype";
 import {
-  AAVE_ORACLE_ABI,
   POOL_ABI,
   POOL_ADDRESS_PROVIDER_ABI,
   UI_POOL_DATA_PROVIDER_V3_ABI,
@@ -10,16 +16,21 @@ import {
 import { request, gql } from "graphql-request";
 import { MESSARI_GRAPHQL_URL } from "../constants";
 import { getTokenMetadata } from "./tokenService";
-import { e } from "mathjs";
 
 export class BaseAaveService {
+  private protocol: Protocol;
   private poolAddressProvider: Address;
   private uiPoolDataProvider: Address;
   private provider: AlchemyProvider;
   private poolDataProviderContract: Contract;
   private poolAddressProviderContract: Contract;
 
-  constructor(poolAddressProvider: Address, uiPoolDataProvider: Address) {
+  constructor(
+    protocol: Protocol,
+    poolAddressProvider: Address,
+    uiPoolDataProvider: Address
+  ) {
+    this.protocol = protocol;
     this.poolAddressProvider = poolAddressProvider;
     this.uiPoolDataProvider = uiPoolDataProvider;
 
@@ -41,10 +52,13 @@ export class BaseAaveService {
     );
   }
 
-  public async getUserDebtPositions(
+  public async getUserDebtDetails(
     userAddress: Address
-  ): Promise<DebtPosition[]> {
+  ): Promise<UserDebtDetails> {
+    const markets: Market[] = [];
     const debtPositions: DebtPosition[] = [];
+    let weightedMaxLTV = 0;
+
     const userReservesMap = await this.getUserReservesMap(userAddress);
     const userReserves = Array.from(userReservesMap.values());
     // console.log(`User[${userAddress}] reserves: `, userReserves);
@@ -78,48 +92,98 @@ export class BaseAaveService {
       // console.log("Collateral tokens: ", collateralTokens);
 
       // Get reserve data
-      const reservesMap = await this.getReservesData();
+      const { reservesMap, baseCurrencyData } = await this.getReservesData();
 
       // Get user's combined account data
       const userAccountData = await this.getUserAccountData(userAddress);
-      // console.log("User account data: ", userAccountData);
+      console.log("User account data: ", userAccountData);
 
-      // Add an aggregated debt position for user with total collateral and debt
-      debtPositions.push({
-        collateralTokens: collateralTokens,
-        debtToken: debtTokens[0],
-        collateralAmount: userAccountData.totalCollateralBase,
-        debtAmount: userAccountData.totalDebtBase,
-        LTV: 0,
+      const debts: TokenAmount[] = debtTokens.map((debtToken) => {
+        const debtUserReserve = userReservesMap.get(debtToken.address);
+        return {
+          token: debtToken,
+          amount: debtUserReserve.scaledVariableDebt,
+          amountInUSD: calculateDebtAmountInBaseCurrency(
+            debtUserReserve.scaledVariableDebt,
+            reservesMap.get(debtToken.address),
+            baseCurrencyData.marketReferenceCurrencyUnit
+          ),
+        };
       });
 
+      const collaterals: TokenAmount[] = collateralTokens.map(
+        (collateralToken) => {
+          const collateralUserReserve = userReservesMap.get(
+            collateralToken.address
+          );
+          return {
+            token: collateralToken,
+            amount: collateralUserReserve.scaledATokenBalance,
+            amountInUSD: calculateCollateralAmountInBaseCurrency(
+              collateralUserReserve.scaledATokenBalance,
+              reservesMap.get(collateralToken.address),
+              baseCurrencyData.marketReferenceCurrencyUnit
+            ),
+          };
+        }
+      );
+
+      // Add an aggregated debt position for user with total collateral and debt
+      const totalCollateralAmountInUSD = collaterals.reduce(
+        (acc, curr) => acc + curr.amountInUSD,
+        0
+      );
+      const totalDebtAmountInUSD = debts.reduce(
+        (acc, curr) => acc + curr.amountInUSD,
+        0
+      );
+      debtPositions.push({
+        debt: debts,
+        collateral: collaterals,
+        LTV: totalDebtAmountInUSD / totalCollateralAmountInUSD,
+      });
+
+      // Add a debt position per debt token when user has multiple debts
       if (debtTokens.length > 1) {
         console.log(
           `User has multiple debts (${debtTokens.length}), need to create debt position for each token`
         );
-        // Add a position per debt token when user has multiple debts
-        for (let i = 0; i < debtTokens.length; i++) {
-          const debtToken = debtTokens[i];
-          console.log(
-            "Debt Reserve data: ",
-            reservesMap.get(debtToken.address)
-          );
-
+        debts.forEach((debt) => {
           debtPositions.push({
-            collateralTokens: collateralTokens,
-            debtToken,
-            collateralAmount: userAccountData.totalCollateralBase,
-            debtAmount: this.calculateDebtAmount(
-              userReservesMap.get(debtToken.address).scaledVariableDebt,
-              reservesMap.get(debtToken.address)
-            ),
-            LTV: 0,
+            debt: [debt],
+            collateral: collaterals,
+            LTV: debt.amountInUSD / totalCollateralAmountInUSD,
           });
-        }
+        });
       }
+
+      // Add a market for each debt & collateral token
+      const underlyingAssets = new Set<Token>([
+        ...debtTokens,
+        ...collateralTokens,
+      ]);
+
+      underlyingAssets.forEach((underlyingAssetToken) => {
+        const tokenReserve = reservesMap.get(underlyingAssetToken.address);
+        markets.push({
+          underlyingAsset: underlyingAssetToken,
+          maxLTV: Number(tokenReserve.baseLTVasCollateral) / 10000,
+          // TODO: need to get Trailing30DaysLendingAPY and Trailing30DaysBorrowingAPY
+          Trailing30DaysLendingAPY: 0,
+          Trailing30DaysBorrowingAPY: 0,
+        });
+      });
+
+      weightedMaxLTV = Number(userAccountData.ltv) / 10000;
     }
 
-    return debtPositions;
+    return {
+      protocol: this.protocol,
+      userAddress,
+      markets,
+      debtPositions,
+      weightedMaxLTV,
+    };
   }
 
   private async getUserAccountData(userAddress: Address) {
@@ -173,6 +237,7 @@ export class BaseAaveService {
     }
   }
 
+  // Ref: https://docs.aave.com/developers/periphery-contracts/uipooldataproviderv3#userreservedata
   private async getUserReservesMap(
     userAddress: Address
   ): Promise<Map<string, any>> {
@@ -199,7 +264,8 @@ export class BaseAaveService {
     return userReservesMap;
   }
 
-  private async getReservesData(): Promise<Map<string, any>> {
+  // Ref: https://docs.aave.com/developers/periphery-contracts/uipooldataproviderv3#aggregatedreservedata
+  private async getReservesData(): Promise<any> {
     const { 0: reservesRaw, 1: poolBaseCurrencyRaw } =
       await this.poolDataProviderContract.getReservesData(
         this.poolAddressProvider
@@ -269,7 +335,19 @@ export class BaseAaveService {
     // console.log("Reserves data: ", reservesMap);
     // console.log("Pool base currency: ", poolBaseCurrencyRaw);
 
-    return reservesMap;
+    // See https://docs.aave.com/developers/periphery-contracts/uipooldataproviderv3#basecurrencyinfo
+    const baseCurrencyData = {
+      marketReferenceCurrencyUnit:
+        poolBaseCurrencyRaw.marketReferenceCurrencyUnit,
+      marketReferenceCurrencyPriceInUsd:
+        poolBaseCurrencyRaw.marketReferenceCurrencyPriceInUsd,
+      networkBaseTokenPriceInUsd:
+        poolBaseCurrencyRaw.networkBaseTokenPriceInUsd,
+      networkBaseTokenPriceDecimals:
+        poolBaseCurrencyRaw.networkBaseTokenPriceDecimals,
+    };
+
+    return { reservesMap, baseCurrencyData };
   }
 
   // private async getAssetPrice(
@@ -286,27 +364,35 @@ export class BaseAaveService {
   //     return { price: values[0], currencyUnit: values[1] };
   //   });
   // }
-
-  private calculateDebtAmount(
-    scaledVariableDebt: bigint,
-    assetReserveData: any
-  ): bigint {
-    // Ref: https://docs.aave.com/developers/guides/rates-guide#variable-borrow-balances
-    // Variable borrow balance =
-    // VariableDebtToken.balanceOf(user) = VariableDebtToken.scaledBalanceOf(user) * Pool.getReserveData(underlyingTokenAddress).variableBorrowIndex
-    const borrowAmountInBaseCurrency =
-      (scaledVariableDebt *
-        assetReserveData.variableBorrowIndex *
-        assetReserveData.priceInMarketReferenceCurrency) /
-      (BigInt(10 ** 27) * BigInt(10 ** Number(assetReserveData.decimals))); // borrow index uses ray decimals, see https://docs.aave.com/developers/v/2.0/glossary
-    return borrowAmountInBaseCurrency;
-  }
 }
 
-function calculateCollateralAmount(
+function calculateDebtAmountInBaseCurrency(
+  scaledVariableDebt: bigint,
+  assetReserveData: any,
+  baseCurrencyUnit: bigint
+): number {
+  // Ref: https://docs.aave.com/developers/guides/rates-guide#variable-borrow-balances
+  // Variable borrow balance =
+  // VariableDebtToken.balanceOf(user) = VariableDebtToken.scaledBalanceOf(user) * Pool.getReserveData(underlyingTokenAddress).variableBorrowIndex
+  const borrowAmountInBaseCurrency =
+    (scaledVariableDebt *
+      assetReserveData.variableBorrowIndex *
+      assetReserveData.priceInMarketReferenceCurrency) /
+    (BigInt(10 ** 27) * BigInt(10 ** Number(assetReserveData.decimals))); // borrow index uses ray decimals, see https://docs.aave.com/developers/v/2.0/glossary
+
+  // Multiply and divide by 10000 to maintain 4 decimal places precision
+  // TODO: need to get base currency unit(10 ** 8) from contract
+  return (
+    Number((borrowAmountInBaseCurrency * BigInt(10000)) / baseCurrencyUnit) /
+    10000
+  );
+}
+
+function calculateCollateralAmountInBaseCurrency(
   scaledATokenBalance: bigint,
-  assetReserveData: any
-): bigint {
+  assetReserveData: any,
+  baseCurrencyUnit: bigint
+): number {
   // Ref: https://docs.aave.com/developers/guides/rates-guide#supply-balances
   // Supply balance =
   // AToken.balanceOf(user) = AToken.scaledBalanceOf(user) * Pool.getReserveData(underlyingTokenAddress).liquidityIndex
@@ -315,5 +401,15 @@ function calculateCollateralAmount(
   const supplyAmount =
     (scaledATokenBalance * assetReserveData.liquidityIndex) / BigInt(10 ** 27); // Liquidity index uses ray decimals, see https://docs.aave.com/developers/v/2.0/glossary
   // console.log("Supply amount: ", supplyAmount);
-  return supplyAmount;
+
+  const supplyAmountInBaseCurrency =
+    (supplyAmount * assetReserveData.priceInMarketReferenceCurrency) /
+    BigInt(10 ** Number(assetReserveData.decimals));
+
+  // Multiply and divide by 10000 to maintain 4 decimal places precision
+  // TODO: need to get base currency unit(10 ** 8) from contract
+  return (
+    Number((supplyAmountInBaseCurrency * BigInt(10000)) / baseCurrencyUnit) /
+    10000
+  );
 }
