@@ -1,13 +1,17 @@
 import type { Address } from "abitype";
 import { request, gql } from "graphql-request";
-import { DebtPositionTableRow } from "../type/type";
+import {
+  MorphoBlueDebtPosition,
+  MorphoBlueMarket,
+  MorphoBlueUserDebtDetails,
+  Protocol,
+} from "../type/type";
+import { MORPHO_GRAPHQL_URL } from "../constants";
 
-const ENDPOINT = "https://blue-api.morpho.org/graphql";
-
-export async function getDebtPositionTableRows(
+export async function getMorphoBlueUserDebtDetails(
   chainId: number,
   address: Address
-): Promise<DebtPositionTableRow[]> {
+): Promise<MorphoBlueUserDebtDetails> {
   const query = gql`
     query {
       userByAddress(chainId: ${chainId}, address: "${address}") {
@@ -36,37 +40,60 @@ export async function getDebtPositionTableRows(
             }
             monthlyApys {
               borrowApy
+              supplyApy
             }
           }
         }
       }
     }
   `;
-  try {
-    const queryResult = await request(ENDPOINT, query);
-    const debtPositionTableRows = parseQueryResult(queryResult);
-    return debtPositionTableRows;
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
+
+  return request(MORPHO_GRAPHQL_URL, query)
+    .then((queryResult) => parseQueryResult(queryResult, address))
+    .catch((error) => {
+      console.error(error);
+      throw error;
+    });
 }
 
-function parseQueryResult(queryResult: any): DebtPositionTableRow[] {
-  const marketPositions = queryResult.userByAddress.marketPositions;
-  const debtPositionTableRows: DebtPositionTableRow[] = marketPositions.map(
-    (position: any) => {
-      return {
-        name: "MorphoBlue",
-        debtToken: position.market.loanAsset,
-        collateralTokens: position.market.collateralAsset,
-        debtAmount: position.borrowAssets,
-        collateralAmount: position.collateral,
-        LTV: position.borrowAssetsUsd / position.collateralUsd,
-        maxLTV: position.market.lltv,
-        Trailing30DaysBorrowingAPY: position.market.monthlyApys.borrowApy
-      };
-    }
-  );
-  return debtPositionTableRows;
+function parseQueryResult(
+  queryResult: any,
+  address: Address
+): MorphoBlueUserDebtDetails {
+  // Parse out the debt positions and markets
+  const markets: Map<string, MorphoBlueMarket> = new Map();
+  const debtPositions: MorphoBlueDebtPosition[] = [];
+  queryResult.userByAddress.marketPositions.forEach((position: any) => {
+    const market: MorphoBlueMarket = {
+      marketId: position.market.uniqueKey,
+      debtToken: position.market.loanAsset,
+      collateralToken: position.market.collateralAsset,
+      maxLTV: position.market.lltv / 10 ** 18,
+      trailing30DaysBorrowingAPY: position.market.monthlyApys.borrowApy,
+      trailing30DaysLendingAPY: position.market.monthlyApys.supplyApy,
+    };
+    markets.set(market.marketId, market);
+
+    debtPositions.push({
+      marketId: position.market.uniqueKey,
+      debt: {
+        token: position.market.loanAsset,
+        amount: position.borrowAssets,
+        amountInUSD: position.borrowAssetsUsd,
+      },
+      collateral: {
+        token: position.market.collateralAsset,
+        amount: position.collateral,
+        amountInUSD: position.collateralUsd,
+      },
+      LTV: position.borrowAssetsUsd / position.collateralUsd,
+    });
+  });
+
+  return {
+    protocol: Protocol.MorphoBlue,
+    userAddress: address,
+    markets: Array.from(markets.values()),
+    debtPositions,
+  };
 }

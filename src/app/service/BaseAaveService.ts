@@ -173,8 +173,8 @@ export class BaseAaveService {
             return {
               underlyingAsset: underlyingAssetToken,
               maxLTV: Number(tokenReserve.baseLTVasCollateral) / 10000,
-              Trailing30DaysLendingAPY: trailingDayBorrowingAPY,
-              Trailing30DaysBorrowingAPY: trailingDayLendingAPY,
+              trailing30DaysLendingAPY: trailingDayBorrowingAPY,
+              trailing30DaysBorrowingAPY: trailingDayLendingAPY,
             };
           });
         }

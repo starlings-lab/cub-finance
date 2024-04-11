@@ -1,6 +1,7 @@
+/* eslint-disable @next/next/no-async-client-component */
 "use client";
 import React, { useState } from "react";
-import { getDebtPositionTableRows } from "./service/morphoBlueService";
+import { getMorphoBlueUserDebtDetails } from "./service/morphoBlueService";
 
 export default async function Home() {
   const [value, setValue] = useState<string>(
@@ -11,11 +12,20 @@ export default async function Home() {
   };
 
   // test getDebtPositionTableRows from morpho blue service
-  const debtPositionTableRows = await getDebtPositionTableRows(
+  const debtPositionTableRows = await getMorphoBlueUserDebtDetails(
     1,
     "0xf603265f91f58F1EfA4fAd57694Fb3B77b25fC18"
   );
-  console.log(debtPositionTableRows);
+  console.dir(debtPositionTableRows, { depth: null });
+
+  // AaveV3 test
+  // getUserDebtDetails("0x00171ab2f44c1c9b21c7696eb1a5c601f05a9167")
+  //   .then((debtDetails) => {
+  //     console.dir(debtDetails, { depth: null });
+  //   })
+  //   .catch((error) => {
+  //     console.error(error);
+  //   });
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">

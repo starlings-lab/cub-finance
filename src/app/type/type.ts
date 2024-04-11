@@ -1,5 +1,12 @@
 import { Address } from "abitype";
 
+export enum Protocol {
+  AaveV3 = "AaveV3",
+  CompoundV3 = "CompoundV3",
+  MorphoBlue = "MorphoBlue",
+  Spark = "Spark",
+}
+
 export interface Token {
   address: Address;
   name: string;
@@ -51,6 +58,11 @@ export interface DebtPositionBase {
   LTV: number; // debtAmountInUSD / sum of collateralAmountInUSD array
 }
 
+export interface DebtPosition extends DebtPositionBase {
+  debt: TokenAmount[]; // if debt count > 0, the debt position is an aggregate of multiple debt positions.
+  collaterals: TokenAmount[];
+}
+
 export interface MorphoBlueDebtPosition extends DebtPositionBase {
   marketId: string; // This is required because there can be two markets with the same collateral token and a debt token.
   debt: TokenAmount;
@@ -62,14 +74,14 @@ export interface CompoundV3DebtPosition extends DebtPositionBase {
   collaterals: TokenAmount[];
 }
 
-export interface DebtPosition extends DebtPositionBase {
-  debt: TokenAmount[]; // if debt count > 0, the debt position is an aggregate of multiple debt positions.
-  collaterals: TokenAmount[];
-}
-
 export interface MarketBase {
   maxLTV: number; // the maximum LTV in this market.
-  Trailing30DaysBorrowingAPY: number; // borrowing cost of a debt token or an underling asset.
+  trailing30DaysBorrowingAPY: number; // borrowing cost of a debt token or an underlying asset.
+  trailing30DaysLendingAPY: number;
+}
+
+export interface Market extends MarketBase {
+  underlyingAsset: Token;
 }
 
 // collateral doesn't earn yields in MorphoBlue
@@ -83,16 +95,4 @@ export interface MorphoBlueMarket extends MarketBase {
 export interface CompoundV3Market extends MarketBase {
   debtToken: Token;
   collateralTokens: Token[];
-}
-
-export interface Market extends MarketBase {
-  underlyingAsset: Token;
-  Trailing30DaysLendingAPY: number;
-}
-
-export enum Protocol {
-  AaveV3 = "AaveV3",
-  CompoundV3 = "CompoundV3",
-  MorphoBlue = "MorphoBlue",
-  Spark = "Spark"
 }
