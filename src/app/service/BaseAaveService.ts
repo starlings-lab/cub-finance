@@ -16,6 +16,7 @@ import {
 import { request, gql } from "graphql-request";
 import { MESSARI_GRAPHQL_URL } from "../constants";
 import { getTokenMetadata } from "./tokenService";
+import { calculateAPYFromAPR } from "../utils";
 
 export class BaseAaveService {
   private protocol: Protocol;
@@ -163,17 +164,22 @@ export class BaseAaveService {
         ...collateralTokens,
       ]);
 
-      underlyingAssets.forEach((underlyingAssetToken) => {
-        const tokenReserve = reservesMap.get(underlyingAssetToken.address);
-        markets.push({
-          underlyingAsset: underlyingAssetToken,
-          maxLTV: Number(tokenReserve.baseLTVasCollateral) / 10000,
-          // TODO: need to get Trailing30DaysLendingAPY and Trailing30DaysBorrowingAPY
-          Trailing30DaysLendingAPY: 0,
-          Trailing30DaysBorrowingAPY: 0,
-        });
-      });
-
+      const marketPromises = Array.from(underlyingAssets).map(
+        (underlyingAssetToken: Token) => {
+          const tokenReserve = reservesMap.get(underlyingAssetToken.address);
+          return this.calculateTrailingDayBorrowingAndLendingAPYs(
+            tokenReserve.aTokenAddress
+          ).then(({ trailingDayBorrowingAPY, trailingDayLendingAPY }) => {
+            return {
+              underlyingAsset: underlyingAssetToken,
+              maxLTV: Number(tokenReserve.baseLTVasCollateral) / 10000,
+              Trailing30DaysLendingAPY: trailingDayBorrowingAPY,
+              Trailing30DaysBorrowingAPY: trailingDayLendingAPY,
+            };
+          });
+        }
+      );
+      markets.push(...(await Promise.all(marketPromises)));
       weightedMaxLTV = Number(userAccountData.ltv) / 10000;
     }
 
@@ -184,6 +190,81 @@ export class BaseAaveService {
       debtPositions,
       weightedMaxLTV,
     };
+  }
+
+  /**
+   * Calculates trailing day interest rate for a given market.
+   * Default trailing days count is 30.
+   * @param marketAddress Address of and aave market (aToken address of an asset)
+   * @returns
+   * @remarks Trailing day interest rate is calculated by fetching hourly snapshots of the market
+   * and calculating the average rate for the trailing days.
+   */
+  public async calculateTrailingDayBorrowingAndLendingAPYs(
+    marketAddress: Address,
+    trailingDaysCount = 30
+  ): Promise<{
+    trailingDayBorrowingAPY: number;
+    trailingDayLendingAPY: number;
+  }> {
+    const query = gql`
+    query {
+      marketHourlySnapshots(
+        where: { market: "${marketAddress}" }
+        orderBy: blockNumber
+        orderDirection: desc
+        first: ${24 * trailingDaysCount}
+      ) {
+        rates(where: {type: VARIABLE}) {
+          rate
+          side
+          type
+        }
+        blockNumber
+      }
+    }
+  `;
+    try {
+      const queryResult: any = await request(MESSARI_GRAPHQL_URL, query);
+      // console.log(
+      //   "Query result count: ",
+      //   queryResult.marketHourlySnapshots.length
+      // );
+
+      let cumulativeBorrowRate = 0;
+      let cumulativeLendRate = 0;
+      for (let i = 0; i < queryResult.marketHourlySnapshots.length; i++) {
+        const snapshot = queryResult.marketHourlySnapshots[i];
+        const rateMapBySide = new Map<string, number>();
+        snapshot.rates.forEach((rate: any) => {
+          rateMapBySide.set(rate.side, parseFloat(rate.rate) / 100);
+        });
+        const borrowerRate = rateMapBySide.get("BORROWER") || 0;
+        cumulativeBorrowRate += borrowerRate;
+        const lenderRate = rateMapBySide.get("LENDER") || 0;
+        cumulativeLendRate += lenderRate;
+      }
+
+      const trailingDayBorrowRate =
+        cumulativeBorrowRate / queryResult.marketHourlySnapshots.length;
+      const trailingDayLendRate =
+        cumulativeLendRate / queryResult.marketHourlySnapshots.length;
+
+      // console.log(
+      //   `Cumulative borrow rate: ${cumulativeBorrowRate}, Cumulative lend rate: ${cumulativeLendRate}`
+      // );
+      // console.log(
+      //   `Trailing day borrow rate: ${trailingDayBorrowRate}, Trailing day lend rate: ${trailingDayLendRate}`
+      // );
+      const trailingDayBorrowingAPY = calculateAPYFromAPR(
+        trailingDayBorrowRate
+      );
+      const trailingDayLendingAPY = calculateAPYFromAPR(trailingDayLendRate);
+      return { trailingDayBorrowingAPY, trailingDayLendingAPY };
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
   private async getUserAccountData(userAddress: Address) {
@@ -202,39 +283,6 @@ export class BaseAaveService {
       ltv: userData.ltv,
       healthFactor: userData.healthFactor,
     };
-  }
-
-  public async getInterestRates(marketAddress: Address): Promise<any[]> {
-    const query = gql`
-    query {
-      marketHourlySnapshots(
-        where: { market: "${marketAddress}" }
-        orderBy: blockNumber
-        orderDirection: desc
-      ) {
-        rates {
-          rate
-          side
-          type
-        }
-        blockNumber
-        timestamp
-      }
-    }
-  `;
-    try {
-      const queryResult: any = await request(MESSARI_GRAPHQL_URL, query);
-      console.log(
-        "Query result count: ",
-        queryResult.marketHourlySnapshots.length
-      );
-      // const debtPositionTableRows = parseQueryResult(queryResult);
-      // return debtPositionTableRows;
-      return [queryResult];
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
   }
 
   // Ref: https://docs.aave.com/developers/periphery-contracts/uipooldataproviderv3#userreservedata

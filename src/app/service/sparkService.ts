@@ -12,7 +12,3 @@ const baseAaveService = new BaseAaveService(
 export async function getUserDebtDetails(userAddress: Address) {
   return baseAaveService.getUserDebtDetails(userAddress);
 }
-
-export async function getInterestRates(marketAddress: Address): Promise<any[]> {
-  return baseAaveService.getInterestRates(marketAddress);
-}
