@@ -290,9 +290,7 @@ async function getLtv(
         collateral.token.address,
         collateral.amount
       );
-      console.log("usdPrice", usdPrice);
-      console.log("collateral.amount", collateral.amount);
-      return usdPrice * Number(collateral.amount);
+      return Number(usdPrice) * Number(collateral.amount);
     })
   );
   const totalCollateralBalanceInUsd = collateralBalanceInUsd.reduce(
