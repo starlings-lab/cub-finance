@@ -2,6 +2,7 @@
 "use client";
 import React, { useState } from "react";
 import { getMorphoBlueUserDebtDetails } from "./service/morphoBlueService";
+import { getCompoundV3UserDebtDetails } from "./service/compoundV3Service";
 
 export default async function Home() {
   const [value, setValue] = useState<string>(
@@ -12,11 +13,11 @@ export default async function Home() {
   };
 
   // test getDebtPositionTableRows from morpho blue service
-  const debtPositionTableRows = await getMorphoBlueUserDebtDetails(
-    1,
-    "0xf603265f91f58F1EfA4fAd57694Fb3B77b25fC18"
-  );
-  console.dir(debtPositionTableRows, { depth: null });
+  // const debtPositionTableRows = await getMorphoBlueUserDebtDetails(
+  //   1,
+  //   "0xf603265f91f58F1EfA4fAd57694Fb3B77b25fC18"
+  // );
+  // console.dir(debtPositionTableRows, { depth: null });
 
   // AaveV3 test
   // getUserDebtDetails("0x00171ab2f44c1c9b21c7696eb1a5c601f05a9167")
@@ -26,6 +27,12 @@ export default async function Home() {
   //   .catch((error) => {
   //     console.error(error);
   //   });
+
+  // test getCompoundV3UserDebtDetails
+  const compoundV3UserDebtDetails = await getCompoundV3UserDebtDetails(
+    "0x9CF423E929d661a0fB25e4AEf05bEB1037298fFb"
+  );
+  console.log(compoundV3UserDebtDetails);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">

@@ -1,46 +1,194 @@
 import type { Address } from "abitype";
-import { AlchemyProvider, Contract } from "ethers";
+import { ethers, Contract } from "ethers";
+import { ALCHEMY_API_URL_2 } from "../constants";
 import {
   COMPOUND_V3_CUSDC_ADDRESS,
   COMPOUND_V3_CWETH_ADDRESS,
   COMPOUND_V3_CUSDC_COLLATERALS,
   COMPOUND_V3_CWETH_COLLATERALS,
-  COMPOUND_V3_CUSDC_ABI,
-  COMPOUND_V3_CWETH_ABI
+  COMPOUND_V3_USDC_PRICEFEED,
+  COMPOUND_V3_WETH_PRICEFEED,
+  COMPOUND_V3_ABI
 } from "../contracts/compoundV3";
+import { USDC, WETH } from "../contracts/ERC20Tokens";
+import {
+  Token,
+  TokenAmount,
+  CompoundV3UserDebtDetails,
+  CompoundV3Market,
+  CompoundV3DebtPosition,
+  Protocol
+} from "../type/type";
+import { getTokenByAddress } from "../utils/utils";
 
-const provider = new AlchemyProvider(
-  1,
-  process.env.ALCHEMY_API_KEY_ETH_MAINNET
-);
-
-let signer;
-(async () => {
-  signer = await provider.getSigner(0);
-})();
+const provider = new ethers.JsonRpcProvider(ALCHEMY_API_URL_2);
 
 const CompoundV3cUSDC = new Contract(
   COMPOUND_V3_CUSDC_ADDRESS,
-  COMPOUND_V3_CUSDC_ABI,
-  signer
+  COMPOUND_V3_ABI,
+  provider
 );
 
 const CompoundV3cWETH = new Contract(
   COMPOUND_V3_CWETH_ADDRESS,
-  COMPOUND_V3_CWETH_ABI,
-  signer
+  COMPOUND_V3_ABI,
+  provider
 );
 
-async function getBorrowBalance(
-  market: Contract,
-  address: Address
-): Promise<BigInt> {
+export async function getCompoundV3UserDebtDetails(
+  userAddress: Address
+): Promise<CompoundV3UserDebtDetails> {
   try {
-    const borrowBalance = await market.borrowBalanceOf(address);
-    return borrowBalance;
+    let CompoundV3UserDebtDetails: CompoundV3UserDebtDetails;
+    const debtPositions: CompoundV3DebtPosition[] = await getDebtPositions(
+      userAddress
+    );
+    CompoundV3UserDebtDetails = addMarketsToDebtPositions(
+      userAddress,
+      debtPositions
+    );
+    return CompoundV3UserDebtDetails;
   } catch (error) {
     console.log(error);
     throw error;
+  }
+}
+
+async function getDebtPositions(
+  userAddress: Address
+): Promise<CompoundV3DebtPosition[]> {
+  let debtPositions: CompoundV3DebtPosition[] = [];
+  const cUSDCBorrowBalance = await getBorrowBalance(
+    CompoundV3cUSDC,
+    userAddress
+  );
+  if (cUSDCBorrowBalance > BigInt(0)) {
+    const debtAmountInUSD = await getDebtUsdPrice(
+      CompoundV3cUSDC,
+      COMPOUND_V3_USDC_PRICEFEED,
+      cUSDCBorrowBalance
+    );
+    const cUSDCcollaterals = await getCollateralsByUserAddress(
+      CompoundV3cUSDC,
+      userAddress
+    );
+
+    const debtPosition: CompoundV3DebtPosition = {
+      LTV: await getLtv(CompoundV3cUSDC, debtAmountInUSD, cUSDCcollaterals),
+      debt: {
+        token: USDC,
+        amount: cUSDCBorrowBalance,
+        amountInUSD: debtAmountInUSD
+      },
+      collaterals: cUSDCcollaterals
+    };
+    debtPositions.push(debtPosition);
+  }
+  const cWETHBorrowBalance = await getBorrowBalance(
+    CompoundV3cWETH,
+    userAddress
+  );
+  if (cWETHBorrowBalance > BigInt(0)) {
+    const debtAmountInUSD = await getDebtUsdPrice(
+      CompoundV3cWETH,
+      COMPOUND_V3_WETH_PRICEFEED,
+      cWETHBorrowBalance
+    );
+    const cWETHcollaterals = await getCollateralsByUserAddress(
+      CompoundV3cWETH,
+      userAddress
+    );
+
+    const cWETHdebtPosition: CompoundV3DebtPosition = {
+      LTV: await getLtv(CompoundV3cWETH, debtAmountInUSD, cWETHcollaterals),
+      debt: {
+        token: WETH,
+        amount: cWETHBorrowBalance,
+        amountInUSD: debtAmountInUSD
+      },
+      collaterals: cWETHcollaterals
+    };
+    debtPositions.push(cWETHdebtPosition);
+  }
+  return debtPositions;
+}
+
+function addMarketsToDebtPositions(
+  userAddress: Address,
+  debtPositions: CompoundV3DebtPosition[]
+): CompoundV3UserDebtDetails {
+  const markets = getCompoundV3Markets(debtPositions);
+  const compoundV3UserDebtDetails: CompoundV3UserDebtDetails = {
+    protocol: Protocol.CompoundV3,
+    userAddress: userAddress,
+    markets: markets,
+    debtPositions: debtPositions
+  };
+  return compoundV3UserDebtDetails;
+}
+
+// get a market based on the debt token
+function getCompoundV3Markets(
+  debtPositions: CompoundV3DebtPosition[]
+): CompoundV3Market[] {
+  const markets: CompoundV3Market[] = [];
+  debtPositions.forEach((debtPosition) => {
+    const debtTokenAddress = debtPosition.debt.token.address;
+    const market: CompoundV3Market = {
+      maxLTV: getMaxLtv(),
+      Trailing30DaysBorrowingAPY: 0,
+      debtToken: getTokenByAddress(debtTokenAddress),
+      collateralTokens: getSupportedCollateralTokens(debtTokenAddress)
+    };
+    markets.push(market);
+  });
+  return markets;
+}
+
+async function getCollateralsByUserAddress(
+  market: Contract,
+  userAddress: Address
+): Promise<TokenAmount[]> {
+  const marketAddress = (await market.getAddress()) as Address;
+  const collateralAddresses = getSupportedCollateralAddresses(marketAddress);
+  const collateralsPromise = collateralAddresses.map(
+    async (collateralAddress) => {
+      const collateralAmount = await getCollateralBalance(
+        market,
+        userAddress,
+        collateralAddress
+      );
+      if (collateralAmount > BigInt(0)) {
+        const amountInUSD = await getCollateralUsdPrice(
+          market,
+          collateralAddress,
+          collateralAmount
+        );
+        return {
+          token: getTokenByAddress(collateralAddress),
+          amount: collateralAmount,
+          amountInUSD: amountInUSD
+        };
+      }
+      return null;
+    }
+  );
+  const collaterals = await Promise.all(collateralsPromise);
+  return collaterals.filter(
+    (collateral): collateral is TokenAmount => collateral !== null
+  );
+}
+
+async function getBorrowBalance(
+  market: Contract,
+  userAddress: Address
+): Promise<BigInt> {
+  try {
+    const borrowBalance = await market.borrowBalanceOf(userAddress);
+    return BigInt(borrowBalance);
+  } catch (error) {
+    console.error("Error fetching borrow balance:", error);
+    throw new Error("Failed to fetch borrow balance");
   }
 }
 
@@ -66,6 +214,23 @@ function getSupportedCollateralAddresses(marketAddress: Address): Address[] {
   }
 }
 
+function getSupportedCollateralTokens(debtTokenAddress?: Address): Token[] {
+  try {
+    let supportedCollateralTokens: Token[];
+    if (debtTokenAddress === USDC.address) {
+      supportedCollateralTokens = COMPOUND_V3_CUSDC_COLLATERALS;
+    } else if (debtTokenAddress === WETH.address) {
+      supportedCollateralTokens = COMPOUND_V3_CWETH_COLLATERALS;
+    } else {
+      throw new Error("Unsupported market address");
+    }
+    return supportedCollateralTokens;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
 async function getCollateralBalance(
   market: Contract,
   userAddress: Address,
@@ -81,5 +246,63 @@ async function getCollateralBalance(
     console.log(error);
     throw error;
   }
+}
+
+async function getCollateralUsdPrice(
+  market: Contract,
+  tokenAddress: Address,
+  amount: BigInt
+): Promise<number> {
+  try {
+    const usdPrice = await market.quoteCollateral(tokenAddress, amount);
+    return usdPrice;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+async function getDebtUsdPrice(
+  market: Contract,
+  priceFeed: Address,
+  amount: BigInt
+): Promise<number> {
+  try {
+    const rate = await market.getPrice(priceFeed);
+    const usdPrice = amount * BigInt(rate);
+    return usdPrice;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+async function getLtv(
+  market: Contract,
+  debtAmountInUSD: number,
+  collaterals: TokenAmount[]
+): Promise<number> {
+  const collateralBalanceInUsd: number[] = await Promise.all(
+    collaterals.map(async (collateral) => {
+      const usdPrice = await getCollateralUsdPrice(
+        market,
+        collateral.token.address,
+        collateral.amount
+      );
+      console.log("usdPrice", usdPrice);
+      console.log("collateral.amount", collateral.amount);
+      return usdPrice * Number(collateral.amount);
+    })
+  );
+  const totalCollateralBalanceInUsd = collateralBalanceInUsd.reduce(
+    (totalBalance, currentBalance) => totalBalance + currentBalance,
+    0
+  );
+  const ltv = debtAmountInUSD / totalCollateralBalanceInUsd;
+  return ltv;
+}
+
+function getMaxLtv() {
+  return 0;
 }
 
