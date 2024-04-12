@@ -40,7 +40,6 @@ export async function getMorphoBlueUserDebtDetails(
             }
             monthlyApys {
               borrowApy
-              supplyApy
             }
           }
         }
