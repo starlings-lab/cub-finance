@@ -62,7 +62,7 @@ async function getDebtPositions(
     CompoundV3cUSDC,
     userAddress
   );
-  if (cUSDCBorrowBalance > BigInt(0)) {
+  if (cUSDCBorrowBalance != BigInt(0)) {
     const debtAmountInUSD = await getDebtUsdPrice(
       CompoundV3cUSDC,
       COMPOUND_V3_USDC_PRICEFEED,
@@ -89,7 +89,7 @@ async function getDebtPositions(
     CompoundV3cWETH,
     userAddress
   );
-  if (cWETHBorrowBalance > BigInt(0)) {
+  if (cWETHBorrowBalance != BigInt(0)) {
     const debtAmountInUSD = await getDebtUsdPrice(
       CompoundV3cWETH,
       COMPOUND_V3_WETH_PRICEFEED,
@@ -159,7 +159,7 @@ async function getCollateralsByUserAddress(
         userAddress,
         collateralAddress
       );
-      if (collateralAmount > BigInt(0)) {
+      if (collateralAmount != BigInt(0)) {
         const amountInUSD = await getCollateralUsdPrice(
           market,
           collateralAddress,
@@ -270,7 +270,7 @@ async function getDebtUsdPrice(
 ): Promise<number> {
   try {
     const rate = await market.getPrice(priceFeed);
-    const usdPrice = amount * BigInt(rate);
+    const usdPrice = Number(amount) * Number(rate);
     return usdPrice;
   } catch (error) {
     console.log(error);
@@ -315,20 +315,21 @@ async function getCollateralFactor(
 
 // max LTV for each market
 function getMaxLtv(market: Contract, collaterals: TokenAmount[]): number {
-  let maxLtvAmount = BigInt(0);
-  let totalCollateralAmount = BigInt(0);
+  let maxLtvAmount = 0;
+  let totalCollateralAmount = 0;
 
   collaterals.forEach(async (collateral) => {
     const collateralFactor = await getCollateralFactor(
       market,
       collateral.token
     );
-    const maxLtvAmountForCollateral = collateral.amount * collateralFactor;
+    const maxLtvAmountForCollateral =
+      Number(collateral.amount) * Number(collateralFactor);
     maxLtvAmount += maxLtvAmountForCollateral;
-    totalCollateralAmount += collateral.amount;
+    totalCollateralAmount += Number(collateral.amount);
   });
 
-  if (totalCollateralAmount === BigInt(0)) return 0;
+  if (totalCollateralAmount === 0) return 0;
 
   const maxLtvPercentage = Number(maxLtvAmount) / Number(totalCollateralAmount);
   return maxLtvPercentage;
