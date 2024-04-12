@@ -70,6 +70,7 @@ export interface MorphoBlueDebtPosition extends DebtPositionBase {
 }
 
 export interface CompoundV3DebtPosition extends DebtPositionBase {
+  weightedMaxLTV: number; // weighted maxLTV based on debt position
   debt: TokenAmount;
   collaterals: TokenAmount[];
 }

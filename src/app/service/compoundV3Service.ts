@@ -74,6 +74,7 @@ async function getDebtPositions(
     );
 
     const debtPosition: CompoundV3DebtPosition = {
+      weightedMaxLTV: getMaxLtv(CompoundV3cUSDC, cUSDCcollaterals),
       LTV: await getLtv(CompoundV3cUSDC, debtAmountInUSD, cUSDCcollaterals),
       debt: {
         token: USDC,
@@ -100,6 +101,7 @@ async function getDebtPositions(
     );
 
     const cWETHdebtPosition: CompoundV3DebtPosition = {
+      weightedMaxLTV: getMaxLtv(CompoundV3cWETH, cWETHcollaterals),
       LTV: await getLtv(CompoundV3cWETH, debtAmountInUSD, cWETHcollaterals),
       debt: {
         token: WETH,
@@ -135,7 +137,7 @@ function getCompoundV3Markets(
   debtPositions.forEach((debtPosition) => {
     const debtTokenAddress = debtPosition.debt.token.address;
     const market: CompoundV3Market = {
-      maxLTV: getMaxLtv(),
+      maxLTV: 0,
       Trailing30DaysBorrowingAPY: 0,
       debtToken: getTokenByAddress(debtTokenAddress),
       collateralTokens: getSupportedCollateralTokens(debtTokenAddress)
@@ -302,7 +304,33 @@ async function getLtv(
   return ltv;
 }
 
-function getMaxLtv() {
-  return 0;
+// collateral factor is max LTV for each collateral
+async function getCollateralFactor(
+  market: Contract,
+  collateral: Token
+): Promise<BigInt> {
+  const assetInfo = await market.getAssetInfoByAddress(collateral.address);
+  const collateralFactor = BigInt(assetInfo.borrowCollateralFactor);
+  return collateralFactor;
 }
 
+// max LTV for each market
+function getMaxLtv(market: Contract, collaterals: TokenAmount[]): number {
+  let maxLtvAmount = BigInt(0);
+  let totalCollateralAmount = BigInt(0);
+
+  collaterals.forEach(async (collateral) => {
+    const collateralFactor = await getCollateralFactor(
+      market,
+      collateral.token
+    );
+    const maxLtvAmountForCollateral = collateral.amount * collateralFactor;
+    maxLtvAmount += maxLtvAmountForCollateral;
+    totalCollateralAmount += collateral.amount;
+  });
+
+  if (totalCollateralAmount === BigInt(0)) return 0;
+
+  const maxLtvPercentage = Number(maxLtvAmount) / Number(totalCollateralAmount);
+  return maxLtvPercentage;
+}
