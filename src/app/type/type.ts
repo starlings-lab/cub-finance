@@ -50,11 +50,11 @@ export interface CompoundV3UserDebtDetails extends UserDebtDetailsBase {
 
 export interface UserDebtDetails extends UserDebtDetailsBase {
   markets: Market[];
-  weightedMaxLTV: number; // weighted average of maxLTV of user's collateral markets
   debtPositions: DebtPosition[];
 }
 
 export interface DebtPositionBase {
+  maxLTV: number;
   LTV: number; // debtAmountInUSD / sum of collateralAmountInUSD array
 }
 
@@ -70,13 +70,11 @@ export interface MorphoBlueDebtPosition extends DebtPositionBase {
 }
 
 export interface CompoundV3DebtPosition extends DebtPositionBase {
-  weightedMaxLTV: number; // weighted maxLTV based on debt position
   debt: TokenAmount;
   collaterals: TokenAmount[];
 }
 
 export interface MarketBase {
-  maxLTV: number; // the maximum LTV in this market.
   trailing30DaysBorrowingAPY: number; // borrowing cost of a debt token or an underlying asset.
   trailing30DaysLendingAPY: number;
 }

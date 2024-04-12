@@ -68,13 +68,14 @@ function parseQueryResult(
       marketId: position.market.uniqueKey,
       debtToken: position.market.loanAsset,
       collateralToken: position.market.collateralAsset,
-      maxLTV: position.market.lltv / 10 ** 18,
       trailing30DaysBorrowingAPY: position.market.monthlyApys.borrowApy,
       trailing30DaysLendingAPY: position.market.monthlyApys.supplyApy,
     };
     markets.set(market.marketId, market);
 
     debtPositions.push({
+      maxLTV: position.market.lltv / 10 ** 18,
+      LTV: position.borrowAssetsUsd / position.collateralUsd,
       marketId: position.market.uniqueKey,
       debt: {
         token: position.market.loanAsset,
@@ -86,7 +87,6 @@ function parseQueryResult(
         amount: position.collateral,
         amountInUSD: position.collateralUsd,
       },
-      LTV: position.borrowAssetsUsd / position.collateralUsd,
     });
   });
 

@@ -74,7 +74,7 @@ async function getDebtPositions(
     );
 
     const debtPosition: CompoundV3DebtPosition = {
-      weightedMaxLTV: getMaxLtv(CompoundV3cUSDC, cUSDCcollaterals),
+      maxLTV: getMaxLtv(CompoundV3cUSDC, cUSDCcollaterals),
       LTV: await getLtv(CompoundV3cUSDC, debtAmountInUSD, cUSDCcollaterals),
       debt: {
         token: USDC,
@@ -101,7 +101,7 @@ async function getDebtPositions(
     );
 
     const cWETHdebtPosition: CompoundV3DebtPosition = {
-      weightedMaxLTV: getMaxLtv(CompoundV3cWETH, cWETHcollaterals),
+      maxLTV: getMaxLtv(CompoundV3cWETH, cWETHcollaterals),
       LTV: await getLtv(CompoundV3cWETH, debtAmountInUSD, cWETHcollaterals),
       debt: {
         token: WETH,
@@ -137,7 +137,6 @@ function getCompoundV3Markets(
   debtPositions.forEach((debtPosition) => {
     const debtTokenAddress = debtPosition.debt.token.address;
     const market: CompoundV3Market = {
-      maxLTV: 0,
       Trailing30DaysBorrowingAPY: 0,
       debtToken: getTokenByAddress(debtTokenAddress),
       collateralTokens: getSupportedCollateralTokens(debtTokenAddress)
