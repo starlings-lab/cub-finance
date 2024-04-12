@@ -16,7 +16,7 @@ export interface Token {
 
 export interface TokenAmount {
   token: Token;
-  amount: BigInt;
+  amount: bigint;
   amountInUSD: number;
 }
 

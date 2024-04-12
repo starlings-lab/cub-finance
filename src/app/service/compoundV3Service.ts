@@ -183,10 +183,10 @@ async function getCollateralsByUserAddress(
 async function getBorrowBalance(
   market: Contract,
   userAddress: Address
-): Promise<BigInt> {
+): Promise<bigint> {
   try {
     const borrowBalance = await market.borrowBalanceOf(userAddress);
-    return BigInt(borrowBalance);
+    return borrowBalance;
   } catch (error) {
     console.error("Error fetching borrow balance:", error);
     throw new Error("Failed to fetch borrow balance");
@@ -236,7 +236,7 @@ async function getCollateralBalance(
   market: Contract,
   userAddress: Address,
   tokenAddress: Address
-): Promise<BigInt> {
+): Promise<bigint> {
   try {
     const collateralBalance = await market.collateralBalanceOf(
       userAddress,
@@ -252,7 +252,7 @@ async function getCollateralBalance(
 async function getCollateralUsdPrice(
   market: Contract,
   tokenAddress: Address,
-  amount: BigInt
+  amount: bigint
 ): Promise<number> {
   try {
     const usdPrice = await market.quoteCollateral(tokenAddress, amount);
@@ -266,7 +266,7 @@ async function getCollateralUsdPrice(
 async function getDebtUsdPrice(
   market: Contract,
   priceFeed: Address,
-  amount: BigInt
+  amount: bigint
 ): Promise<number> {
   try {
     const rate = await market.getPrice(priceFeed);
@@ -305,9 +305,9 @@ async function getLtv(
 async function getCollateralFactor(
   market: Contract,
   collateral: Token
-): Promise<BigInt> {
+): Promise<bigint> {
   const assetInfo = await market.getAssetInfoByAddress(collateral.address);
-  const collateralFactor = BigInt(assetInfo.borrowCollateralFactor);
+  const collateralFactor = assetInfo.borrowCollateralFactor;
   return collateralFactor;
 }
 
