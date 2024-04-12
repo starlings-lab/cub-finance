@@ -4,7 +4,7 @@ export enum Protocol {
   AaveV3 = "AaveV3",
   CompoundV3 = "CompoundV3",
   MorphoBlue = "MorphoBlue",
-  Spark = "Spark",
+  Spark = "Spark"
 }
 
 export interface Token {
@@ -38,6 +38,11 @@ export interface UserDebtDetailsBase {
   userAddress: Address;
 }
 
+export interface UserDebtDetails extends UserDebtDetailsBase {
+  markets: Market[];
+  debtPositions: DebtPosition[];
+}
+
 export interface MorphoBlueUserDebtDetails extends UserDebtDetailsBase {
   markets: MorphoBlueMarket[];
   debtPositions: MorphoBlueDebtPosition[];
@@ -46,11 +51,6 @@ export interface MorphoBlueUserDebtDetails extends UserDebtDetailsBase {
 export interface CompoundV3UserDebtDetails extends UserDebtDetailsBase {
   markets: CompoundV3Market[];
   debtPositions: CompoundV3DebtPosition[];
-}
-
-export interface UserDebtDetails extends UserDebtDetailsBase {
-  markets: Market[];
-  debtPositions: DebtPosition[];
 }
 
 export interface DebtPositionBase {
@@ -76,11 +76,11 @@ export interface CompoundV3DebtPosition extends DebtPositionBase {
 
 export interface MarketBase {
   trailing30DaysBorrowingAPY: number; // borrowing cost of a debt token or an underlying asset.
-  trailing30DaysLendingAPY: number;
 }
 
 export interface Market extends MarketBase {
   underlyingAsset: Token;
+  trailing30DaysLendingAPY: number;
 }
 
 // collateral doesn't earn yields in MorphoBlue

@@ -137,7 +137,7 @@ function getCompoundV3Markets(
   debtPositions.forEach((debtPosition) => {
     const debtTokenAddress = debtPosition.debt.token.address;
     const market: CompoundV3Market = {
-      Trailing30DaysBorrowingAPY: 0,
+      trailing30DaysBorrowingAPY: 0,
       debtToken: getTokenByAddress(debtTokenAddress),
       collateralTokens: getSupportedCollateralTokens(debtTokenAddress)
     };

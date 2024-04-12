@@ -4,7 +4,7 @@ import {
   MorphoBlueDebtPosition,
   MorphoBlueMarket,
   MorphoBlueUserDebtDetails,
-  Protocol,
+  Protocol
 } from "../type/type";
 import { MORPHO_GRAPHQL_URL } from "../constants";
 
@@ -68,8 +68,7 @@ function parseQueryResult(
       marketId: position.market.uniqueKey,
       debtToken: position.market.loanAsset,
       collateralToken: position.market.collateralAsset,
-      trailing30DaysBorrowingAPY: position.market.monthlyApys.borrowApy,
-      trailing30DaysLendingAPY: position.market.monthlyApys.supplyApy,
+      trailing30DaysBorrowingAPY: position.market.monthlyApys.borrowApy
     };
     markets.set(market.marketId, market);
 
@@ -80,13 +79,13 @@ function parseQueryResult(
       debt: {
         token: position.market.loanAsset,
         amount: position.borrowAssets,
-        amountInUSD: position.borrowAssetsUsd,
+        amountInUSD: position.borrowAssetsUsd
       },
       collateral: {
         token: position.market.collateralAsset,
         amount: position.collateral,
-        amountInUSD: position.collateralUsd,
-      },
+        amountInUSD: position.collateralUsd
+      }
     });
   });
 
@@ -94,6 +93,6 @@ function parseQueryResult(
     protocol: Protocol.MorphoBlue,
     userAddress: address,
     markets: Array.from(markets.values()),
-    debtPositions,
+    debtPositions
   };
 }
