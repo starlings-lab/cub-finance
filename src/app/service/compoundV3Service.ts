@@ -1,6 +1,10 @@
 import type { Address } from "abitype";
 import { ethers, Contract } from "ethers";
-import { ALCHEMY_API_URL_2 } from "../constants";
+import {
+  ALCHEMY_API_URL_2,
+  DEFILLAMA_COMPOUND_ETH_POOL_ID,
+  DEFILLAMA_COMPOUND_USDC_POOL_ID,
+} from "../constants";
 import {
   COMPOUND_V3_CUSDC_ADDRESS,
   COMPOUND_V3_CWETH_ADDRESS,
@@ -8,7 +12,7 @@ import {
   COMPOUND_V3_CWETH_COLLATERALS,
   COMPOUND_V3_USDC_PRICEFEED,
   COMPOUND_V3_WETH_PRICEFEED,
-  COMPOUND_V3_ABI
+  COMPOUND_V3_ABI,
 } from "../contracts/compoundV3";
 import { USDC, WETH } from "../contracts/ERC20Tokens";
 import {
@@ -17,9 +21,10 @@ import {
   CompoundV3UserDebtDetails,
   CompoundV3Market,
   CompoundV3DebtPosition,
-  Protocol
+  Protocol,
 } from "../type/type";
 import { getTokenByAddress } from "../utils/utils";
+import { calculate30DayTrailingBorrowingAndLendingAPYs } from "./defiLlamaDataService";
 
 const provider = new ethers.JsonRpcProvider(ALCHEMY_API_URL_2);
 
@@ -43,7 +48,7 @@ export async function getCompoundV3UserDebtDetails(
     const debtPositions: CompoundV3DebtPosition[] = await getDebtPositions(
       userAddress
     );
-    CompoundV3UserDebtDetails = addMarketsToDebtPositions(
+    CompoundV3UserDebtDetails = await addMarketsToDebtPositions(
       userAddress,
       debtPositions
     );
@@ -79,9 +84,9 @@ async function getDebtPositions(
       debt: {
         token: USDC,
         amount: cUSDCBorrowBalance,
-        amountInUSD: debtAmountInUSD
+        amountInUSD: debtAmountInUSD,
       },
-      collaterals: cUSDCcollaterals
+      collaterals: cUSDCcollaterals,
     };
     debtPositions.push(debtPosition);
   }
@@ -106,44 +111,64 @@ async function getDebtPositions(
       debt: {
         token: WETH,
         amount: cWETHBorrowBalance,
-        amountInUSD: debtAmountInUSD
+        amountInUSD: debtAmountInUSD,
       },
-      collaterals: cWETHcollaterals
+      collaterals: cWETHcollaterals,
     };
     debtPositions.push(cWETHdebtPosition);
   }
   return debtPositions;
 }
 
-function addMarketsToDebtPositions(
+async function addMarketsToDebtPositions(
   userAddress: Address,
   debtPositions: CompoundV3DebtPosition[]
-): CompoundV3UserDebtDetails {
-  const markets: CompoundV3Market[] = getCompoundV3Markets(debtPositions);
+): Promise<CompoundV3UserDebtDetails> {
+  const markets: CompoundV3Market[] = await getCompoundV3Markets(debtPositions);
   const compoundV3UserDebtDetails: CompoundV3UserDebtDetails = {
     protocol: Protocol.CompoundV3,
     userAddress: userAddress,
     markets: markets,
-    debtPositions: debtPositions
+    debtPositions: debtPositions,
   };
   return compoundV3UserDebtDetails;
 }
 
 // get a market based on the debt token
-function getCompoundV3Markets(
+async function getCompoundV3Markets(
   debtPositions: CompoundV3DebtPosition[]
-): CompoundV3Market[] {
-  const markets: CompoundV3Market[] = [];
-  debtPositions.forEach((debtPosition) => {
-    const debtTokenAddress: Address = debtPosition.debt.token.address;
-    const market: CompoundV3Market = {
-      trailing30DaysBorrowingAPY: 0,
-      debtToken: getTokenByAddress(debtTokenAddress),
-      collateralTokens: getSupportedCollateralTokens(debtTokenAddress)
-    };
-    markets.push(market);
+): Promise<CompoundV3Market[]> {
+  // Fetch borrowing APYs for Compound ETH and USDC pools
+  return getBorrowingAPYsByTokenAddress().then((borrowingAPYs) => {
+    const markets: CompoundV3Market[] = [];
+    debtPositions.forEach((debtPosition) => {
+      const debtTokenAddress: Address = debtPosition.debt.token.address;
+      const market: CompoundV3Market = {
+        trailing30DaysBorrowingAPY: borrowingAPYs.get(debtTokenAddress) || 0,
+        debtToken: getTokenByAddress(debtTokenAddress),
+        collateralTokens: getSupportedCollateralTokens(debtTokenAddress),
+      };
+      markets.push(market);
+    });
+    return markets;
   });
-  return markets;
+}
+
+// Fetches 30 days trailing borrowing APYs for Compound ETH and USDC pools
+async function getBorrowingAPYsByTokenAddress(): Promise<Map<string, number>> {
+  return Promise.all([
+    calculate30DayTrailingBorrowingAndLendingAPYs(
+      DEFILLAMA_COMPOUND_ETH_POOL_ID
+    ),
+    calculate30DayTrailingBorrowingAndLendingAPYs(
+      DEFILLAMA_COMPOUND_USDC_POOL_ID
+    ),
+  ]).then((apyData) => {
+    const borrowingAPYs = new Map<string, number>();
+    borrowingAPYs.set(WETH.address, apyData[0].trailingDayBorrowingAPY);
+    borrowingAPYs.set(USDC.address, apyData[1].trailingDayBorrowingAPY);
+    return borrowingAPYs;
+  });
 }
 
 async function getCollateralsByUserAddress(
@@ -169,7 +194,7 @@ async function getCollateralsByUserAddress(
         return {
           token: getTokenByAddress(collateralAddress),
           amount: collateralAmount,
-          amountInUSD: amountInUSD
+          amountInUSD: amountInUSD,
         };
       }
       return null;

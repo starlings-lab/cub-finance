@@ -7,7 +7,7 @@ import {
   UNI,
   LINK,
   cbETH,
-  wstETH
+  wstETH,
 } from "../contracts/ERC20Tokens";
 import { ethers } from "ethers";
 
@@ -20,4 +20,11 @@ export function getTokenByAddress(address: string): Token {
     throw new Error(`Token not found for address: ${address}`);
   }
   return foundToken;
+}
+
+export function calculateAPYFromAPR(aprDecimal: number) {
+  const secondsPerYear = 365 * 24 * 60 * 60; // 86,400 seconds/day * 365 days/year
+  const apyDecimal =
+    Math.pow(1 + aprDecimal / secondsPerYear, secondsPerYear) - 1;
+  return apyDecimal;
 }
