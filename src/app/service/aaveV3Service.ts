@@ -2,7 +2,7 @@ import * as markets from "@bgd-labs/aave-address-book";
 import { BaseAaveService } from "./BaseAaveService";
 import { Address } from "abitype";
 import { UiPoolDataProvider } from "@aave/contract-helpers";
-import { Protocol } from "../type/type";
+import { DebtPosition, Market, Protocol } from "../type/type";
 
 const baseAaveService = new BaseAaveService(
   Protocol.AaveV3,

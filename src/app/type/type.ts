@@ -4,7 +4,7 @@ export enum Protocol {
   AaveV3 = "AaveV3",
   CompoundV3 = "CompoundV3",
   MorphoBlue = "MorphoBlue",
-  Spark = "Spark"
+  Spark = "Spark",
 }
 
 export interface Token {
@@ -94,4 +94,19 @@ export interface MorphoBlueMarket extends MarketBase {
 export interface CompoundV3Market extends MarketBase {
   debtToken: Token;
   collateralTokens: Token[];
+}
+
+// Recommendation related types
+
+export interface RecommendedDebtDetailBase {
+  protocol: Protocol;
+  availableBorrowingAmount: bigint; // Amount in debt
+  // ((lendingAPY * lendingAmount) - (borrowingAPY * (debtAmount)))/debAmount
+  netBorrowingApy: number;
+}
+
+// Interface for Aave & Spark
+export interface RecommendedDebtDetail extends RecommendedDebtDetailBase {
+  debt: DebtPosition; // The recommended/new debt position
+  market: Market; // The market where the debt is recommended
 }
