@@ -3,7 +3,7 @@ import { ethers, Contract } from "ethers";
 import {
   ALCHEMY_API_URL_2,
   DEFILLAMA_COMPOUND_ETH_POOL_ID,
-  DEFILLAMA_COMPOUND_USDC_POOL_ID,
+  DEFILLAMA_COMPOUND_USDC_POOL_ID
 } from "../constants";
 import {
   COMPOUND_V3_CUSDC_ADDRESS,
@@ -11,7 +11,7 @@ import {
   COMPOUND_V3_CUSDC_COLLATERALS,
   COMPOUND_V3_CWETH_COLLATERALS,
   COMPOUND_V3_PRICEFEEDS,
-  COMPOUND_V3_ABI,
+  COMPOUND_V3_ABI
 } from "../contracts/compoundV3";
 import { USDC, WETH } from "../contracts/ERC20Tokens";
 import {
@@ -20,7 +20,7 @@ import {
   CompoundV3UserDebtDetails,
   CompoundV3Market,
   CompoundV3DebtPosition,
-  Protocol,
+  Protocol
 } from "../type/type";
 import { getTokenByAddress } from "../utils/utils";
 import { calculate30DayTrailingBorrowingAndLendingAPYs } from "./defiLlamaDataService";
@@ -93,7 +93,7 @@ async function getDebtPositions(
         amount: cUSDCBorrowBalance,
         amountInUSD: amountInUSD
       },
-      collaterals: cUSDCcollaterals,
+      collaterals: cUSDCcollaterals
     };
     debtPositions.push(debtPosition);
   }
@@ -127,7 +127,7 @@ async function getDebtPositions(
         amount: cWETHBorrowBalance,
         amountInUSD: amountInUSD
       },
-      collaterals: cWETHcollaterals,
+      collaterals: cWETHcollaterals
     };
     debtPositions.push(cWETHdebtPosition);
   }
@@ -143,7 +143,7 @@ async function addMarketsToDebtPositions(
     protocol: Protocol.CompoundV3,
     userAddress: userAddress,
     markets: markets,
-    debtPositions: debtPositions,
+    debtPositions: debtPositions
   };
   return compoundV3UserDebtDetails;
 }
@@ -160,7 +160,7 @@ async function getCompoundV3Markets(
       const market: CompoundV3Market = {
         trailing30DaysBorrowingAPY: borrowingAPYs.get(debtTokenAddress) || 0,
         debtToken: getTokenByAddress(debtTokenAddress),
-        collateralTokens: getSupportedCollateralTokens(debtTokenAddress),
+        collateralTokens: getSupportedCollateralTokens(debtTokenAddress)
       };
       markets.push(market);
     });
@@ -176,7 +176,7 @@ async function getBorrowingAPYsByTokenAddress(): Promise<Map<string, number>> {
     ),
     calculate30DayTrailingBorrowingAndLendingAPYs(
       DEFILLAMA_COMPOUND_USDC_POOL_ID
-    ),
+    )
   ]).then((apyData) => {
     const borrowingAPYs = new Map<string, number>();
     borrowingAPYs.set(WETH.address, apyData[0].trailingDayBorrowingAPY);
@@ -206,7 +206,7 @@ async function getCollateralsByUserAddress(
       return {
         token: getTokenByAddress(collateral.address),
         amount: collateralAmount,
-        amountInUSD: amountInUSD,
+        amountInUSD: amountInUSD
       };
     }
     return null;
@@ -232,19 +232,19 @@ async function getBorrowBalance(
 // there seems to be no easy way to fetch supported collaterals for each market. So we store them as constant values. Even compound.js keeps constant values.
 function getSupportedCollateral(marketAddress: Address): Token[] {
   try {
-    let supportedCollateralAddresses: Address[];
+    let supportedCollaterals: Token[];
     if (marketAddress === COMPOUND_V3_CUSDC_ADDRESS) {
-      supportedCollateralAddresses = COMPOUND_V3_CUSDC_COLLATERALS.map(
-        (collateral) => collateral.address
+      supportedCollaterals = COMPOUND_V3_CUSDC_COLLATERALS.map(
+        (collateral) => collateral
       );
     } else if (marketAddress === COMPOUND_V3_CWETH_ADDRESS) {
-      supportedCollateralAddresses = COMPOUND_V3_CWETH_COLLATERALS.map(
-        (collateral) => collateral.address
+      supportedCollaterals = COMPOUND_V3_CWETH_COLLATERALS.map(
+        (collateral) => collateral
       );
     } else {
       throw new Error("Unsupported market address");
     }
-    return supportedCollateralAddresses;
+    return supportedCollaterals;
   } catch (error) {
     console.log(error);
     throw error;
