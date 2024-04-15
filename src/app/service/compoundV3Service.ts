@@ -328,8 +328,6 @@ async function getLtv(
   debtAmountInUSD: bigint,
   collaterals: TokenAmount[]
 ): Promise<number> {
-  const USD_SCALE = BigInt(10 ** 8);
-
   const collateralBalanceInUsd: bigint[] = await Promise.all(
     collaterals.map(async (collateral) => {
       const COLLATERAL_TOKEN_SCALE = BigInt(10 ** collateral.token.decimals);
@@ -345,8 +343,8 @@ async function getLtv(
     (totalBalance: bigint, currentBalance) => totalBalance + currentBalance,
     BigInt(0)
   );
-  const ltv = debtAmountInUSD / totalCollateralBalanceInUsd / USD_SCALE;
-  return Number(ltv);
+  const ltv = Number(debtAmountInUSD) / Number(totalCollateralBalanceInUsd);
+  return ltv;
 }
 
 // collateral factor is max LTV for each collateral
