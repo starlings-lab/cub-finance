@@ -6,8 +6,7 @@ import {
   COMPOUND_V3_CWETH_ADDRESS,
   COMPOUND_V3_CUSDC_COLLATERALS,
   COMPOUND_V3_CWETH_COLLATERALS,
-  COMPOUND_V3_USDC_PRICEFEED,
-  COMPOUND_V3_WETH_PRICEFEED,
+  COMPOUND_V3_PRICEFEEDS,
   COMPOUND_V3_ABI
 } from "../contracts/compoundV3";
 import { USDC, WETH } from "../contracts/ERC20Tokens";
@@ -65,7 +64,7 @@ async function getDebtPositions(
   if (cUSDCBorrowBalance != BigInt(0)) {
     const debtAmountInUSD: bigint = await getDebtUsdPrice(
       CompoundV3cUSDC,
-      COMPOUND_V3_USDC_PRICEFEED,
+      COMPOUND_V3_PRICEFEEDS.USDC,
       cUSDCBorrowBalance
     );
     const cUSDCcollaterals: TokenAmount[] = await getCollateralsByUserAddress(
@@ -92,7 +91,7 @@ async function getDebtPositions(
   if (cWETHBorrowBalance != BigInt(0)) {
     const debtAmountInUSD: bigint = await getDebtUsdPrice(
       CompoundV3cWETH,
-      COMPOUND_V3_WETH_PRICEFEED,
+      COMPOUND_V3_PRICEFEEDS.WETH,
       cWETHBorrowBalance
     );
     const cWETHcollaterals = await getCollateralsByUserAddress(
@@ -151,32 +150,29 @@ async function getCollateralsByUserAddress(
   userAddress: Address
 ): Promise<TokenAmount[]> {
   const marketAddress: Address = (await market.getAddress()) as Address;
-  const collateralAddresses: Address[] =
-    getSupportedCollateralAddresses(marketAddress);
-  const collateralsPromise = collateralAddresses.map(
-    async (collateralAddress) => {
-      const collateralAmount: bigint = await getCollateralBalance(
+  const collaterals: Token[] = getSupportedCollateral(marketAddress);
+  const collateralsPromise = collaterals.map(async (collateral) => {
+    const collateralAmount: bigint = await getCollateralBalance(
+      market,
+      userAddress,
+      collateral.address
+    );
+    if (collateralAmount !== BigInt(0)) {
+      const amountInUSD: bigint = await getDebtUsdPrice(
         market,
-        userAddress,
-        collateralAddress
+        getPriceFeedFromTokenSymbol(collateral.symbol),
+        collateralAmount
       );
-      if (collateralAmount !== BigInt(0)) {
-        const amountInUSD: bigint = await getCollateralUsdPrice(
-          market,
-          collateralAddress,
-          collateralAmount
-        );
-        return {
-          token: getTokenByAddress(collateralAddress),
-          amount: collateralAmount,
-          amountInUSD: amountInUSD
-        };
-      }
-      return null;
+      return {
+        token: getTokenByAddress(collateral.address),
+        amount: collateralAmount,
+        amountInUSD: amountInUSD
+      };
     }
-  );
-  const collaterals = await Promise.all(collateralsPromise);
-  return collaterals.filter(
+    return null;
+  });
+  const collateralsPromiseResolved = await Promise.all(collateralsPromise);
+  return collateralsPromiseResolved.filter(
     (collateral): collateral is TokenAmount => collateral !== null
   ) as TokenAmount[];
 }
@@ -194,7 +190,7 @@ async function getBorrowBalance(
 }
 
 // there seems to be no easy way to fetch supported collaterals for each market. So we store them as constant values. Even compound.js keeps constant values.
-function getSupportedCollateralAddresses(marketAddress: Address): Address[] {
+function getSupportedCollateral(marketAddress: Address): Token[] {
   try {
     let supportedCollateralAddresses: Address[];
     if (marketAddress === COMPOUND_V3_CUSDC_ADDRESS) {
@@ -249,17 +245,25 @@ async function getCollateralBalance(
   }
 }
 
-async function getCollateralUsdPrice(
-  market: Contract,
-  tokenAddress: Address,
-  amount: bigint
-): Promise<bigint> {
-  try {
-    const usdPrice: bigint = await market.quoteCollateral(tokenAddress, amount);
-    return usdPrice;
-  } catch (error) {
-    console.log(error);
-    throw error;
+function getPriceFeedFromTokenSymbol(tokenSymbol: string): Address {
+  if (tokenSymbol === "USDC") {
+    return COMPOUND_V3_PRICEFEEDS.USDC;
+  } else if (tokenSymbol === "WETH") {
+    return COMPOUND_V3_PRICEFEEDS.WETH;
+  } else if (tokenSymbol === "COMP") {
+    return COMPOUND_V3_PRICEFEEDS.COMP;
+  } else if (tokenSymbol === "WBTC") {
+    return COMPOUND_V3_PRICEFEEDS.WBTC;
+  } else if (tokenSymbol === "UNI") {
+    return COMPOUND_V3_PRICEFEEDS.UNI;
+  } else if (tokenSymbol === "LINK") {
+    return COMPOUND_V3_PRICEFEEDS.LINK;
+  } else if (tokenSymbol === "cbETH") {
+    return COMPOUND_V3_PRICEFEEDS.cbETH;
+  } else if (tokenSymbol === "wstETH") {
+    return COMPOUND_V3_PRICEFEEDS.wstETH;
+  } else {
+    throw new Error("Unsupported token name");
   }
 }
 
@@ -285,9 +289,9 @@ async function getLtv(
 ): Promise<bigint> {
   const collateralBalanceInUsd: bigint[] = await Promise.all(
     collaterals.map(async (collateral) => {
-      const usdPrice: bigint = await getCollateralUsdPrice(
+      const usdPrice: bigint = await getDebtUsdPrice(
         market,
-        collateral.token.address,
+        getPriceFeedFromTokenSymbol(collateral.token.symbol),
         collateral.amount
       );
       return usdPrice * collateral.amount;
@@ -307,28 +311,41 @@ async function getCollateralFactor(
   collateral: Token
 ): Promise<bigint> {
   const assetInfo = await market.getAssetInfoByAddress(collateral.address);
+  // collateralFactor an integer that represents the decimal value scaled up by 10 ^ 18. E.g. 650000000000000000 is 65%.
   const collateralFactor: bigint = assetInfo.borrowCollateralFactor;
   return collateralFactor;
 }
 
 // max LTV for each market
 function getMaxLtv(market: Contract, collaterals: TokenAmount[]): bigint {
-  let maxLtvAmount = BigInt(0);
-  let totalCollateralAmount = BigInt(0);
+  let maxLtvAmountInUsd = BigInt(0);
+  let totalCollateralAmountInUsd = BigInt(0);
 
   collaterals.forEach(async (collateral) => {
-    const collateralFactor: bigint = await getCollateralFactor(
+    let collateralFactor: bigint = await getCollateralFactor(
       market,
       collateral.token
     );
+    collateralFactor = collateralFactor / BigInt(10 ** (18 + 2));
     const maxLtvAmountForCollateral: bigint =
       collateral.amount * collateralFactor;
-    maxLtvAmount += maxLtvAmountForCollateral;
-    totalCollateralAmount += collateral.amount;
+    const maxLtvAmountForCollateralInUSD: bigint = await getDebtUsdPrice(
+      market,
+      getPriceFeedFromTokenSymbol(collateral.token.symbol),
+      maxLtvAmountForCollateral
+    );
+    maxLtvAmountInUsd += maxLtvAmountForCollateralInUSD;
+    const collateralAmountInUSD: bigint = await getDebtUsdPrice(
+      market,
+      getPriceFeedFromTokenSymbol(collateral.token.symbol),
+      collateral.amount
+    );
+    totalCollateralAmountInUsd += collateralAmountInUSD;
   });
 
-  if (totalCollateralAmount === BigInt(0)) return BigInt(0);
+  if (totalCollateralAmountInUsd === BigInt(0)) return BigInt(0);
 
-  const maxLtvPercentage: bigint = maxLtvAmount / totalCollateralAmount;
+  const maxLtvPercentage: bigint =
+    maxLtvAmountInUsd / totalCollateralAmountInUsd;
   return maxLtvPercentage;
 }
