@@ -82,7 +82,7 @@ async function getDebtPositions(
     );
 
     const debtPosition: CompoundV3DebtPosition = {
-      maxLTV: getMaxLtv(CompoundV3cUSDC, cUSDCcollaterals),
+      maxLTV: await getMaxLtv(CompoundV3cUSDC, cUSDCcollaterals),
       LTV: await getLtv(
         CompoundV3cUSDC,
         debtAmountInUSD / BigInt(10 ** USDC.decimals),
@@ -116,7 +116,7 @@ async function getDebtPositions(
     );
 
     const cWETHdebtPosition: CompoundV3DebtPosition = {
-      maxLTV: getMaxLtv(CompoundV3cWETH, cWETHcollaterals),
+      maxLTV: await getMaxLtv(CompoundV3cWETH, cWETHcollaterals),
       LTV: await getLtv(
         CompoundV3cWETH,
         debtAmountInUSD / BigInt(10 ** WETH.decimals),
@@ -328,8 +328,6 @@ async function getLtv(
   debtAmountInUSD: bigint,
   collaterals: TokenAmount[]
 ): Promise<number> {
-  const USD_SCALE = BigInt(10 ** 8);
-
   const collateralBalanceInUsd: bigint[] = await Promise.all(
     collaterals.map(async (collateral) => {
       const COLLATERAL_TOKEN_SCALE = BigInt(10 ** collateral.token.decimals);
@@ -345,8 +343,8 @@ async function getLtv(
     (totalBalance: bigint, currentBalance) => totalBalance + currentBalance,
     BigInt(0)
   );
-  const ltv = debtAmountInUSD / totalCollateralBalanceInUsd / USD_SCALE;
-  return Number(ltv);
+  const ltv = Number(debtAmountInUSD) / Number(totalCollateralBalanceInUsd);
+  return ltv;
 }
 
 // collateral factor is max LTV for each collateral
@@ -361,13 +359,15 @@ async function getCollateralFactor(
 }
 
 // max LTV for each market
-function getMaxLtv(market: Contract, collaterals: TokenAmount[]): number {
+async function getMaxLtv(
+  market: Contract,
+  collaterals: TokenAmount[]
+): Promise<number> {
   let maxLtvAmountInUsd = BigInt(0);
   let totalCollateralAmountInUsd = BigInt(0);
-  const USD_SCALE = BigInt(10 ** 8);
 
-  collaterals.forEach(async (collateral) => {
-    const COLLATERAL_FACTOR_SCALE = BigInt(10 ** (18 + 2));
+  const promises = collaterals.map(async (collateral) => {
+    const COLLATERAL_FACTOR_SCALE = BigInt(10 ** 18);
     const COLLATERAL_AMOUNT_SCALE = BigInt(10 ** collateral.token.decimals);
 
     let collateralFactor: bigint = await getCollateralFactor(
@@ -392,9 +392,11 @@ function getMaxLtv(market: Contract, collaterals: TokenAmount[]): number {
     totalCollateralAmountInUsd += collateralAmountInUSD;
   });
 
-  if (totalCollateralAmountInUsd === BigInt(0)) return BigInt(0);
+  await Promise.all(promises);
 
-  let maxLtvPercentage: bigint =
-    maxLtvAmountInUsd / totalCollateralAmountInUsd / USD_SCALE;
+  if (totalCollateralAmountInUsd === BigInt(0)) return 0;
+
+  let maxLtvPercentage: number =
+    Number(maxLtvAmountInUsd) / Number(totalCollateralAmountInUsd);
   return Number(maxLtvPercentage);
 }
