@@ -4,7 +4,7 @@ export enum Protocol {
   AaveV3 = "AaveV3",
   CompoundV3 = "CompoundV3",
   MorphoBlue = "MorphoBlue",
-  Spark = "Spark",
+  Spark = "Spark"
 }
 
 export interface Token {
@@ -111,4 +111,10 @@ export interface RecommendedDebtDetailBase {
 export interface RecommendedDebtDetail extends RecommendedDebtDetailBase {
   debt: DebtPosition; // The recommended/new debt position
   market: Market; // The market where the debt is recommended
+}
+
+export interface MorphoBlueRecommendedDebtDetail
+  extends RecommendedDebtDetailBase {
+  debt: MorphoBlueDebtPosition; // The recommended/new debt position
+  market: MorphoBlueMarket; // The market where the debt is recommended
 }

@@ -1,10 +1,14 @@
 import type { Address } from "abitype";
 import { request, gql } from "graphql-request";
 import {
+  DebtPosition,
   MorphoBlueDebtPosition,
+  CompoundV3DebtPosition,
   MorphoBlueMarket,
   MorphoBlueUserDebtDetails,
-  Protocol
+  Protocol,
+  MorphoBlueRecommendedDebtDetail,
+  TokenAmount
 } from "../type/type";
 import { MORPHO_GRAPHQL_URL } from "../constants";
 
@@ -157,3 +161,56 @@ function parseMarketsQueryResult(queryResult: any): MorphoBlueMarket[] {
   return markets;
 }
 
+export async function getRecommendedDebtDetail(
+  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
+  protocol: Protocol
+): Promise<MorphoBlueRecommendedDebtDetail[] | null> {
+  const markets: MorphoBlueMarket[] = await getMarkets();
+
+  // check if the debt token is in the markets
+  const debtTokenMatchedMarkets = markets.filter((market) => {
+    if (protocol === Protocol.AaveV3 || protocol === Protocol.Spark) {
+      return (debtPosition.debt as TokenAmount[]).some(
+        (debt) => market.debtToken.address === debt.token.address
+      );
+    }
+    return (
+      market.debtToken.address ===
+      (debtPosition.debt as TokenAmount).token.address
+    );
+  });
+
+  // check if the collateral tokens are in the markets
+  let collateralTokenMatchedMarkets: MorphoBlueMarket[] = [];
+  if (debtTokenMatchedMarkets.length > 0) {
+    collateralTokenMatchedMarkets = debtTokenMatchedMarkets.filter(
+      (debtTokenMatchedMarket) => {
+        if (
+          protocol === Protocol.AaveV3 ||
+          protocol === Protocol.Spark ||
+          protocol === Protocol.CompoundV3
+        ) {
+          return (
+            (debtPosition as DebtPosition) ||
+            (debtPosition as CompoundV3DebtPosition)
+          ).collaterals.some(
+            (collateral) =>
+              debtTokenMatchedMarket.collateralToken.address ===
+              collateral.token.address
+          );
+        }
+        return (
+          debtTokenMatchedMarket.collateralToken.address ===
+          (debtPosition as MorphoBlueDebtPosition).collateral.token.address
+        );
+      }
+    );
+  } else if (debtTokenMatchedMarkets.length === 0) {
+    return null;
+  }
+
+  if (collateralTokenMatchedMarkets.length === 0) {
+    return null;
+  }
+  return [];
+}
