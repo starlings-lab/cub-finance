@@ -86,6 +86,8 @@ export interface Market extends MarketBase {
 // collateral doesn't earn yields in MorphoBlue
 export interface MorphoBlueMarket extends MarketBase {
   marketId: string; // This is required because two markets with the same collateral token and a debt token can have different borrowing APY and maxLTV.
+  utilizationRatio: number;
+  maxLTV: number;
   debtToken: Token;
   collateralToken: Token;
 }

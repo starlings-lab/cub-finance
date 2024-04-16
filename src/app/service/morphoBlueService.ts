@@ -41,6 +41,9 @@ export async function getMorphoBlueUserDebtDetails(
             monthlyApys {
               borrowApy
             }
+            state {
+              utilization
+            }          
           }
         }
       }
@@ -48,14 +51,16 @@ export async function getMorphoBlueUserDebtDetails(
   `;
 
   return request(MORPHO_GRAPHQL_URL, query)
-    .then((queryResult) => parseQueryResult(queryResult, address))
+    .then((queryResult) =>
+      parseMarketPositionsQueryResult(queryResult, address)
+    )
     .catch((error) => {
       console.error(error);
       throw error;
     });
 }
 
-function parseQueryResult(
+function parseMarketPositionsQueryResult(
   queryResult: any,
   address: Address
 ): MorphoBlueUserDebtDetails {
@@ -65,6 +70,8 @@ function parseQueryResult(
   queryResult.userByAddress.marketPositions.forEach((position: any) => {
     const market: MorphoBlueMarket = {
       marketId: position.market.uniqueKey,
+      utilizationRatio: position.market.state.utilization,
+      maxLTV: Number(position.market.lltv / 10 ** 18),
       debtToken: position.market.loanAsset,
       collateralToken: position.market.collateralAsset,
       trailing30DaysBorrowingAPY: position.market.monthlyApys.borrowApy
@@ -95,3 +102,58 @@ function parseQueryResult(
     debtPositions
   };
 }
+
+function getMarkets(): Promise<MorphoBlueMarket[]> {
+  const query = gql`
+    query {
+      markets {
+        items {
+          uniqueKey
+          lltv
+          loanAsset {
+            address
+            name
+            decimals
+            symbol
+          }
+          collateralAsset {
+            address
+            name
+            decimals
+            symbol
+          }
+          state {
+            utilization
+          }
+          monthlyApys {
+            borrowApy
+          }
+        }
+      }
+    }
+  `;
+
+  return request(MORPHO_GRAPHQL_URL, query)
+    .then((queryResult) => parseMarketsQueryResult(queryResult))
+    .catch((error) => {
+      console.error(error);
+      throw error;
+    });
+}
+
+function parseMarketsQueryResult(queryResult: any): MorphoBlueMarket[] {
+  const markets: MorphoBlueMarket[] = [];
+  queryResult.markets.items.forEach((market: any) => {
+    markets.push({
+      marketId: market.uniqueKey,
+      debtToken: market.loanAsset,
+      collateralToken: market.collateralAsset,
+      trailing30DaysBorrowingAPY: market.monthlyApys.borrowApy,
+      utilizationRatio: market.state.utilization,
+      maxLTV: Number(market.lltv / 10 ** 18)
+    });
+  });
+
+  return markets;
+}
+
