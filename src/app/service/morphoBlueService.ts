@@ -199,7 +199,7 @@ export async function getRecommendedDebtDetail(
             (debtPosition as CompoundV3DebtPosition)
           ).collaterals.some(
             (collateral) =>
-              debtTokenMatchedMarket.collateralToken.address ===
+              debtTokenMatchedMarket.collateralToken?.address ===
               collateral.token.address
           );
         }
@@ -263,7 +263,9 @@ export async function getRecommendedDebtDetail(
     }
     const newDebt = {
       maxLTV: matchedMarket.maxLTV,
-      LTV: matchedDebtToken.amountInUSD / matchedCollateral.amountInUSD,
+      LTV:
+        Number(matchedDebtToken.amountInUSD) /
+        Number(matchedCollateral.amountInUSD),
       marketId: matchedMarket.marketId,
       debt: debtPosition.debt as TokenAmount,
       collateral: matchedCollateral
