@@ -1,9 +1,11 @@
 import { AlchemyProvider, Contract } from "ethers";
 import {
   CompoundV3DebtPosition,
+  CompoundV3Market,
   DebtPosition,
   Market,
   MorphoBlueDebtPosition,
+  MorphoBlueMarket,
   Protocol,
   RecommendedDebtDetail,
   Token,
@@ -264,6 +266,7 @@ export class BaseAaveService {
       | DebtPosition
       | MorphoBlueDebtPosition
       | CompoundV3DebtPosition,
+    existingDebtMarket: Market | MorphoBlueMarket | CompoundV3Market,
     protocol: Protocol,
     maxLTVTolerance = 0.1
   ): Promise<RecommendedDebtDetail | null> {
@@ -275,6 +278,9 @@ export class BaseAaveService {
     let collateralTokens = null;
     let debtAmount = BigInt(0);
 
+    let existingLendingAPY = 0;
+    let existingBorrowingAPY = 0;
+
     switch (protocol) {
       case Protocol.AaveV3:
       case Protocol.Spark:
@@ -284,12 +290,19 @@ export class BaseAaveService {
         collateralTokens = convertedDebtPosition.collaterals.map(
           (collateral) => collateral.token
         );
+        existingLendingAPY = (existingDebtMarket as Market)
+          .trailing30DaysLendingAPY;
+        existingBorrowingAPY = (existingDebtMarket as Market)
+          .trailing30DaysBorrowingAPY;
         break;
       case Protocol.MorphoBlue:
         const morphoBlueDebtPosition = debtPosition as MorphoBlueDebtPosition;
         debtToken = morphoBlueDebtPosition.debt.token;
         debtAmount = morphoBlueDebtPosition.debt.amount;
         collateralTokens = [morphoBlueDebtPosition.debt.token];
+        // Collateral doesn't earn yields in MorphoBlue
+        existingBorrowingAPY = (existingDebtMarket as MorphoBlueMarket)
+          .trailing30DaysBorrowingAPY;
         break;
       case Protocol.CompoundV3:
         const compoundV3DebtPosition = debtPosition as CompoundV3DebtPosition;
@@ -298,6 +311,9 @@ export class BaseAaveService {
         collateralTokens = compoundV3DebtPosition.collaterals.map(
           (collateral) => collateral.token
         );
+        // Collateral doesn't earn yields in Compound V3
+        existingBorrowingAPY = (existingDebtMarket as CompoundV3Market)
+          .trailing30DaysBorrowingAPY;
         break;
     }
 
@@ -324,38 +340,53 @@ export class BaseAaveService {
         .filter((collateral) => !!collateral);
 
       if (collateralMarkets && collateralMarkets.length > 0) {
-        // fetch available borrowing amount
-        const borrowCap =
-          BigInt(debtReserve.borrowCap) *
-          BigInt(10 ** Number(debtReserve.decimals));
-        const availableBorrowingAmount =
-          borrowCap === BigInt(0) ? debtReserve.availableLiquidity : borrowCap;
-
-        if (availableBorrowingAmount > debtAmount) {
-          console.log(
-            `Available borrowing amount: ${availableBorrowingAmount} is greater than debt amount: ${debtAmount}`
-          );
-
+        // Verify if pool has enough liquidity to borrow
+        if (checkBorrowingAvailability(debtReserve, debtAmount)) {
           // Calculate new max ltv
-          const newMaxLTV = Number(debtReserve.baseLTVasCollateral) / 10000;
-
-          // new Max ltv should be >= current LTV - maxLTVTolerance
-          const tolerableMaxLTV = debtPosition.maxLTV - maxLTVTolerance;
-          if (newMaxLTV >= tolerableMaxLTV) {
-            console.log(
-              `New max LTV: ${newMaxLTV} is >= current max LTV: ${debtPosition.maxLTV} - maxLTVTolerance: ${maxLTVTolerance}`
-            );
-            // calculate borrowing cost
+          const { isMaxLTVAcceptable, newMaxLTV } = validateMaxLTV(
+            debtReserve,
+            debtPosition,
+            maxLTVTolerance
+          );
+          if (isMaxLTVAcceptable) {
+            // Calculate existing borrowing cost
+            const { newNetBorrowingApy, existingNetBorrowingApy } =
+              calculateNetBorrowingAPYs(
+                existingLendingAPY,
+                existingBorrowingAPY,
+                debtPosition,
+                newMaxLTV,
+                debtMarket
+              );
+            if (newNetBorrowingApy < existingNetBorrowingApy) {
+              console.log(
+                "New net borrowing APY is less than existing net borrowing APY"
+              );
+              return {
+                protocol,
+                market: debtMarket,
+                debt: debtPosition, // TODO: need to create new debt position
+                netBorrowingApy: newNetBorrowingApy
+              };
+            } else {
+              console.log(
+                "New net borrowing APY is greater than existing net borrowing APY"
+              );
+              return null;
+            }
           } else {
-            console.log(
-              `New max LTV: ${newMaxLTV} is not >= current max LTV: ${debtPosition.maxLTV} - maxLTVTolerance: ${maxLTVTolerance}`
-            );
+            console.log("New max LTV is not within tolerance");
+
             return null;
           }
+        } else {
+          console.log("Debt market doesn't have enough liquidity to borrow");
+          return null;
         }
+      } else {
+        console.log("Collateral market doesn't exist");
+        return null;
       }
-
-      return null;
     } else {
       console.log("There is no debt token market for position", debtPosition);
       return null;
@@ -528,6 +559,70 @@ export class BaseAaveService {
       };
     });
   }
+}
+
+function calculateNetBorrowingAPYs(
+  existingLendingAPY: number,
+  existingBorrowingAPY: number,
+  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
+  newMaxLTV: number,
+  debtMarket: Market
+) {
+  const existingLendingInterest = existingLendingAPY * 100;
+  const existingBorrowingInterest =
+    existingBorrowingAPY * (debtPosition.LTV * 100);
+
+  const existingNetBorrowingApy =
+    (existingLendingInterest - existingBorrowingInterest) / 100;
+
+  console.log("Existing Net borrowing APY: ", existingNetBorrowingApy);
+
+  // Calculate new borrowing cost assuming an user wants
+  // to use same LTV as an existing LTV but cap it with new max LTV
+  const ltvToUse = debtPosition.LTV > newMaxLTV ? newMaxLTV : debtPosition.LTV;
+  const newLendingInterest = debtMarket.trailing30DaysLendingAPY * 100;
+  const newBorrowingInterest =
+    debtMarket.trailing30DaysBorrowingAPY * (debtPosition.LTV * 100);
+  const newNetBorrowingApy = (newLendingInterest - newBorrowingInterest) / 100;
+  console.log("New Net borrowing APY: ", newNetBorrowingApy);
+  return { newNetBorrowingApy, existingNetBorrowingApy };
+}
+
+function validateMaxLTV(
+  debtReserve: any,
+  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
+  maxLTVTolerance: number
+) {
+  const newMaxLTV = Number(debtReserve.baseLTVasCollateral) / 10000;
+
+  // new Max ltv should be >= current LTV - maxLTVTolerance
+  const tolerableMaxLTV = debtPosition.maxLTV - maxLTVTolerance;
+  const isMaxLTVAcceptable = newMaxLTV >= tolerableMaxLTV;
+
+  if (isMaxLTVAcceptable) {
+    console.log(
+      `New max LTV: ${newMaxLTV} is >= current max LTV: ${debtPosition.maxLTV} - maxLTVTolerance: ${maxLTVTolerance}`
+    );
+    // calculate borrowing cost
+  } else {
+    console.log(
+      `New max LTV: ${newMaxLTV} is not >= current max LTV: ${debtPosition.maxLTV} - maxLTVTolerance: ${maxLTVTolerance}`
+    );
+  }
+  return { isMaxLTVAcceptable, newMaxLTV };
+}
+
+function checkBorrowingAvailability(debtReserve: any, debtAmount: bigint) {
+  const borrowCap =
+    BigInt(debtReserve.borrowCap) * BigInt(10 ** Number(debtReserve.decimals));
+  const availableBorrowingAmount =
+    borrowCap === BigInt(0) ? debtReserve.availableLiquidity : borrowCap;
+
+  const isAvailableForBorrowing = availableBorrowingAmount > debtAmount;
+  console.log(
+    `Available borrowing amount: ${availableBorrowingAmount}, debt amount: ${debtAmount}`
+  );
+  return isAvailableForBorrowing;
 }
 
 function calculateDebtAmountInBaseCurrency(

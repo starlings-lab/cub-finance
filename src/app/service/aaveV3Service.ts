@@ -4,9 +4,11 @@ import { Address } from "abitype";
 import { UiPoolDataProvider } from "@aave/contract-helpers";
 import {
   CompoundV3DebtPosition,
+  CompoundV3Market,
   DebtPosition,
   Market,
   MorphoBlueDebtPosition,
+  MorphoBlueMarket,
   Protocol,
   RecommendedDebtDetail
 } from "../type/type";
@@ -33,8 +35,13 @@ export async function getUserDebtDetails(userAddress: Address) {
  */
 export async function getRecommendedDebtDetail(
   debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
+  debtMarket: Market | MorphoBlueMarket | CompoundV3Market,
   protocol: Protocol,
   maxLTVTolerance = 0.1
 ): Promise<RecommendedDebtDetail | null> {
-  return baseAaveService.getRecommendedDebtDetail(debtPosition, protocol);
+  return baseAaveService.getRecommendedDebtDetail(
+    debtPosition,
+    debtMarket,
+    protocol
+  );
 }

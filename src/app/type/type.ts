@@ -100,7 +100,7 @@ export interface CompoundV3Market extends MarketBase {
 
 export interface RecommendedDebtDetailBase {
   protocol: Protocol;
-  availableBorrowingAmount: bigint; // Amount in debt
+  // availableBorrowingAmount: bigint; // Amount in debt
   // ((lendingAPY * lendingAmount) - (borrowingAPY * (debtAmount)))/debAmount
   netBorrowingApy: number;
 }
