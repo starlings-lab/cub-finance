@@ -1,8 +1,12 @@
 /* eslint-disable @next/next/no-async-client-component */
 "use client";
 import React, { useState } from "react";
-import { getMorphoBlueUserDebtDetails } from "./service/morphoBlueService";
+import {
+  getMorphoBlueUserDebtDetails,
+  getRecommendedDebtDetail
+} from "./service/morphoBlueService";
 import { getCompoundV3UserDebtDetails } from "./service/compoundV3Service";
+import { Protocol } from "./type/type";
 
 export default async function Home() {
   const [value, setValue] = useState<string>(
@@ -32,7 +36,14 @@ export default async function Home() {
   const compoundV3UserDebtDetails = await getCompoundV3UserDebtDetails(
     "0x9CF423E929d661a0fB25e4AEf05bEB1037298fFb"
   );
-  console.log(compoundV3UserDebtDetails);
+  // console.log(compoundV3UserDebtDetails);
+
+  const recommendedDebtDetail = await getRecommendedDebtDetail(
+    compoundV3UserDebtDetails.debtPositions[0],
+    compoundV3UserDebtDetails.markets[0],
+    Protocol.CompoundV3
+  );
+  console.log(recommendedDebtDetail);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
