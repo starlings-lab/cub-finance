@@ -32,7 +32,9 @@ export async function getUserDebtDetails(userAddress: Address) {
  * @returns recommended debt details or null if no recommendations are available
  */
 export async function getRecommendedDebtDetail(
-  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition
+  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
+  protocol: Protocol,
+  maxLTVTolerance = 0.1
 ): Promise<RecommendedDebtDetail | null> {
-  return baseAaveService.getRecommendedDebtDetail(debtPosition);
+  return baseAaveService.getRecommendedDebtDetail(debtPosition, protocol);
 }

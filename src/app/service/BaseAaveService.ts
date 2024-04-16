@@ -20,7 +20,7 @@ import { request, gql } from "graphql-request";
 import { MESSARI_GRAPHQL_URL } from "../constants";
 import { getTokenMetadata } from "./tokenService";
 import { calculateAPYFromAPR } from "../utils/utils";
-import { e } from "mathjs";
+import { formatReservesAndIncentives, formatReserve } from "@aave/math-utils";
 
 export class BaseAaveService {
   private protocol: Protocol;
@@ -260,40 +260,56 @@ export class BaseAaveService {
   }
 
   public async getRecommendedDebtDetail(
-    debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition
+    debtPosition:
+      | DebtPosition
+      | MorphoBlueDebtPosition
+      | CompoundV3DebtPosition,
+    protocol: Protocol,
+    maxLTVTolerance = 0.1
   ): Promise<RecommendedDebtDetail | null> {
     // get reserve data
     const { reservesMap, baseCurrencyData } = await this.getReservesData();
 
-    // get debt token based on type of debt position
+    // get debt & collateral token based on type of debt position
     let debtToken = null;
     let collateralTokens = null;
+    let debtAmount = BigInt(0);
 
-    // Aave or Spark debt position
-    if ("debts" in debtPosition) {
-      debtToken = (debtPosition.debts as TokenAmount[])[0].token;
-      collateralTokens = (debtPosition.collaterals as TokenAmount[]).map(
-        (collateral) => collateral.token
-      );
+    switch (protocol) {
+      case Protocol.AaveV3:
+      case Protocol.Spark:
+        const convertedDebtPosition = debtPosition as DebtPosition;
+        debtToken = convertedDebtPosition.debts[0].token;
+        debtAmount = convertedDebtPosition.debts[0].amount;
+        collateralTokens = convertedDebtPosition.collaterals.map(
+          (collateral) => collateral.token
+        );
+        break;
+      case Protocol.MorphoBlue:
+        const morphoBlueDebtPosition = debtPosition as MorphoBlueDebtPosition;
+        debtToken = morphoBlueDebtPosition.debt.token;
+        debtAmount = morphoBlueDebtPosition.debt.amount;
+        collateralTokens = [morphoBlueDebtPosition.debt.token];
+        break;
+      case Protocol.CompoundV3:
+        const compoundV3DebtPosition = debtPosition as CompoundV3DebtPosition;
+        debtToken = compoundV3DebtPosition.debt.token;
+        debtAmount = compoundV3DebtPosition.debt.amount;
+        collateralTokens = compoundV3DebtPosition.collaterals.map(
+          (collateral) => collateral.token
+        );
+        break;
     }
 
-    // Morpho Blue or Compound debt position
-    if ("debt" in debtPosition) {
-      debtToken = (debtPosition.debt as TokenAmount).token;
+    const debtReserve = reservesMap.get(debtToken!.address.toLowerCase());
+    // console.log("Debt reserve", debtReserve);
 
-      if ("collateral" in debtPosition) {
-        collateralTokens = [(debtPosition.collateral as TokenAmount).token];
-      }
-
-      // Compound V3 debt position
-      if ("collaterals" in debtPosition) {
-        collateralTokens = [
-          (debtPosition.collaterals as TokenAmount[])[0].token
-        ];
-      }
-    }
-
-    if (debtToken && reservesMap.has(debtToken!.address.toLowerCase())) {
+    if (
+      debtToken &&
+      debtReserve &&
+      debtReserve.borrowingEnabled &&
+      debtReserve.isActive
+    ) {
       const debtMarket = await this.getAaveMarket(reservesMap, debtToken!);
       console.dir(debtMarket, { depth: null });
 
@@ -309,6 +325,34 @@ export class BaseAaveService {
 
       if (collateralMarkets && collateralMarkets.length > 0) {
         // fetch available borrowing amount
+        const borrowCap =
+          BigInt(debtReserve.borrowCap) *
+          BigInt(10 ** Number(debtReserve.decimals));
+        const availableBorrowingAmount =
+          borrowCap === BigInt(0) ? debtReserve.availableLiquidity : borrowCap;
+
+        if (availableBorrowingAmount > debtAmount) {
+          console.log(
+            `Available borrowing amount: ${availableBorrowingAmount} is greater than debt amount: ${debtAmount}`
+          );
+
+          // Calculate new max ltv
+          const newMaxLTV = Number(debtReserve.baseLTVasCollateral) / 10000;
+
+          // new Max ltv should be >= current LTV - maxLTVTolerance
+          const tolerableMaxLTV = debtPosition.maxLTV - maxLTVTolerance;
+          if (newMaxLTV >= tolerableMaxLTV) {
+            console.log(
+              `New max LTV: ${newMaxLTV} is >= current max LTV: ${debtPosition.maxLTV} - maxLTVTolerance: ${maxLTVTolerance}`
+            );
+            // calculate borrowing cost
+          } else {
+            console.log(
+              `New max LTV: ${newMaxLTV} is not >= current max LTV: ${debtPosition.maxLTV} - maxLTVTolerance: ${maxLTVTolerance}`
+            );
+            return null;
+          }
+        }
       }
 
       return null;

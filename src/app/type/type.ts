@@ -107,6 +107,6 @@ export interface RecommendedDebtDetailBase {
 
 // Interface for Aave & Spark
 export interface RecommendedDebtDetail extends RecommendedDebtDetailBase {
-  debt: DebtPosition; // The recommended/new debt position
+  debt: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition; // The recommended/new debt position
   market: Market; // The market where the debt is recommended
 }
