@@ -264,8 +264,8 @@ export async function getRecommendedDebtDetail(
     const newDebt = {
       maxLTV: matchedMarket.maxLTV,
       LTV:
-        Number(matchedDebtToken.amountInUSD) /
-        Number(matchedCollateral.amountInUSD),
+        matchedDebtToken.amountInUSD /
+        matchedCollateral.amountInUSD,
       marketId: matchedMarket.marketId,
       debt: debtPosition.debt as TokenAmount,
       collateral: matchedCollateral
