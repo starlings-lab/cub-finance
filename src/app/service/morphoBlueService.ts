@@ -4,7 +4,9 @@ import {
   DebtPosition,
   MorphoBlueDebtPosition,
   CompoundV3DebtPosition,
+  Market,
   MorphoBlueMarket,
+  CompoundV3Market,
   MorphoBlueUserDebtDetails,
   Protocol,
   MorphoBlueRecommendedDebtDetail,
@@ -163,6 +165,7 @@ function parseMarketsQueryResult(queryResult: any): MorphoBlueMarket[] {
 
 export async function getRecommendedDebtDetail(
   debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
+  existingMarket: Market | MorphoBlueMarket | CompoundV3Market,
   protocol: Protocol
 ): Promise<MorphoBlueRecommendedDebtDetail[] | null> {
   const markets: MorphoBlueMarket[] = await getMarkets();
@@ -181,9 +184,9 @@ export async function getRecommendedDebtDetail(
   });
 
   // check if the collateral tokens are in the markets
-  let collateralTokenMatchedMarkets: MorphoBlueMarket[] = [];
+  let matchedMarkets: MorphoBlueMarket[] = [];
   if (debtTokenMatchedMarkets.length > 0) {
-    collateralTokenMatchedMarkets = debtTokenMatchedMarkets.filter(
+    matchedMarkets = debtTokenMatchedMarkets.filter(
       (debtTokenMatchedMarket) => {
         if (
           protocol === Protocol.AaveV3 ||
@@ -209,8 +212,25 @@ export async function getRecommendedDebtDetail(
     return null;
   }
 
-  if (collateralTokenMatchedMarkets.length === 0) {
+  if (matchedMarkets.length === 0) {
     return null;
   }
-  return [];
+
+  // check if the utilization ratio is small enough
+  matchedMarkets = matchedMarkets.filter((matchedMarket) => {
+    matchedMarket.utilizationRatio < 0.98;
+  });
+
+  // check if the new max LTV >= (the old max LTV - 5%)
+  matchedMarkets = matchedMarkets.filter((matchedMarket) => {
+    matchedMarket.maxLTV >= debtPosition.maxLTV - 0.05;
+  });
+
+  // check if the old borrowing cost - the new borrowing cost > 3%
+  matchedMarkets = matchedMarkets.filter((matchedMarket) => {
+    existingMarket.trailing30DaysBorrowingAPY -
+      matchedMarket.trailing30DaysBorrowingAPY >
+      0.03;
+  });
+
 }
