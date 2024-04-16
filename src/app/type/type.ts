@@ -4,7 +4,7 @@ export enum Protocol {
   AaveV3 = "AaveV3",
   CompoundV3 = "CompoundV3",
   MorphoBlue = "MorphoBlue",
-  Spark = "Spark",
+  Spark = "Spark"
 }
 
 export interface Token {
@@ -86,6 +86,8 @@ export interface Market extends MarketBase {
 // collateral doesn't earn yields in MorphoBlue
 export interface MorphoBlueMarket extends MarketBase {
   marketId: string; // This is required because two markets with the same collateral token and a debt token can have different borrowing APY and maxLTV.
+  utilizationRatio: number;
+  maxLTV: number;
   debtToken: Token;
   collateralToken: Token;
 }
@@ -100,13 +102,19 @@ export interface CompoundV3Market extends MarketBase {
 
 export interface RecommendedDebtDetailBase {
   protocol: Protocol;
-  availableBorrowingAmount: bigint; // Amount in debt
   // ((lendingAPY * lendingAmount) - (borrowingAPY * (debtAmount)))/debAmount
   netBorrowingApy: number;
 }
 
 // Interface for Aave & Spark
 export interface RecommendedDebtDetail extends RecommendedDebtDetailBase {
+  availableBorrowingAmount: bigint; // Amount in debt
   debt: DebtPosition; // The recommended/new debt position
   market: Market; // The market where the debt is recommended
+}
+
+export interface MorphoBlueRecommendedDebtDetail
+  extends RecommendedDebtDetailBase {
+  debt: MorphoBlueDebtPosition; // The recommended/new debt position
+  market: MorphoBlueMarket; // The market where the debt is recommended
 }

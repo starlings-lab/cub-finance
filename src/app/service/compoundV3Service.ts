@@ -206,7 +206,7 @@ async function getCollateralsByUserAddress(
       return {
         token: getTokenByAddress(collateral.address),
         amount: collateralAmount,
-        amountInUSD: amountInUSD
+        amountInUSD: Number(amountInUSD / BigInt(10 ** collateral.decimals))
       };
     }
     return null;
