@@ -102,13 +102,13 @@ export interface CompoundV3Market extends MarketBase {
 
 export interface RecommendedDebtDetailBase {
   protocol: Protocol;
-  availableBorrowingAmount: bigint; // Amount in debt
   // ((lendingAPY * lendingAmount) - (borrowingAPY * (debtAmount)))/debAmount
   netBorrowingApy: number;
 }
 
 // Interface for Aave & Spark
 export interface RecommendedDebtDetail extends RecommendedDebtDetailBase {
+  availableBorrowingAmount: bigint; // Amount in debt
   debt: DebtPosition; // The recommended/new debt position
   market: Market; // The market where the debt is recommended
 }
