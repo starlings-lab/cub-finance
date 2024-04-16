@@ -10,7 +10,8 @@ import {
   MorphoBlueUserDebtDetails,
   Protocol,
   MorphoBlueRecommendedDebtDetail,
-  TokenAmount
+  TokenAmount,
+  Token
 } from "../type/type";
 import { MORPHO_GRAPHQL_URL } from "../constants";
 
@@ -233,4 +234,46 @@ export async function getRecommendedDebtDetail(
       0.03;
   });
 
+  const recommendedDebtDetails: MorphoBlueRecommendedDebtDetail[] = [];
+  matchedMarkets.forEach((matchedMarket) => {
+    let matchedDebtToken: TokenAmount;
+    if (protocol === Protocol.AaveV3 || protocol === Protocol.Spark) {
+      matchedDebtToken = (debtPosition as DebtPosition).debt.find(
+        (debt) => debt.token.address === matchedMarket.debtToken.address
+      ) as TokenAmount;
+    } else {
+      matchedDebtToken = debtPosition.debt as TokenAmount;
+    }
+
+    let matchedCollateral: TokenAmount;
+    if (protocol === Protocol.AaveV3 || protocol === Protocol.Spark) {
+      matchedCollateral = (debtPosition as DebtPosition).collaterals.find(
+        (collateral) =>
+          collateral.token.address === matchedMarket.collateralToken.address
+      ) as TokenAmount;
+    } else if (protocol === Protocol.CompoundV3) {
+      matchedCollateral = (
+        debtPosition as CompoundV3DebtPosition
+      ).collaterals.find(
+        (collateral) =>
+          collateral.token.address === matchedMarket.collateralToken.address
+      ) as TokenAmount;
+    } else {
+      matchedCollateral = (debtPosition as MorphoBlueDebtPosition).collateral;
+    }
+    const newDebt = {
+      maxLTV: matchedMarket.maxLTV,
+      LTV: matchedDebtToken.amountInUSD / matchedCollateral.amountInUSD,
+      marketId: matchedMarket.marketId,
+      debt: debtPosition.debt as TokenAmount,
+      collateral: matchedCollateral
+    };
+    recommendedDebtDetails.push({
+      protocol: Protocol.MorphoBlue,
+      netBorrowingApy: matchedMarket.trailing30DaysBorrowingAPY,
+      debt: newDebt,
+      market: matchedMarket
+    });
+  });
+  return recommendedDebtDetails;
 }
