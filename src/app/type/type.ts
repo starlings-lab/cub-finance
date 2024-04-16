@@ -4,7 +4,7 @@ export enum Protocol {
   AaveV3 = "AaveV3",
   CompoundV3 = "CompoundV3",
   MorphoBlue = "MorphoBlue",
-  Spark = "Spark",
+  Spark = "Spark"
 }
 
 export interface Token {
@@ -59,7 +59,7 @@ export interface DebtPositionBase {
 }
 
 export interface DebtPosition extends DebtPositionBase {
-  debt: TokenAmount[]; // if debt count > 0, the debt position is an aggregate of multiple debt positions.
+  debts: TokenAmount[]; // if debt count > 0, the debt position is an aggregate of multiple debt positions.
   collaterals: TokenAmount[];
 }
 

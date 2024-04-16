@@ -1,22 +1,26 @@
 import { AlchemyProvider, Contract } from "ethers";
 import {
+  CompoundV3DebtPosition,
   DebtPosition,
   Market,
+  MorphoBlueDebtPosition,
   Protocol,
+  RecommendedDebtDetail,
   Token,
   TokenAmount,
-  UserDebtDetails,
+  UserDebtDetails
 } from "../type/type";
 import { Address } from "abitype";
 import {
   POOL_ABI,
   POOL_ADDRESS_PROVIDER_ABI,
-  UI_POOL_DATA_PROVIDER_V3_ABI,
+  UI_POOL_DATA_PROVIDER_V3_ABI
 } from "../contracts/aaveV3";
 import { request, gql } from "graphql-request";
 import { MESSARI_GRAPHQL_URL } from "../constants";
 import { getTokenMetadata } from "./tokenService";
 import { calculateAPYFromAPR } from "../utils/utils";
+import { e } from "mathjs";
 
 export class BaseAaveService {
   private protocol: Protocol;
@@ -107,7 +111,7 @@ export class BaseAaveService {
             debtUserReserve.scaledVariableDebt,
             reservesMap.get(debtToken.address),
             baseCurrencyData.marketReferenceCurrencyUnit
-          ),
+          )
         };
       });
 
@@ -123,7 +127,7 @@ export class BaseAaveService {
               collateralUserReserve.scaledATokenBalance,
               reservesMap.get(collateralToken.address),
               baseCurrencyData.marketReferenceCurrencyUnit
-            ),
+            )
           };
         }
       );
@@ -139,9 +143,9 @@ export class BaseAaveService {
       );
       debtPositions.push({
         maxLTV: Number(userAccountData.ltv) / 10000,
-        debt: debts,
+        debts: debts,
         collaterals: collaterals,
-        LTV: totalDebtAmountInUSD / totalCollateralAmountInUSD,
+        LTV: totalDebtAmountInUSD / totalCollateralAmountInUSD
       });
 
       // Add a debt position per debt token when user has multiple debts
@@ -152,9 +156,9 @@ export class BaseAaveService {
         debts.forEach((debt) => {
           debtPositions.push({
             maxLTV: Number(userAccountData.ltv) / 10000,
-            debt: [debt],
+            debts: [debt],
             collaterals: collaterals,
-            LTV: debt.amountInUSD / totalCollateralAmountInUSD,
+            LTV: debt.amountInUSD / totalCollateralAmountInUSD
           });
         });
       }
@@ -162,22 +166,12 @@ export class BaseAaveService {
       // Add a market for each debt & collateral token
       const underlyingAssets = new Set<Token>([
         ...debtTokens,
-        ...collateralTokens,
+        ...collateralTokens
       ]);
 
       const marketPromises = Array.from(underlyingAssets).map(
-        (underlyingAssetToken: Token) => {
-          const tokenReserve = reservesMap.get(underlyingAssetToken.address);
-          return this.calculateTrailingDayBorrowingAndLendingAPYs(
-            tokenReserve.aTokenAddress
-          ).then(({ trailingDayBorrowingAPY, trailingDayLendingAPY }) => {
-            return {
-              underlyingAsset: underlyingAssetToken,
-              trailing30DaysLendingAPY: trailingDayBorrowingAPY,
-              trailing30DaysBorrowingAPY: trailingDayLendingAPY,
-            };
-          });
-        }
+        (underlyingAssetToken: Token) =>
+          this.getAaveMarket(reservesMap, underlyingAssetToken)
       );
       markets.push(...(await Promise.all(marketPromises)));
     }
@@ -186,7 +180,7 @@ export class BaseAaveService {
       protocol: this.protocol,
       userAddress,
       markets,
-      debtPositions,
+      debtPositions
     };
   }
 
@@ -265,6 +259,65 @@ export class BaseAaveService {
     }
   }
 
+  public async getRecommendedDebtDetail(
+    debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition
+  ): Promise<RecommendedDebtDetail | null> {
+    // get reserve data
+    const { reservesMap, baseCurrencyData } = await this.getReservesData();
+
+    // get debt token based on type of debt position
+    let debtToken = null;
+    let collateralTokens = null;
+
+    // Aave or Spark debt position
+    if ("debts" in debtPosition) {
+      debtToken = (debtPosition.debts as TokenAmount[])[0].token;
+      collateralTokens = (debtPosition.collaterals as TokenAmount[]).map(
+        (collateral) => collateral.token
+      );
+    }
+
+    // Morpho Blue or Compound debt position
+    if ("debt" in debtPosition) {
+      debtToken = (debtPosition.debt as TokenAmount).token;
+
+      if ("collateral" in debtPosition) {
+        collateralTokens = [(debtPosition.collateral as TokenAmount).token];
+      }
+
+      // Compound V3 debt position
+      if ("collaterals" in debtPosition) {
+        collateralTokens = [
+          (debtPosition.collaterals as TokenAmount[])[0].token
+        ];
+      }
+    }
+
+    if (debtToken && reservesMap.has(debtToken!.address.toLowerCase())) {
+      const debtMarket = await this.getAaveMarket(reservesMap, debtToken!);
+      console.dir(debtMarket, { depth: null });
+
+      // find collateral market
+      // TODO: how do we handle multiple collateral tokens
+      let collateralMarkets = collateralTokens
+        ?.map((collateralToken) => {
+          if (reservesMap.has(collateralToken.address.toLowerCase()))
+            return this.getAaveMarket(reservesMap, collateralToken);
+          else return null;
+        })
+        .filter((collateral) => !!collateral);
+
+      if (collateralMarkets && collateralMarkets.length > 0) {
+        // fetch available borrowing amount
+      }
+
+      return null;
+    } else {
+      console.log("There is no debt token market for position", debtPosition);
+      return null;
+    }
+  }
+
   private async getUserAccountData(userAddress: Address) {
     const poolAddress = await this.poolAddressProviderContract.getPool();
     // console.log("Pool address: ", poolAddress);
@@ -279,7 +332,7 @@ export class BaseAaveService {
       availableBorrowsBase: userData.availableBorrowsBase,
       currentLiquidationThreshold: userData.currentLiquidationThreshold,
       ltv: userData.ltv,
-      healthFactor: userData.healthFactor,
+      healthFactor: userData.healthFactor
     };
   }
 
@@ -303,7 +356,7 @@ export class BaseAaveService {
         scaledVariableDebt: userReserveRaw.scaledVariableDebt,
         principalStableDebt: userReserveRaw.principalStableDebt,
         stableBorrowLastUpdateTimestamp:
-          userReserveRaw.stableBorrowLastUpdateTimestamp,
+          userReserveRaw.stableBorrowLastUpdateTimestamp
       });
     });
 
@@ -311,7 +364,10 @@ export class BaseAaveService {
   }
 
   // Ref: https://docs.aave.com/developers/periphery-contracts/uipooldataproviderv3#aggregatedreservedata
-  private async getReservesData(): Promise<any> {
+  private async getReservesData(): Promise<{
+    reservesMap: Map<string, any>;
+    baseCurrencyData: any;
+  }> {
     const { 0: reservesRaw, 1: poolBaseCurrencyRaw } =
       await this.poolDataProviderContract.getReservesData(
         this.poolAddressProvider
@@ -375,7 +431,7 @@ export class BaseAaveService {
         isolationModeTotalDebt: reserveRaw.isolationModeTotalDebt,
         debtCeilingDecimals: reserveRaw.debtCeilingDecimals,
         isSiloedBorrowing: reserveRaw.isSiloedBorrowing,
-        flashLoanEnabled: reserveRaw.flashLoanEnabled,
+        flashLoanEnabled: reserveRaw.flashLoanEnabled
       });
     });
     // console.log("Reserves data: ", reservesMap);
@@ -390,7 +446,7 @@ export class BaseAaveService {
       networkBaseTokenPriceInUsd:
         poolBaseCurrencyRaw.networkBaseTokenPriceInUsd,
       networkBaseTokenPriceDecimals:
-        poolBaseCurrencyRaw.networkBaseTokenPriceDecimals,
+        poolBaseCurrencyRaw.networkBaseTokenPriceDecimals
     };
 
     return { reservesMap, baseCurrencyData };
@@ -410,6 +466,24 @@ export class BaseAaveService {
   //     return { price: values[0], currencyUnit: values[1] };
   //   });
   // }
+
+  private async getAaveMarket(
+    reservesMap: any,
+    underlyingAssetToken: Token
+  ): Promise<Market> {
+    const tokenReserve = reservesMap.get(
+      underlyingAssetToken.address.toLowerCase()
+    );
+    return this.calculateTrailingDayBorrowingAndLendingAPYs(
+      tokenReserve.aTokenAddress
+    ).then(({ trailingDayBorrowingAPY, trailingDayLendingAPY }) => {
+      return {
+        underlyingAsset: underlyingAssetToken,
+        trailing30DaysLendingAPY: trailingDayBorrowingAPY,
+        trailing30DaysBorrowingAPY: trailingDayLendingAPY
+      };
+    });
+  }
 }
 
 function calculateDebtAmountInBaseCurrency(
