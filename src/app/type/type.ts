@@ -28,9 +28,9 @@ export interface DebtPositionTableRow {
   totalCollateralAmountInUSD: number;
   LTV: number; // debtAmountInUSD / sum of collateralAmountInUSD array
   maxLTV: number;
-  Trailing30DaysNetAPY: number;
-  Trailing30DaysLendingAPY: number;
-  Trailing30DaysBorrowingAPY: number;
+  trailing30DaysNetAPY: number;
+  trailing30DaysLendingAPY: number;
+  trailing30DaysBorrowingAPY: number;
 }
 
 export interface UserDebtDetailsBase {
@@ -56,6 +56,7 @@ export interface CompoundV3UserDebtDetails extends UserDebtDetailsBase {
 export interface DebtPositionBase {
   maxLTV: number;
   LTV: number; // debtAmountInUSD / sum of collateralAmountInUSD array
+  trailing30DaysNetAPY: number;
 }
 
 export interface DebtPosition extends DebtPositionBase {

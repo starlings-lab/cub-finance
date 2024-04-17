@@ -63,7 +63,7 @@ export class BaseAaveService {
   public async getUserDebtDetails(
     userAddress: Address
   ): Promise<UserDebtDetails> {
-    const markets: Market[] = [];
+    const marketMap = new Map<string, Market>();
     const debtPositions: DebtPosition[] = [];
 
     const userReservesMap = await this.getUserReservesMap(userAddress);
@@ -134,6 +134,19 @@ export class BaseAaveService {
           };
         }
       );
+      // Add a market for each debt & collateral token
+      const underlyingAssets = new Set<Token>([
+        ...debtTokens,
+        ...collateralTokens
+      ]);
+
+      const marketPromises = Array.from(underlyingAssets).map(
+        (underlyingAssetToken: Token) =>
+          this.getAaveMarket(reservesMap, underlyingAssetToken)
+      );
+      (await Promise.all(marketPromises)).forEach((market) => {
+        marketMap.set(market.underlyingAsset.address.toLowerCase(), market);
+      });
 
       // Add an aggregated debt position for user with total collateral and debt
       const totalCollateralAmountInUSD = collaterals.reduce(
@@ -148,7 +161,12 @@ export class BaseAaveService {
         maxLTV: Number(userAccountData.ltv) / 10000,
         debts: debts,
         collaterals: collaterals,
-        LTV: totalDebtAmountInUSD / totalCollateralAmountInUSD
+        LTV: totalDebtAmountInUSD / totalCollateralAmountInUSD,
+        trailing30DaysNetAPY: calculateNetBorrowingAPY(
+          collaterals,
+          debts,
+          marketMap
+        )
       });
 
       // Add a debt position per debt token when user has multiple debts
@@ -161,28 +179,21 @@ export class BaseAaveService {
             maxLTV: Number(userAccountData.ltv) / 10000,
             debts: [debt],
             collaterals: collaterals,
-            LTV: debt.amountInUSD / totalCollateralAmountInUSD
+            LTV: debt.amountInUSD / totalCollateralAmountInUSD,
+            trailing30DaysNetAPY: calculateNetBorrowingAPY(
+              collaterals,
+              [debt],
+              marketMap
+            )
           });
         });
       }
-
-      // Add a market for each debt & collateral token
-      const underlyingAssets = new Set<Token>([
-        ...debtTokens,
-        ...collateralTokens
-      ]);
-
-      const marketPromises = Array.from(underlyingAssets).map(
-        (underlyingAssetToken: Token) =>
-          this.getAaveMarket(reservesMap, underlyingAssetToken)
-      );
-      markets.push(...(await Promise.all(marketPromises)));
     }
 
     return {
       protocol: this.protocol,
       userAddress,
-      markets,
+      markets: Array.from(marketMap.values()),
       debtPositions
     };
   }
@@ -263,24 +274,23 @@ export class BaseAaveService {
   }
 
   public async getRecommendedDebtDetail(
+    existingProtocol: Protocol,
     debtPosition:
       | DebtPosition
       | MorphoBlueDebtPosition
       | CompoundV3DebtPosition,
     existingDebtMarket: Market | MorphoBlueMarket | CompoundV3Market,
-    existingProtocol: Protocol,
     maxLTVTolerance = 0.1, // 10%
     borrowingAPYTolerance = 0.03 // 3%
   ): Promise<RecommendedDebtDetail | null> {
-    // get reserve data
-    const { reservesMap, baseCurrencyData } = await this.getReservesData();
+    // get market reserve data
+    const { reservesMap } = await this.getReservesData();
 
     // get debt & collateral token based on type of debt position
     let existingDebt = null;
     let existingCollateralTokens = null;
     let existingCollateralAmountByAddress = new Map<string, TokenAmount>();
-    let existingLendingAPY = 0;
-    let existingBorrowingAPY;
+    let existingNetBorrowingApy = 0;
 
     switch (existingProtocol) {
       case Protocol.AaveV3:
@@ -290,8 +300,7 @@ export class BaseAaveService {
         existingCollateralTokens = convertedDebtPosition.collaterals.map(
           (collateral) => collateral.token
         );
-        existingBorrowingAPY = (existingDebtMarket as Market)
-          .trailing30DaysBorrowingAPY;
+        existingNetBorrowingApy = convertedDebtPosition.trailing30DaysNetAPY;
         convertedDebtPosition.collaterals.forEach((collateral) => {
           existingCollateralAmountByAddress.set(
             collateral.token.address.toLowerCase(),
@@ -303,9 +312,7 @@ export class BaseAaveService {
         const morphoBlueDebtPosition = debtPosition as MorphoBlueDebtPosition;
         existingDebt = morphoBlueDebtPosition.debt;
         existingCollateralTokens = [morphoBlueDebtPosition.debt.token];
-        // Collateral doesn't earn yields in MorphoBlue
-        existingBorrowingAPY = (existingDebtMarket as MorphoBlueMarket)
-          .trailing30DaysBorrowingAPY;
+        existingNetBorrowingApy = morphoBlueDebtPosition.trailing30DaysNetAPY;
         existingCollateralAmountByAddress.set(
           morphoBlueDebtPosition.collateral.token.address.toLowerCase(),
           morphoBlueDebtPosition.collateral
@@ -323,9 +330,7 @@ export class BaseAaveService {
             collateral
           );
         });
-        // Collateral doesn't earn yields in Compound V3
-        existingBorrowingAPY = (existingDebtMarket as CompoundV3Market)
-          .trailing30DaysBorrowingAPY;
+        existingNetBorrowingApy = compoundV3DebtPosition.trailing30DaysNetAPY;
         break;
       default:
         throw new Error("Unsupported protocol");
@@ -341,8 +346,7 @@ export class BaseAaveService {
       debtReserve.borrowingEnabled &&
       debtReserve.isActive
     ) {
-      const debtMarket = await this.getAaveMarket(reservesMap, debtToken!);
-      console.dir(debtMarket, { depth: null });
+      const newDebtMarket = await this.getAaveMarket(reservesMap, debtToken!);
 
       // find new collateral markets
       let newCollateralMarkets = await this.fetchCollateralMarkets(
@@ -351,13 +355,6 @@ export class BaseAaveService {
       );
 
       if (newCollateralMarkets && newCollateralMarkets.size > 0) {
-        // If existing debt position is in Aave or spark, then calculate existing avg lending APY using collateral markets
-        // assuming that user is using same collateral markets for borrowing
-        existingProtocol === Protocol.AaveV3 ||
-        existingProtocol === Protocol.Spark
-          ? (existingLendingAPY = calculateAvgLendingAPY(newCollateralMarkets))
-          : 0;
-
         // Verify if pool has enough liquidity to borrow
         if (checkBorrowingAvailability(debtReserve, existingDebt.amount)) {
           // Verify that new max ltv is within tolerance
@@ -368,19 +365,30 @@ export class BaseAaveService {
             maxLTVTolerance
           );
           if (isMaxLTVAcceptable) {
-            // Calculate existing borrowing cost
-            const { newNetBorrowingApy, existingNetBorrowingApy } =
-              calculateNetBorrowingAPYs(
-                existingLendingAPY,
-                existingBorrowingAPY,
-                debtPosition,
-                newCollateralMarkets,
-                newMaxLTV,
-                debtMarket
-              );
+            const debtAndCollateralMarkets = new Map<string, Market>(
+              Array.from(newCollateralMarkets).concat([
+                [debtToken.address.toLowerCase(), newDebtMarket]
+              ])
+            );
+
+            const newCollaterals = Array.from(
+              newCollateralMarkets.values()
+            ).map((collateralMarket: Market) => {
+              const collateralToken = collateralMarket.underlyingAsset;
+              return existingCollateralAmountByAddress.get(
+                collateralToken.address.toLowerCase()
+              )!;
+            });
+
+            const newNetBorrowingApy = calculateNetBorrowingAPY(
+              newCollaterals,
+              [existingDebt],
+              debtAndCollateralMarkets
+            );
+            console.log("New net borrowing APY: ", newNetBorrowingApy);
             const borrowingApySpread =
               newNetBorrowingApy - existingNetBorrowingApy;
-            // TODO: what is better way to compare APYs?
+
             console.log("Borrowing APY spread: ", borrowingApySpread);
             if (borrowingApySpread >= 0.03) {
               console.log(
@@ -390,12 +398,13 @@ export class BaseAaveService {
               );
               return {
                 protocol: existingProtocol,
-                market: debtMarket,
+                market: newDebtMarket,
                 debt: createNewDebtPosition(
                   newMaxLTV,
                   existingDebt,
                   existingCollateralTokens,
-                  existingCollateralAmountByAddress
+                  existingCollateralAmountByAddress,
+                  debtAndCollateralMarkets
                 ),
                 netBorrowingApy: newNetBorrowingApy
               };
@@ -623,8 +632,9 @@ function createNewDebtPosition(
   newMaxLTV: number,
   existingDebt: TokenAmount,
   collateralTokens: Token[],
-  existingCollateralAmountByAddress: Map<string, TokenAmount>
-): DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition {
+  existingCollateralAmountByAddress: Map<string, TokenAmount>,
+  marketsMap: Map<string, Market>
+): DebtPosition {
   const newCollaterals = collateralTokens.map((collateralToken) => {
     return existingCollateralAmountByAddress.get(
       collateralToken.address.toLowerCase()
@@ -638,7 +648,12 @@ function createNewDebtPosition(
     maxLTV: newMaxLTV,
     LTV: newLTV,
     debts: [existingDebt],
-    collaterals: newCollaterals
+    collaterals: newCollaterals,
+    trailing30DaysNetAPY: calculateNetBorrowingAPY(
+      newCollaterals,
+      [existingDebt],
+      marketsMap
+    )
   };
 }
 
@@ -770,4 +785,38 @@ function calculateAvgLendingAPY(collateralMarkets: Map<string, Market>) {
     ) / collateralMarkets.size;
   console.log("Avg lending APY: ", avgApy);
   return avgApy;
+}
+
+/**
+ * Calculates net borrowing APY for a user's debt position based on total lending, borrowing costs & debt amount
+ * @param collaterals
+ * @param debts
+ * @param marketMap
+ * @returns netBorrowingAPY: (lendingInterest - borrowingInterest) / totalDebtAmount
+ */
+function calculateNetBorrowingAPY(
+  collaterals: TokenAmount[],
+  debts: TokenAmount[],
+  marketMap: Map<string, Market>
+) {
+  // Calculate total lending interest
+  const totalLendingInterest = collaterals.reduce((acc, curr) => {
+    const market = marketMap.get(curr.token.address.toLowerCase());
+    return acc + curr.amountInUSD * market!.trailing30DaysLendingAPY;
+  }, 0);
+
+  // Calculate total borrowing interest
+  const totalBorrowingInterest = debts.reduce((acc, curr) => {
+    const market = marketMap.get(curr.token.address.toLowerCase());
+    return acc + curr.amountInUSD * market!.trailing30DaysBorrowingAPY;
+  }, 0);
+
+  const totalDebtAmountInUSD = debts.reduce(
+    (acc, curr) => acc + curr.amountInUSD,
+    0
+  );
+
+  const netBorrowingAPY =
+    (totalLendingInterest - totalBorrowingInterest) / totalDebtAmountInUSD;
+  return netBorrowingAPY;
 }
