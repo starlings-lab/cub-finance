@@ -35,13 +35,14 @@ export async function getUserDebtDetails(userAddress: Address) {
  */
 export async function getRecommendedDebtDetail(
   debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
-  debtMarket: Market | MorphoBlueMarket | CompoundV3Market,
+  existingDebtMarket: Market | MorphoBlueMarket | CompoundV3Market,
   protocol: Protocol,
   maxLTVTolerance = 0.1
 ): Promise<RecommendedDebtDetail | null> {
   return baseAaveService.getRecommendedDebtDetail(
     debtPosition,
-    debtMarket,
-    protocol
+    existingDebtMarket,
+    protocol,
+    maxLTVTolerance
   );
 }
