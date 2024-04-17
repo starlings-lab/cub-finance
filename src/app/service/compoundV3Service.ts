@@ -93,7 +93,8 @@ async function getDebtPositions(
         amount: cUSDCBorrowBalance,
         amountInUSD: amountInUSD
       },
-      collaterals: cUSDCcollaterals
+      collaterals: cUSDCcollaterals,
+      trailing30DaysNetAPY: 0
     };
     debtPositions.push(debtPosition);
   }
@@ -127,7 +128,8 @@ async function getDebtPositions(
         amount: cWETHBorrowBalance,
         amountInUSD: amountInUSD
       },
-      collaterals: cWETHcollaterals
+      collaterals: cWETHcollaterals,
+      trailing30DaysNetAPY: 0
     };
     debtPositions.push(cWETHdebtPosition);
   }
@@ -139,6 +141,17 @@ async function addMarketsToDebtPositions(
   debtPositions: CompoundV3DebtPosition[]
 ): Promise<CompoundV3UserDebtDetails> {
   const markets: CompoundV3Market[] = await getCompoundV3Markets(debtPositions);
+  const marketsMap = new Map<string, CompoundV3Market>(
+    markets.map((market) => [market.debtToken.address.toLowerCase(), market])
+  );
+  debtPositions.forEach((debtPosition) => {
+    const market: CompoundV3Market = marketsMap.get(
+      debtPosition.debt.token.address.toLowerCase()
+    ) as CompoundV3Market;
+    // Compound V3 does not pay interest on collateral
+    debtPosition.trailing30DaysNetAPY = 0 - market.trailing30DaysBorrowingAPY;
+  });
+
   const compoundV3UserDebtDetails: CompoundV3UserDebtDetails = {
     protocol: Protocol.CompoundV3,
     userAddress: userAddress,

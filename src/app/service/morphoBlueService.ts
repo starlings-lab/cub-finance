@@ -99,7 +99,9 @@ function parseMarketPositionsQueryResult(
         token: position.market.collateralAsset,
         amount: position.collateral,
         amountInUSD: position.collateralUsd
-      }
+      },
+      // MorphoBlue does not pay interest on collateral
+      trailing30DaysNetAPY: 0 - position.market.monthlyApys.borrowApy
     });
   });
 
@@ -275,11 +277,12 @@ export async function getRecommendedDebtDetail(
       LTV: matchedDebtToken!.amountInUSD / matchedCollateral.amountInUSD,
       marketId: matchedMarket.marketId,
       debt: matchedDebtToken!,
-      collateral: matchedCollateral
+      collateral: matchedCollateral,
+      trailing30DaysNetAPY: 0 - matchedMarket.trailing30DaysBorrowingAPY
     };
     recommendedDebtDetails.push({
       protocol: Protocol.MorphoBlue,
-      netBorrowingApy: matchedMarket.trailing30DaysBorrowingAPY,
+      netBorrowingApy: 0 - matchedMarket.trailing30DaysBorrowingAPY,
       debt: newDebt,
       market: matchedMarket
     });
