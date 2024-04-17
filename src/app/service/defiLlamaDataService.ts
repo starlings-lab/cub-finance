@@ -28,12 +28,12 @@ export async function calculate30DayTrailingBorrowingAndLendingAPYs(
       const trailingDayBorrowingAPY = cumulativeBorrowRate / data.length / 100;
       const trailingDayLendingAPY = cumulativeLendRate / data.length / 100;
 
-      console.log(
-        `Cumulative borrow rate: ${cumulativeBorrowRate}, Cumulative lend rate: ${cumulativeLendRate}`
-      );
-      console.log(
-        `Trailing day borrow rate: ${trailingDayBorrowingAPY}, Trailing day lend rate: ${trailingDayLendingAPY}`
-      );
+      // console.log(
+      //   `Cumulative borrow rate: ${cumulativeBorrowRate}, Cumulative lend rate: ${cumulativeLendRate}`
+      // );
+      // console.log(
+      //   `Trailing day borrow rate: ${trailingDayBorrowingAPY}, Trailing day lend rate: ${trailingDayLendingAPY}`
+      // );
 
       return { trailingDayBorrowingAPY, trailingDayLendingAPY };
     })

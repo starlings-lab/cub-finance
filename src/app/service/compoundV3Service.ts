@@ -38,6 +38,7 @@ const CompoundV3cWETH = new Contract(
   COMPOUND_V3_ABI,
   provider
 );
+const USD_SCALE = BigInt(10 ** 8);
 
 export async function getCompoundV3UserDebtDetails(
   userAddress: Address
@@ -61,7 +62,6 @@ export async function getCompoundV3UserDebtDetails(
 async function getDebtPositions(
   userAddress: Address
 ): Promise<CompoundV3DebtPosition[]> {
-  const USD_SCALE = BigInt(10 ** 8);
   let debtPositions: CompoundV3DebtPosition[] = [];
   const cUSDCBorrowBalance: bigint = await getBorrowBalance(
     CompoundV3cUSDC,
@@ -219,7 +219,9 @@ async function getCollateralsByUserAddress(
       return {
         token: getTokenByAddress(collateral.address),
         amount: collateralAmount,
-        amountInUSD: Number(amountInUSD / BigInt(10 ** collateral.decimals))
+        amountInUSD: Number(
+          amountInUSD / BigInt(10 ** collateral.decimals) / USD_SCALE
+        )
       };
     }
     return null;
@@ -320,15 +322,18 @@ function getPriceFeedFromTokenSymbol(tokenSymbol: string): Address {
   }
 }
 
+// Returns the USD price with 8 decimal places as an unsigned integer scaled up by 10 ^ 8.
+// E.g. 5000_00000000 means that the asset’s price is $5000 USD.
 async function getDebtUsdPrice(
   market: Contract,
   priceFeed: Address,
   amount: bigint
 ): Promise<bigint> {
   try {
-    // Returns the USD price with 8 decimal places as an unsigned integer scaled up by 10 ^ 8. E.g. 500000000000 means that the asset’s price is $5000 USD.
     const rate: bigint = await market.getPrice(priceFeed);
     const usdPrice: bigint = amount * rate;
+    // console.log(`Amount: ${amount}, Rate: ${rate}, USD Price: ${usdPrice}`);
+
     return usdPrice;
   } catch (error) {
     console.log(error);
@@ -349,7 +354,7 @@ async function getLtv(
         getPriceFeedFromTokenSymbol(collateral.token.symbol),
         collateral.amount
       );
-      return usdPrice / COLLATERAL_TOKEN_SCALE;
+      return usdPrice / COLLATERAL_TOKEN_SCALE / USD_SCALE;
     })
   );
   const totalCollateralBalanceInUsd: bigint = collateralBalanceInUsd.reduce(
@@ -396,13 +401,13 @@ async function getMaxLtv(
       getPriceFeedFromTokenSymbol(collateral.token.symbol),
       maxLtvAmountForCollateral
     );
-    maxLtvAmountInUsd += maxLtvAmountForCollateralInUSD;
+    maxLtvAmountInUsd += maxLtvAmountForCollateralInUSD / USD_SCALE;
     const collateralAmountInUSD: bigint = await getDebtUsdPrice(
       market,
       getPriceFeedFromTokenSymbol(collateral.token.symbol),
       collateral.amount / COLLATERAL_AMOUNT_SCALE
     );
-    totalCollateralAmountInUsd += collateralAmountInUSD;
+    totalCollateralAmountInUsd += collateralAmountInUSD / USD_SCALE;
   });
 
   await Promise.all(promises);
