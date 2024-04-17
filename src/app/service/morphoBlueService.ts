@@ -14,6 +14,7 @@ import {
   Token
 } from "../type/type";
 import { MORPHO_GRAPHQL_URL } from "../constants";
+import { i } from "mathjs";
 
 export async function getMorphoBlueUserDebtDetails(
   chainId: number,
@@ -174,14 +175,20 @@ export async function getRecommendedDebtDetail(
   // check if the debt token is in the markets
   const debtTokenMatchedMarkets = markets.filter((market) => {
     if (protocol === Protocol.AaveV3 || protocol === Protocol.Spark) {
-      return (debtPosition.debt as TokenAmount[]).some(
+      return (debtPosition as DebtPosition).debts.some(
         (debt) => market.debtToken.address === debt.token.address
       );
+    } else if (protocol === Protocol.CompoundV3) {
+      return (
+        market.debtToken.address ===
+        (debtPosition as CompoundV3DebtPosition).debt.token.address
+      );
+    } else if (protocol === Protocol.MorphoBlue) {
+      return (
+        market.debtToken.address ===
+        (debtPosition as MorphoBlueDebtPosition).debt.token.address
+      );
     }
-    return (
-      market.debtToken.address ===
-      (debtPosition.debt as TokenAmount).token.address
-    );
   });
 
   // check if the collateral tokens are in the markets
@@ -238,11 +245,13 @@ export async function getRecommendedDebtDetail(
   matchedMarkets.forEach((matchedMarket) => {
     let matchedDebtToken: TokenAmount;
     if (protocol === Protocol.AaveV3 || protocol === Protocol.Spark) {
-      matchedDebtToken = (debtPosition as DebtPosition).debt.find(
+      matchedDebtToken = (debtPosition as DebtPosition).debts.find(
         (debt) => debt.token.address === matchedMarket.debtToken.address
       ) as TokenAmount;
-    } else {
-      matchedDebtToken = debtPosition.debt as TokenAmount;
+    } else if (protocol === Protocol.CompoundV3) {
+      matchedDebtToken = (debtPosition as CompoundV3DebtPosition).debt;
+    } else if (protocol === Protocol.MorphoBlue) {
+      matchedDebtToken = (debtPosition as MorphoBlueDebtPosition).debt;
     }
 
     let matchedCollateral: TokenAmount;
@@ -263,11 +272,9 @@ export async function getRecommendedDebtDetail(
     }
     const newDebt = {
       maxLTV: matchedMarket.maxLTV,
-      LTV:
-        matchedDebtToken.amountInUSD /
-        matchedCollateral.amountInUSD,
+      LTV: matchedDebtToken!.amountInUSD / matchedCollateral.amountInUSD,
       marketId: matchedMarket.marketId,
-      debt: debtPosition.debt as TokenAmount,
+      debt: matchedDebtToken!,
       collateral: matchedCollateral
     };
     recommendedDebtDetails.push({

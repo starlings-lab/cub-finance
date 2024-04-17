@@ -103,6 +103,8 @@ export interface CompoundV3Market extends MarketBase {
 export interface RecommendedDebtDetailBase {
   protocol: Protocol;
   // ((lendingAPY * lendingAmount) - (borrowingAPY * (debtAmount)))/debAmount
+  // Positive value means user will earn interest and
+  // negative value means user will pay interest.
   netBorrowingApy: number;
 }
 
