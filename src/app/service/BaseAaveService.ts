@@ -269,7 +269,8 @@ export class BaseAaveService {
       | CompoundV3DebtPosition,
     existingDebtMarket: Market | MorphoBlueMarket | CompoundV3Market,
     existingProtocol: Protocol,
-    maxLTVTolerance = 0.1
+    maxLTVTolerance = 0.1, // 10%
+    borrowingAPYTolerance = 0.03 // 3%
   ): Promise<RecommendedDebtDetail | null> {
     // get reserve data
     const { reservesMap, baseCurrencyData } = await this.getReservesData();
@@ -364,10 +365,15 @@ export class BaseAaveService {
                 newMaxLTV,
                 debtMarket
               );
-
-            if (newNetBorrowingApy > existingNetBorrowingApy) {
+            const borrowingApySpread =
+              newNetBorrowingApy - existingNetBorrowingApy;
+            // TODO: what is better way to compare APYs?
+            console.log("Borrowing APY spread: ", borrowingApySpread);
+            if (borrowingApySpread >= 0.03) {
               console.log(
-                "New net borrowing APY is less than existing net borrowing APY"
+                `New borrowing cost is at least ${
+                  borrowingAPYTolerance * 100
+                }% better than existing borrowing cost`
               );
               return {
                 protocol: existingProtocol,
@@ -376,9 +382,7 @@ export class BaseAaveService {
                 netBorrowingApy: newNetBorrowingApy
               };
             } else {
-              console.log(
-                "New net borrowing APY is greater than existing net borrowing APY"
-              );
+              console.log("New net borrowing cost is not within tolerance");
               return null;
             }
           } else {
@@ -617,6 +621,7 @@ function calculateNetBorrowingAPYs(
   // Calculate new borrowing cost assuming an user wants
   // to use same LTV as an existing LTV but cap it with new max LTV
   const ltvToUse = debtPosition.LTV > newMaxLTV ? newMaxLTV : debtPosition.LTV;
+  console.log("LTV to use: ", ltvToUse);
   const newLendingInterest = calculateAvgLendingAPY(newCollateralMarkets) * 100;
   const newBorrowingInterest =
     debtMarket.trailing30DaysBorrowingAPY * (ltvToUse * 100);
@@ -722,6 +727,6 @@ function calculateAvgLendingAPY(collateralMarkets: Map<string, Market>) {
       (acc, curr) => acc + curr.trailing30DaysLendingAPY,
       0
     ) / collateralMarkets.size;
-
+  console.log("Avg lending APY: ", avgApy);
   return avgApy;
 }

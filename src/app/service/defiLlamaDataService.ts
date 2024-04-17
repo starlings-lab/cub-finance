@@ -25,8 +25,8 @@ export async function calculate30DayTrailingBorrowingAndLendingAPYs(
         cumulativeLendRate += datum.apyBase;
       }
 
-      const trailingDayBorrowingAPY = cumulativeBorrowRate / data.length;
-      const trailingDayLendingAPY = cumulativeLendRate / data.length;
+      const trailingDayBorrowingAPY = cumulativeBorrowRate / data.length / 100;
+      const trailingDayLendingAPY = cumulativeLendRate / data.length / 100;
 
       console.log(
         `Cumulative borrow rate: ${cumulativeBorrowRate}, Cumulative lend rate: ${cumulativeLendRate}`
