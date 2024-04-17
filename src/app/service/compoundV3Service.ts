@@ -554,11 +554,11 @@ export async function getRecommendedDebtDetail(
   });
 
   // check if the old borrowing cost - the new borrowing cost > 3%
-  // matchedMarkets = matchedMarkets.filter((matchedMarket) => {
-  //   existingMarket.trailing30DaysBorrowingAPY -
-  //     matchedMarket.trailing30DaysBorrowingAPY >
-  //     0.03;
-  // });
+  matchedMarkets = matchedMarkets.filter((matchedMarket) => {
+    debtPosition.trailing30DaysNetAPY -
+      matchedMarket.trailing30DaysBorrowingAPY >
+      0.03;
+  });
 
   // const recommendedDebtDetails: CompoundV3RecommendedDebtDetail[] = [];
   // matchedMarkets.forEach((matchedMarket) => {
