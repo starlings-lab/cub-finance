@@ -276,10 +276,9 @@ export class BaseAaveService {
     const { reservesMap, baseCurrencyData } = await this.getReservesData();
 
     // get debt & collateral token based on type of debt position
-    let debtToken = null;
-    let collateralTokens = null;
-    let debtAmount = BigInt(0);
-
+    let existingDebt = null;
+    let existingCollateralTokens = null;
+    let existingCollateralAmountByAddress = new Map<string, TokenAmount>();
     let existingLendingAPY = 0;
     let existingBorrowingAPY;
 
@@ -287,30 +286,43 @@ export class BaseAaveService {
       case Protocol.AaveV3:
       case Protocol.Spark:
         const convertedDebtPosition = debtPosition as DebtPosition;
-        debtToken = convertedDebtPosition.debts[0].token;
-        debtAmount = convertedDebtPosition.debts[0].amount;
-        collateralTokens = convertedDebtPosition.collaterals.map(
+        existingDebt = convertedDebtPosition.debts[0];
+        existingCollateralTokens = convertedDebtPosition.collaterals.map(
           (collateral) => collateral.token
         );
         existingBorrowingAPY = (existingDebtMarket as Market)
           .trailing30DaysBorrowingAPY;
+        convertedDebtPosition.collaterals.forEach((collateral) => {
+          existingCollateralAmountByAddress.set(
+            collateral.token.address.toLowerCase(),
+            collateral
+          );
+        });
         break;
       case Protocol.MorphoBlue:
         const morphoBlueDebtPosition = debtPosition as MorphoBlueDebtPosition;
-        debtToken = morphoBlueDebtPosition.debt.token;
-        debtAmount = morphoBlueDebtPosition.debt.amount;
-        collateralTokens = [morphoBlueDebtPosition.debt.token];
+        existingDebt = morphoBlueDebtPosition.debt;
+        existingCollateralTokens = [morphoBlueDebtPosition.debt.token];
         // Collateral doesn't earn yields in MorphoBlue
         existingBorrowingAPY = (existingDebtMarket as MorphoBlueMarket)
           .trailing30DaysBorrowingAPY;
+        existingCollateralAmountByAddress.set(
+          morphoBlueDebtPosition.collateral.token.address.toLowerCase(),
+          morphoBlueDebtPosition.collateral
+        );
         break;
       case Protocol.CompoundV3:
         const compoundV3DebtPosition = debtPosition as CompoundV3DebtPosition;
-        debtToken = compoundV3DebtPosition.debt.token;
-        debtAmount = compoundV3DebtPosition.debt.amount;
-        collateralTokens = compoundV3DebtPosition.collaterals.map(
+        existingDebt = compoundV3DebtPosition.debt;
+        existingCollateralTokens = compoundV3DebtPosition.collaterals.map(
           (collateral) => collateral.token
         );
+        compoundV3DebtPosition.collaterals.forEach((collateral) => {
+          existingCollateralAmountByAddress.set(
+            collateral.token.address.toLowerCase(),
+            collateral
+          );
+        });
         // Collateral doesn't earn yields in Compound V3
         existingBorrowingAPY = (existingDebtMarket as CompoundV3Market)
           .trailing30DaysBorrowingAPY;
@@ -319,6 +331,7 @@ export class BaseAaveService {
         throw new Error("Unsupported protocol");
     }
 
+    const debtToken = existingDebt.token;
     const debtReserve = reservesMap.get(debtToken!.address.toLowerCase());
     // console.log("Debt reserve", debtReserve);
 
@@ -333,7 +346,7 @@ export class BaseAaveService {
 
       // find new collateral markets
       let newCollateralMarkets = await this.fetchCollateralMarkets(
-        collateralTokens,
+        existingCollateralTokens,
         reservesMap
       );
 
@@ -346,7 +359,7 @@ export class BaseAaveService {
           : 0;
 
         // Verify if pool has enough liquidity to borrow
-        if (checkBorrowingAvailability(debtReserve, debtAmount)) {
+        if (checkBorrowingAvailability(debtReserve, existingDebt.amount)) {
           // Verify that new max ltv is within tolerance
           const { isMaxLTVAcceptable, newMaxLTV } = validateMaxLTV(
             debtPosition.maxLTV,
@@ -378,7 +391,12 @@ export class BaseAaveService {
               return {
                 protocol: existingProtocol,
                 market: debtMarket,
-                debt: debtPosition, // TODO: need to create new debt position
+                debt: createNewDebtPosition(
+                  newMaxLTV,
+                  existingDebt,
+                  existingCollateralTokens,
+                  existingCollateralAmountByAddress
+                ),
                 netBorrowingApy: newNetBorrowingApy
               };
             } else {
@@ -599,6 +617,29 @@ export class BaseAaveService {
       };
     });
   }
+}
+
+function createNewDebtPosition(
+  newMaxLTV: number,
+  existingDebt: TokenAmount,
+  collateralTokens: Token[],
+  existingCollateralAmountByAddress: Map<string, TokenAmount>
+): DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition {
+  const newCollaterals = collateralTokens.map((collateralToken) => {
+    return existingCollateralAmountByAddress.get(
+      collateralToken.address.toLowerCase()
+    )!;
+  });
+
+  const newLTV =
+    existingDebt.amountInUSD /
+    newCollaterals.reduce((acc, curr) => acc + curr.amountInUSD, 0);
+  return {
+    maxLTV: newMaxLTV,
+    LTV: newLTV,
+    debts: [existingDebt],
+    collaterals: newCollaterals
+  };
 }
 
 function calculateNetBorrowingAPYs(
