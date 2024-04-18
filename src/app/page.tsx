@@ -43,7 +43,7 @@ export default async function Home() {
     0.15,
     0.01
   );
-  console.log(recommendedDebtDetail);
+  console.dir(recommendedDebtDetail, { depth: null });
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">

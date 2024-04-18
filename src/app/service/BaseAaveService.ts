@@ -402,8 +402,8 @@ export class BaseAaveService {
                 debt: createNewDebtPosition(
                   newMaxLTV,
                   existingDebt,
-                  existingCollateralTokens,
                   existingCollateralAmountByAddress,
+                  newCollaterals,
                   debtAndCollateralMarkets
                 ),
                 netBorrowingApy: newNetBorrowingApy
@@ -631,16 +631,10 @@ export class BaseAaveService {
 function createNewDebtPosition(
   newMaxLTV: number,
   existingDebt: TokenAmount,
-  collateralTokens: Token[],
   existingCollateralAmountByAddress: Map<string, TokenAmount>,
+  newCollaterals: TokenAmount[],
   marketsMap: Map<string, Market>
 ): DebtPosition {
-  const newCollaterals = collateralTokens.map((collateralToken) => {
-    return existingCollateralAmountByAddress.get(
-      collateralToken.address.toLowerCase()
-    )!;
-  });
-
   const newLTV =
     existingDebt.amountInUSD /
     newCollaterals.reduce((acc, curr) => acc + curr.amountInUSD, 0);
@@ -801,6 +795,7 @@ function calculateNetBorrowingAPY(
 ) {
   // Calculate total lending interest
   const totalLendingInterest = collaterals.reduce((acc, curr) => {
+    // console.log("Collateral: ", curr);
     const market = marketMap.get(curr.token.address.toLowerCase());
     return acc + curr.amountInUSD * market!.trailing30DaysLendingAPY;
   }, 0);
