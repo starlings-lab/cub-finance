@@ -439,7 +439,7 @@ async function getMaxLtv(
   let maxLtvAmountInUsd = BigInt(0);
   let totalCollateralAmountInUsd = BigInt(0);
 
-  const promises = collaterals.map(async (collateral) => {
+  const promises = (collaterals as TokenAmount[]).map(async (collateral) => {
     const COLLATERAL_FACTOR_SCALE = BigInt(10 ** 18);
     const COLLATERAL_AMOUNT_SCALE = BigInt(10 ** collateral.token.decimals);
 
