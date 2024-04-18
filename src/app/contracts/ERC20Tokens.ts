@@ -55,3 +55,10 @@ export const wstETH: Token = {
   decimals: 18,
   symbol: "wstETH"
 };
+
+export const rETH: Token = {
+  address: `0x${"ae78736Cd615f374D3085123A210448E74Fc6393"}`,
+  name: "Rocket Pool ETH",
+  decimals: 18,
+  symbol: "rETH"
+};
