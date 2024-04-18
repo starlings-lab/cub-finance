@@ -16,13 +16,16 @@ export const COMPOUND_V3_CWETH_COLLATERALS: Token[] = [cbETH, wstETH, WETH];
 
 export const COMPOUND_V3_PRICEFEEDS = {
   USDC: `0x${"8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6"}` as Address,
-  WETH: `0x${"D72ac1bCE9177CFe7aEb5d0516a38c88a64cE0AB"}` as Address,
+  ETH: `0x${"5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"}` as Address,
   COMP: `0x${"dbd020CAeF83eFd542f4De03e3cF0C28A4428bd5"}` as Address,
   WBTC: `0x${"F4030086522a5bEEa4988F8cA5B36dbC97BeE88c"}` as Address,
   UNI: `0x${"553303d460EE0afB37EdFf9bE42922D8FF63220e"}` as Address,
   LINK: `0x${"2c1d072e956AFFC0D435Cb7AC38EF18d24d9127c"}` as Address,
+  // Following price feeds returns price in ETH, e.g. 1 wstETH = 1.1 ETH
+  WETH: `0x${"D72ac1bCE9177CFe7aEb5d0516a38c88a64cE0AB"}` as Address,
   cbETH: `0x${"23a982b74a3236A5F2297856d4391B2edBBB5549"}` as Address,
-  wstETH: `0x${"4F67e4d9BD67eFa28236013288737D39AeF48e79"}` as Address
+  wstETH: `0x${"4F67e4d9BD67eFa28236013288737D39AeF48e79"}` as Address,
+  rETH: "" // TODO: add rETH price feed
 };
 
 export const COMPOUND_V3_ABI: object[] = [

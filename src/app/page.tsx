@@ -1,11 +1,8 @@
 /* eslint-disable @next/next/no-async-client-component */
 "use client";
 import React, { useState } from "react";
-import {
-  getMorphoBlueUserDebtDetails,
-  getRecommendedDebtDetail
-} from "./service/morphoBlueService";
 import { getCompoundV3UserDebtDetails } from "./service/compoundV3Service";
+import { getRecommendedDebtDetail } from "./service/aaveV3Service";
 import { Protocol } from "./type/type";
 
 export default async function Home() {
@@ -33,17 +30,20 @@ export default async function Home() {
   //   });
 
   // test getCompoundV3UserDebtDetails
-  // const compoundV3UserDebtDetails = await getCompoundV3UserDebtDetails(
-  //   "0x9CF423E929d661a0fB25e4AEf05bEB1037298fFb"
-  // );
-  // console.log(compoundV3UserDebtDetails);
+  const compoundV3UserDebtDetails = await getCompoundV3UserDebtDetails(
+    // "0xfe99cc4664a939f826dbeb545c1aad4c89ee737a"
+    "0x9CF423E929d661a0fB25e4AEf05bEB1037298fFb"
+  );
+  console.dir(compoundV3UserDebtDetails, { depth: null });
 
-  // const recommendedDebtDetail = await getRecommendedDebtDetail(
-  //   compoundV3UserDebtDetails.debtPositions[0],
-  //   compoundV3UserDebtDetails.markets[0],
-  //   Protocol.CompoundV3
-  // );
-  // console.log(recommendedDebtDetail);
+  const recommendedDebtDetail = await getRecommendedDebtDetail(
+    Protocol.CompoundV3,
+    compoundV3UserDebtDetails.debtPositions[0],
+    compoundV3UserDebtDetails.markets[0],
+    0.15,
+    0.01
+  );
+  console.log(recommendedDebtDetail);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">

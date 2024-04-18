@@ -43,6 +43,7 @@ const CompoundV3cWETH = new Contract(
   COMPOUND_V3_ABI,
   provider
 );
+
 const USD_SCALE = BigInt(10 ** 8);
 
 export async function getCompoundV3UserDebtDetails(
@@ -88,11 +89,7 @@ async function getDebtPositions(
 
     const debtPosition: CompoundV3DebtPosition = {
       maxLTV: await getMaxLtv(CompoundV3cUSDC, cUSDCcollaterals),
-      LTV: await getLtv(
-        CompoundV3cUSDC,
-        debtAmountInUSD / BigInt(10 ** USDC.decimals),
-        cUSDCcollaterals
-      ),
+      LTV: await getLtv(CompoundV3cUSDC, amountInUSD, cUSDCcollaterals),
       debt: {
         token: USDC,
         amount: cUSDCBorrowBalance,
@@ -123,11 +120,7 @@ async function getDebtPositions(
 
     const cWETHdebtPosition: CompoundV3DebtPosition = {
       maxLTV: await getMaxLtv(CompoundV3cWETH, cWETHcollaterals),
-      LTV: await getLtv(
-        CompoundV3cWETH,
-        debtAmountInUSD / BigInt(10 ** WETH.decimals),
-        cWETHcollaterals
-      ),
+      LTV: await getLtv(CompoundV3cWETH, amountInUSD, cWETHcollaterals),
       debt: {
         token: WETH,
         amount: cWETHBorrowBalance,
@@ -146,6 +139,8 @@ async function addMarketsToDebtPositions(
   debtPositions: CompoundV3DebtPosition[]
 ): Promise<CompoundV3UserDebtDetails> {
   const markets: CompoundV3Market[] = await getCompoundV3Markets(debtPositions);
+  // console.dir(markets, { depth: null });
+
   const marketsMap = new Map<string, CompoundV3Market>(
     markets.map((market) => [market.debtToken.address.toLowerCase(), market])
   );
@@ -171,9 +166,11 @@ async function getCompoundV3Markets(
   debtPositions: CompoundV3DebtPosition[]
 ): Promise<CompoundV3Market[]> {
   // Fetch borrowing APYs for Compound ETH and USDC pools
-  return getBorrowingAPYsByTokenAddress().then((borrowingAPYs) => {
+  return getBorrowingAPYsByTokenAddress().then(async (borrowingAPYs) => {
     const markets: CompoundV3Market[] = [];
-    debtPositions.forEach(async (debtPosition) => {
+
+    for (let i = 0; i < debtPositions.length; i++) {
+      const debtPosition = debtPositions[i];
       const debtTokenAddress: Address = debtPosition.debt.token.address;
       const market: CompoundV3Market = {
         trailing30DaysBorrowingAPY: borrowingAPYs.get(debtTokenAddress) || 0,
@@ -182,7 +179,7 @@ async function getCompoundV3Markets(
         collateralTokens: getSupportedCollateralTokens(debtTokenAddress)
       };
       markets.push(market);
-    });
+    }
     return markets;
   });
 }
@@ -371,10 +368,21 @@ async function getDebtUsdPrice(
 ): Promise<bigint> {
   try {
     const rate: bigint = await market.getPrice(priceFeed);
-    const usdPrice: bigint = amount * rate;
-    // console.log(`Amount: ${amount}, Rate: ${rate}, USD Price: ${usdPrice}`);
+    let price: bigint = amount * rate;
 
-    return usdPrice;
+    if (market === CompoundV3cWETH) {
+      // Compound ETH market returns price in ETH, e.g. 1 stETH = 1.05 ETH
+      // so we need to multiply price by ETH price in USD
+      const ethUsdRate: bigint = await market.getPrice(
+        COMPOUND_V3_PRICEFEEDS.ETH
+      );
+      // console.log(`ETH price: ${ethUsdRate}`);
+      price = (price * ethUsdRate) / USD_SCALE;
+    }
+
+    // console.log(`Amount: ${amount}, Rate: ${rate}, USD Price: ${price}`);
+
+    return price;
   } catch (error) {
     console.log(error);
     throw error;
@@ -383,7 +391,7 @@ async function getDebtUsdPrice(
 
 async function getLtv(
   market: Contract,
-  debtAmountInUSD: bigint,
+  debtAmountInUSD: number,
   collaterals: TokenAmount[]
 ): Promise<number> {
   const collateralBalanceInUsd: bigint[] = await Promise.all(
@@ -401,7 +409,10 @@ async function getLtv(
     (totalBalance: bigint, currentBalance) => totalBalance + currentBalance,
     BigInt(0)
   );
-  const ltv = Number(debtAmountInUSD) / Number(totalCollateralBalanceInUsd);
+  // console.log(
+  //   `Total collateral balance in USD: ${totalCollateralBalanceInUsd}, Debt amount in USD: ${debtAmountInUSD}`
+  // );
+  const ltv = debtAmountInUSD / Number(totalCollateralBalanceInUsd);
   return ltv;
 }
 
@@ -605,7 +616,7 @@ export async function getRecommendedDebtDetail(
 
     let newLtv: number = await getLtv(
       matchedMarketContract,
-      BigInt(matchedDebtToken.amountInUSD),
+      matchedDebtToken.amountInUSD,
       matchedCollaterals as TokenAmount[]
     );
 
