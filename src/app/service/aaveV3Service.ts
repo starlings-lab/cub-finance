@@ -4,16 +4,13 @@ import { Address } from "abitype";
 import { UiPoolDataProvider } from "@aave/contract-helpers";
 import {
   CompoundV3DebtPosition,
-  CompoundV3Market,
   DebtPosition,
-  Market,
   MorphoBlueDebtPosition,
-  MorphoBlueMarket,
   Protocol,
   RecommendedDebtDetail
 } from "../type/type";
 
-const baseAaveService = new BaseAaveService(
+export const baseAaveService = new BaseAaveService(
   Protocol.AaveV3,
   markets.AaveV3Ethereum.POOL_ADDRESSES_PROVIDER,
   markets.AaveV3Ethereum.UI_POOL_DATA_PROVIDER
