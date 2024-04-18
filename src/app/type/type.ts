@@ -95,6 +95,7 @@ export interface MorphoBlueMarket extends MarketBase {
 
 // collateral doesn't earn yields in Compound V3
 export interface CompoundV3Market extends MarketBase {
+  utilizationRatio: number;
   debtToken: Token;
   collateralTokens: Token[];
 }
@@ -119,4 +120,10 @@ export interface MorphoBlueRecommendedDebtDetail
   extends RecommendedDebtDetailBase {
   debt: MorphoBlueDebtPosition; // The recommended/new debt position
   market: MorphoBlueMarket; // The market where the debt is recommended
+}
+
+export interface CompoundV3RecommendedDebtDetail
+  extends RecommendedDebtDetailBase {
+  debt: CompoundV3DebtPosition; // The recommended/new debt position
+  market: CompoundV3Market; // The market where the debt is recommended
 }

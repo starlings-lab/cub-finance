@@ -18,9 +18,14 @@ import {
   Token,
   TokenAmount,
   CompoundV3UserDebtDetails,
+  Market,
+  MorphoBlueMarket,
   CompoundV3Market,
+  DebtPosition,
+  MorphoBlueDebtPosition,
   CompoundV3DebtPosition,
-  Protocol
+  Protocol,
+  CompoundV3RecommendedDebtDetail
 } from "../type/type";
 import { getTokenByAddress } from "../utils/utils";
 import { calculate30DayTrailingBorrowingAndLendingAPYs } from "./defiLlamaDataService";
@@ -168,10 +173,11 @@ async function getCompoundV3Markets(
   // Fetch borrowing APYs for Compound ETH and USDC pools
   return getBorrowingAPYsByTokenAddress().then((borrowingAPYs) => {
     const markets: CompoundV3Market[] = [];
-    debtPositions.forEach((debtPosition) => {
+    debtPositions.forEach(async (debtPosition) => {
       const debtTokenAddress: Address = debtPosition.debt.token.address;
       const market: CompoundV3Market = {
         trailing30DaysBorrowingAPY: borrowingAPYs.get(debtTokenAddress) || 0,
+        utilizationRatio: await getUtilizationRatio(debtTokenAddress),
         debtToken: getTokenByAddress(debtTokenAddress),
         collateralTokens: getSupportedCollateralTokens(debtTokenAddress)
       };
@@ -179,6 +185,40 @@ async function getCompoundV3Markets(
     });
     return markets;
   });
+}
+
+async function getAllCompoundV3Markets(): Promise<CompoundV3Market[]> {
+  const borrowingAPYs = await getBorrowingAPYsByTokenAddress();
+  const markets: CompoundV3Market[] = [
+    {
+      trailing30DaysBorrowingAPY: borrowingAPYs.get(USDC.address) ?? 0,
+      utilizationRatio: await getUtilizationRatio(USDC.address),
+      debtToken: USDC,
+      collateralTokens: COMPOUND_V3_CUSDC_COLLATERALS
+    },
+    {
+      trailing30DaysBorrowingAPY: borrowingAPYs.get(WETH.address) ?? 0,
+      utilizationRatio: await getUtilizationRatio(WETH.address),
+      debtToken: WETH,
+      collateralTokens: COMPOUND_V3_CWETH_COLLATERALS
+    }
+  ];
+  return markets;
+}
+
+async function getUtilizationRatio(debtTokenAddress: Address): Promise<number> {
+  const UTILIZATION_SCALE = BigInt(10 ** 18);
+  if (debtTokenAddress === USDC.address) {
+    let cusdcUtilization: bigint = await CompoundV3cUSDC.getUtilization();
+    cusdcUtilization = cusdcUtilization / UTILIZATION_SCALE;
+    return Number(cusdcUtilization);
+  } else if (debtTokenAddress === WETH.address) {
+    let cwethUtilization: bigint = await CompoundV3cWETH.getUtilization();
+    cwethUtilization = cwethUtilization / UTILIZATION_SCALE;
+    return Number(cwethUtilization);
+  } else {
+    throw new Error("Unsupported debt token address");
+  }
 }
 
 // Fetches 30 days trailing borrowing APYs for Compound ETH and USDC pools
@@ -379,7 +419,7 @@ async function getCollateralFactor(
 // max LTV for each market
 async function getMaxLtv(
   market: Contract,
-  collaterals: TokenAmount[]
+  collaterals: TokenAmount[] | TokenAmount
 ): Promise<number> {
   let maxLtvAmountInUsd = BigInt(0);
   let totalCollateralAmountInUsd = BigInt(0);
@@ -417,4 +457,172 @@ async function getMaxLtv(
   let maxLtvPercentage: number =
     Number(maxLtvAmountInUsd) / Number(totalCollateralAmountInUsd);
   return Number(maxLtvPercentage);
+}
+
+export async function getRecommendedDebtDetail(
+  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
+  existingMarket: Market | MorphoBlueMarket | CompoundV3Market,
+  protocol: Protocol
+): Promise<CompoundV3RecommendedDebtDetail[] | null> {
+  const markets: CompoundV3Market[] = await getAllCompoundV3Markets();
+
+  // check if the debt token is in the markets
+  const debtTokenMatchedMarkets = markets.filter((market) => {
+    if (protocol === Protocol.AaveV3 || protocol === Protocol.Spark) {
+      return (debtPosition as DebtPosition).debts.some(
+        (debt) => market.debtToken.address === debt.token.address
+      );
+    } else if (protocol === Protocol.CompoundV3) {
+      return (
+        market.debtToken.address ===
+        (debtPosition as CompoundV3DebtPosition).debt.token.address
+      );
+    } else if (protocol === Protocol.MorphoBlue) {
+      return (
+        market.debtToken.address ===
+        (debtPosition as MorphoBlueDebtPosition).debt.token.address
+      );
+    }
+  });
+
+  // check if the collateral tokens are in the markets
+  let matchedMarkets: CompoundV3Market[] = [];
+  if (debtTokenMatchedMarkets.length > 0) {
+    matchedMarkets = debtTokenMatchedMarkets.filter(
+      (debtTokenMatchedMarket) => {
+        if (
+          protocol === Protocol.AaveV3 ||
+          protocol === Protocol.Spark ||
+          protocol === Protocol.CompoundV3
+        ) {
+          return debtTokenMatchedMarket.collateralTokens.some(
+            (collateralInMatchedMarket) =>
+              (debtPosition as DebtPosition) ||
+              (debtPosition as CompoundV3DebtPosition).collaterals.some(
+                (collateralInDebtPosition) =>
+                  collateralInDebtPosition.token.address ===
+                  collateralInMatchedMarket.address
+              )
+          );
+        }
+        return debtTokenMatchedMarket.collateralTokens.some(
+          (collateral) =>
+            (debtPosition as MorphoBlueDebtPosition).collateral.token
+              .address === collateral.address
+        );
+      }
+    );
+  } else if (debtTokenMatchedMarkets.length === 0) {
+    return null;
+  }
+
+  if (matchedMarkets.length === 0) {
+    return null;
+  }
+
+  // check if the utilization ratio is small enough
+  matchedMarkets = matchedMarkets.filter((matchedMarket) => {
+    matchedMarket.utilizationRatio < 0.98;
+  });
+
+  // check if the new max LTV >= (the old max LTV - 5%)
+  let newMaxLtV: number | undefined;
+  matchedMarkets = matchedMarkets.filter(async (matchedMarket) => {
+    const matchedMarketContract =
+      matchedMarket.debtToken.address === USDC.address
+        ? CompoundV3cUSDC
+        : CompoundV3cWETH;
+    if (
+      protocol === Protocol.AaveV3 ||
+      protocol === Protocol.Spark ||
+      protocol === Protocol.CompoundV3
+    ) {
+      newMaxLtV = await getMaxLtv(
+        matchedMarketContract,
+        (
+          (debtPosition as DebtPosition) ||
+          (debtPosition as CompoundV3DebtPosition)
+        ).collaterals
+      );
+    } else if (protocol === Protocol.MorphoBlue) {
+      newMaxLtV = await getMaxLtv(
+        matchedMarketContract,
+        (debtPosition as MorphoBlueDebtPosition).collateral
+      );
+    }
+    return newMaxLtV !== undefined && newMaxLtV >= debtPosition.maxLTV - 0.05;
+  });
+
+  // check if the old borrowing cost - the new borrowing cost > 3%
+  matchedMarkets = matchedMarkets.filter((matchedMarket) => {
+    debtPosition.trailing30DaysNetAPY -
+      matchedMarket.trailing30DaysBorrowingAPY >
+      0.03;
+  });
+
+  const recommendedDebtDetails: CompoundV3RecommendedDebtDetail[] = [];
+  matchedMarkets.forEach(async (matchedMarket) => {
+    let matchedDebtToken: TokenAmount;
+    if (protocol === Protocol.AaveV3 || protocol === Protocol.Spark) {
+      matchedDebtToken = (debtPosition as DebtPosition).debts.find(
+        (debt) => debt.token.address === matchedMarket.debtToken.address
+      ) as TokenAmount;
+    } else if (
+      protocol === Protocol.CompoundV3 ||
+      protocol === Protocol.MorphoBlue
+    ) {
+      matchedDebtToken = (
+        (debtPosition as CompoundV3DebtPosition) ||
+        (debtPosition as MorphoBlueDebtPosition)
+      ).debt;
+    } else {
+      return null;
+    }
+
+    let matchedCollaterals: TokenAmount[] | TokenAmount;
+    if (
+      protocol === Protocol.AaveV3 ||
+      protocol === Protocol.Spark ||
+      protocol === Protocol.CompoundV3
+    ) {
+      matchedCollaterals = (
+        (debtPosition as DebtPosition) ||
+        (debtPosition as CompoundV3DebtPosition)
+      ).collaterals.filter((collateral) =>
+        matchedMarket.collateralTokens.some(
+          (collateralInMarket) =>
+            collateral.token.address === collateralInMarket.address
+        )
+      ) as TokenAmount[] | TokenAmount;
+    } else {
+      matchedCollaterals = (debtPosition as MorphoBlueDebtPosition).collateral;
+    }
+
+    const matchedMarketContract =
+      matchedMarket.debtToken.address === USDC.address
+        ? CompoundV3cUSDC
+        : CompoundV3cWETH;
+
+    let newLtv: number = await getLtv(
+      matchedMarketContract,
+      BigInt(matchedDebtToken.amountInUSD),
+      matchedCollaterals as TokenAmount[]
+    );
+
+    const newDebt = {
+      maxLTV: newMaxLtV as number,
+      LTV: newLtv,
+      trailing30DaysNetAPY: matchedMarket.trailing30DaysBorrowingAPY,
+      debt: matchedDebtToken,
+      collaterals: matchedCollaterals as TokenAmount[]
+    };
+
+    recommendedDebtDetails.push({
+      protocol: Protocol.MorphoBlue,
+      netBorrowingApy: matchedMarket.trailing30DaysBorrowingAPY,
+      debt: newDebt,
+      market: matchedMarket
+    });
+  });
+  return recommendedDebtDetails;
 }
