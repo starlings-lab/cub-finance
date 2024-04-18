@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { getCompoundV3UserDebtDetails } from "./service/compoundV3Service";
 import { getRecommendedDebtDetail } from "./service/aaveV3Service";
 import { Protocol } from "./type/type";
+import { getRecommendations } from "./service/refiananceRecommendationService";
 
 export default async function Home() {
   const [value, setValue] = useState<string>(
@@ -36,14 +37,12 @@ export default async function Home() {
   );
   console.dir(compoundV3UserDebtDetails, { depth: null });
 
-  const recommendedDebtDetail = await getRecommendedDebtDetail(
+  const allRecommendations = await getRecommendations(
     Protocol.CompoundV3,
-    compoundV3UserDebtDetails.debtPositions[0],
-    compoundV3UserDebtDetails.markets[0],
-    0.15,
-    0.01
+    compoundV3UserDebtDetails.debtPositions[0]
   );
-  console.dir(recommendedDebtDetail, { depth: null });
+  console.log("All Recommendations: ");
+  console.dir(allRecommendations, { depth: null });
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">

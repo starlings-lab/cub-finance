@@ -374,9 +374,13 @@ async function getDebtUsdPrice(
     const rate: bigint = await market.getPrice(priceFeed);
     let price: bigint = amount * rate;
 
-    if (market === CompoundV3cWETH) {
-      // Compound ETH market returns price in ETH, e.g. 1 stETH = 1.05 ETH
-      // so we need to multiply price by ETH price in USD
+    // Compound's ETH related price feeds returns price in ETH, e.g. 1 stETH = 1.05 ETH
+    // so we need to multiply price by ETH price in USD
+    if (
+      priceFeed === COMPOUND_V3_PRICEFEEDS.cbETH ||
+      priceFeed === COMPOUND_V3_PRICEFEEDS.wstETH ||
+      priceFeed === COMPOUND_V3_PRICEFEEDS.WETH
+    ) {
       const ethUsdRate: bigint = await market.getPrice(
         COMPOUND_V3_PRICEFEEDS.ETH
       );
@@ -475,9 +479,8 @@ async function getMaxLtv(
 }
 
 export async function getRecommendedDebtDetail(
-  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
-  existingMarket: Market | MorphoBlueMarket | CompoundV3Market,
-  protocol: Protocol
+  protocol: Protocol,
+  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition
 ): Promise<CompoundV3RecommendedDebtDetail[] | null> {
   const markets: CompoundV3Market[] = await getAllCompoundV3Markets();
 

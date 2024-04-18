@@ -169,9 +169,8 @@ function parseMarketsQueryResult(queryResult: any): MorphoBlueMarket[] {
 }
 
 export async function getRecommendedDebtDetail(
-  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
-  existingMarket: Market | MorphoBlueMarket | CompoundV3Market,
-  protocol: Protocol
+  protocol: Protocol,
+  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition
 ): Promise<MorphoBlueRecommendedDebtDetail[] | null> {
   const markets: MorphoBlueMarket[] = await getMarkets();
 

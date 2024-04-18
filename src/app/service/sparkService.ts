@@ -1,6 +1,12 @@
 import { BaseAaveService } from "./BaseAaveService";
 import { Address } from "abitype";
-import { Protocol } from "../type/type";
+import {
+  CompoundV3DebtPosition,
+  DebtPosition,
+  MorphoBlueDebtPosition,
+  Protocol,
+  RecommendedDebtDetail
+} from "../type/type";
 
 // Contract addresses are used from https://docs.sparkprotocol.io/developers/deployed-contracts/mainnet-addresses
 const baseAaveService = new BaseAaveService(
@@ -11,4 +17,23 @@ const baseAaveService = new BaseAaveService(
 
 export async function getUserDebtDetails(userAddress: Address) {
   return baseAaveService.getUserDebtDetails(userAddress);
+}
+
+/**
+ * Provides recommended debt details for a given debt position
+ * @param debtPosition the existing debt position which needs to be refinanced
+ * @returns recommended debt details or null if no recommendations are available
+ */
+export async function getRecommendedDebtDetail(
+  protocol: Protocol,
+  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
+  maxLTVTolerance: number,
+  borrowingAPYTolerance: number
+): Promise<RecommendedDebtDetail | null> {
+  return baseAaveService.getRecommendedDebtDetail(
+    protocol,
+    debtPosition,
+    maxLTVTolerance,
+    borrowingAPYTolerance
+  );
 }

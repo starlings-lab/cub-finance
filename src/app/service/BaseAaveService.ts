@@ -279,7 +279,6 @@ export class BaseAaveService {
       | DebtPosition
       | MorphoBlueDebtPosition
       | CompoundV3DebtPosition,
-    existingDebtMarket: Market | MorphoBlueMarket | CompoundV3Market,
     maxLTVTolerance = 0.1, // 10%
     borrowingAPYTolerance = 0.03 // 3%
   ): Promise<RecommendedDebtDetail | null> {
@@ -357,9 +356,20 @@ export class BaseAaveService {
       if (newCollateralMarkets && newCollateralMarkets.size > 0) {
         // Verify if pool has enough liquidity to borrow
         if (checkBorrowingAvailability(debtReserve, existingDebt.amount)) {
+          // Determine new collateral amounts
+          const newCollaterals = Array.from(newCollateralMarkets.values()).map(
+            (collateralMarket: Market) => {
+              const collateralToken = collateralMarket.underlyingAsset;
+              return existingCollateralAmountByAddress.get(
+                collateralToken.address.toLowerCase()
+              )!;
+            }
+          );
+
           // Verify that new max ltv is within tolerance
           const { isMaxLTVAcceptable, newMaxLTV } = validateMaxLTV(
             debtPosition.maxLTV,
+            newCollaterals,
             Array.from(newCollateralMarkets.keys()),
             reservesMap,
             maxLTVTolerance
@@ -370,15 +380,6 @@ export class BaseAaveService {
                 [debtToken.address.toLowerCase(), newDebtMarket]
               ])
             );
-
-            const newCollaterals = Array.from(
-              newCollateralMarkets.values()
-            ).map((collateralMarket: Market) => {
-              const collateralToken = collateralMarket.underlyingAsset;
-              return existingCollateralAmountByAddress.get(
-                collateralToken.address.toLowerCase()
-              )!;
-            });
 
             const newNetBorrowingApy = calculateNetBorrowingAPY(
               newCollaterals,
@@ -396,8 +397,10 @@ export class BaseAaveService {
                   borrowingAPYTolerance * 100
                 }% better than existing borrowing cost`
               );
+
+              // construct and return new recommended debt detail
               return {
-                protocol: existingProtocol,
+                protocol: Protocol.AaveV3,
                 market: newDebtMarket,
                 debt: createNewDebtPosition(
                   newMaxLTV,
@@ -682,15 +685,35 @@ function calculateNetBorrowingAPYs(
 
 function validateMaxLTV(
   existingMaxLTV: number,
+  newCollaterals: TokenAmount[],
   collateralMarkets: string[],
   reservesMap: Map<string, any>,
   maxLTVTolerance: number
 ) {
-  // calculate avg max LTV of collateral markets
+  // Create a map of collateral amount by address
+  let totalCollateralAmountInUSD = 0;
+  const collateralAmountByAddress = new Map<string, TokenAmount>();
+  newCollaterals.forEach((collateral) => {
+    collateralAmountByAddress.set(
+      collateral.token.address.toLowerCase(),
+      collateral
+    );
+    totalCollateralAmountInUSD += collateral.amountInUSD;
+  });
+
+  // calculate weighted avg max LTV of collateral markets
   const newMaxLTV =
-    collateralMarkets.reduce((acc, currentKey) => {
-      const collateralReserve = reservesMap.get(currentKey);
-      return acc + Number(collateralReserve.baseLTVasCollateral) / 10000;
+    collateralMarkets.reduce((acc, tokenAddress) => {
+      const collateralReserve = reservesMap.get(tokenAddress);
+      const collateralAmount = collateralAmountByAddress.get(
+        tokenAddress.toLowerCase()
+      )!;
+
+      return (
+        acc +
+        (Number(collateralReserve.baseLTVasCollateral) / 10000) *
+          (collateralAmount.amountInUSD / totalCollateralAmountInUSD)
+      );
     }, 0) / collateralMarkets.length;
 
   // new Max ltv should be >= current LTV - maxLTVTolerance
