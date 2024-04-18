@@ -28,9 +28,9 @@ export interface DebtPositionTableRow {
   totalCollateralAmountInUSD: number;
   LTV: number; // debtAmountInUSD / sum of collateralAmountInUSD array
   maxLTV: number;
-  trailing30DaysNetAPY: number;
-  trailing30DaysLendingAPY: number;
-  trailing30DaysBorrowingAPY: number;
+  trailing30DaysNetAPY: number; // negative, 0 or positive
+  trailing30DaysLendingAPY: number; // >=0
+  trailing30DaysBorrowingAPY: number; // >=0
 }
 
 export interface UserDebtDetailsBase {
@@ -56,7 +56,7 @@ export interface CompoundV3UserDebtDetails extends UserDebtDetailsBase {
 export interface DebtPositionBase {
   maxLTV: number;
   LTV: number; // debtAmountInUSD / sum of collateralAmountInUSD array
-  trailing30DaysNetAPY: number;
+  trailing30DaysNetAPY: number; // negative, 0 or positive
 }
 
 export interface DebtPosition extends DebtPositionBase {
@@ -76,12 +76,12 @@ export interface CompoundV3DebtPosition extends DebtPositionBase {
 }
 
 export interface MarketBase {
-  trailing30DaysBorrowingAPY: number; // borrowing cost of a debt token or an underlying asset.
+  trailing30DaysBorrowingAPY: number; // >=0
 }
 
 export interface Market extends MarketBase {
   underlyingAsset: Token;
-  trailing30DaysLendingAPY: number;
+  trailing30DaysLendingAPY: number; // >=0
 }
 
 // collateral doesn't earn yields in MorphoBlue
@@ -107,7 +107,7 @@ export interface RecommendedDebtDetailBase {
   // ((lendingAPY * lendingAmount) - (borrowingAPY * (debtAmount)))/debAmount
   // Positive value means user will earn interest and
   // negative value means user will pay interest.
-  netBorrowingApy: number;
+  trailing30DaysNetAPY: number; // negative, 0 or positive
 }
 
 // Interface for Aave & Spark

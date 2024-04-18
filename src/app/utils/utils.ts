@@ -7,7 +7,7 @@ import {
   UNI,
   LINK,
   cbETH,
-  wstETH,
+  wstETH
 } from "../contracts/ERC20Tokens";
 import { ethers } from "ethers";
 
@@ -27,4 +27,12 @@ export function calculateAPYFromAPR(aprDecimal: number) {
   const apyDecimal =
     Math.pow(1 + aprDecimal / secondsPerYear, secondsPerYear) - 1;
   return apyDecimal;
+}
+
+export function isZeroOrPositive(num: number): num is number {
+  return num >= 0;
+}
+
+export function isZeroOrNegative(num: number): num is number {
+  return num <= 0;
 }
