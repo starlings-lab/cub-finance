@@ -406,7 +406,7 @@ export class BaseAaveService {
                   newCollaterals,
                   debtAndCollateralMarkets
                 ),
-                netBorrowingApy: newNetBorrowingApy
+                trailing30DaysNetAPY: newNetBorrowingApy
               };
             } else {
               console.log("New net borrowing cost is not within tolerance");

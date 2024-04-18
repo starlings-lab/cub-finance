@@ -27,7 +27,11 @@ import {
   Protocol,
   CompoundV3RecommendedDebtDetail
 } from "../type/type";
-import { getTokenByAddress } from "../utils/utils";
+import {
+  getTokenByAddress,
+  isZeroOrPositive,
+  isZeroOrNegative
+} from "../utils/utils";
 import { calculate30DayTrailingBorrowingAndLendingAPYs } from "./defiLlamaDataService";
 
 const provider = new ethers.JsonRpcProvider(ALCHEMY_API_URL_2);
@@ -96,7 +100,7 @@ async function getDebtPositions(
         amountInUSD: amountInUSD
       },
       collaterals: cUSDCcollaterals,
-      trailing30DaysNetAPY: 0
+      trailing30DaysNetAPY: 0 // assign the value in the addMarketsToDebtPositions function
     };
     debtPositions.push(debtPosition);
   }
@@ -127,7 +131,7 @@ async function getDebtPositions(
         amountInUSD: amountInUSD
       },
       collaterals: cWETHcollaterals,
-      trailing30DaysNetAPY: 0
+      trailing30DaysNetAPY: 0 // assign the value in the addMarketsToDebtPositions function
     };
     debtPositions.push(cWETHdebtPosition);
   }
@@ -566,9 +570,14 @@ export async function getRecommendedDebtDetail(
 
   // check if the old borrowing cost - the new borrowing cost > 3%
   matchedMarkets = matchedMarkets.filter((matchedMarket) => {
-    debtPosition.trailing30DaysNetAPY -
-      matchedMarket.trailing30DaysBorrowingAPY >
-      0.03;
+    if (isZeroOrNegative(debtPosition.trailing30DaysNetAPY)) {
+      const spread: number =
+        matchedMarket.trailing30DaysBorrowingAPY -
+        Math.abs(debtPosition.trailing30DaysNetAPY);
+      return spread > 0.03;
+    } else if (isZeroOrPositive(debtPosition.trailing30DaysNetAPY)) {
+      return false;
+    }
   });
 
   const recommendedDebtDetails: CompoundV3RecommendedDebtDetail[] = [];
@@ -623,14 +632,14 @@ export async function getRecommendedDebtDetail(
     const newDebt = {
       maxLTV: newMaxLtV as number,
       LTV: newLtv,
-      trailing30DaysNetAPY: matchedMarket.trailing30DaysBorrowingAPY,
+      trailing30DaysNetAPY: 0 - matchedMarket.trailing30DaysBorrowingAPY,
       debt: matchedDebtToken,
       collaterals: matchedCollaterals as TokenAmount[]
     };
 
     recommendedDebtDetails.push({
       protocol: Protocol.MorphoBlue,
-      netBorrowingApy: matchedMarket.trailing30DaysBorrowingAPY,
+      trailing30DaysNetAPY: 0 - matchedMarket.trailing30DaysBorrowingAPY,
       debt: newDebt,
       market: matchedMarket
     });

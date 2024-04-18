@@ -13,6 +13,7 @@ import {
   TokenAmount,
   Token
 } from "../type/type";
+import { isZeroOrNegative, isZeroOrPositive } from "../utils/utils";
 import { MORPHO_GRAPHQL_URL } from "../constants";
 import { i } from "mathjs";
 
@@ -238,9 +239,14 @@ export async function getRecommendedDebtDetail(
 
   // check if the old borrowing cost - the new borrowing cost > 3%
   matchedMarkets = matchedMarkets.filter((matchedMarket) => {
-    existingMarket.trailing30DaysBorrowingAPY -
-      matchedMarket.trailing30DaysBorrowingAPY >
-      0.03;
+    if (isZeroOrNegative(debtPosition.trailing30DaysNetAPY)) {
+      const spread: number =
+        matchedMarket.trailing30DaysBorrowingAPY -
+        Math.abs(debtPosition.trailing30DaysNetAPY);
+      return spread > 0.03;
+    } else if (isZeroOrPositive(debtPosition.trailing30DaysNetAPY)) {
+      return false;
+    }
   });
 
   const recommendedDebtDetails: MorphoBlueRecommendedDebtDetail[] = [];
@@ -282,7 +288,7 @@ export async function getRecommendedDebtDetail(
     };
     recommendedDebtDetails.push({
       protocol: Protocol.MorphoBlue,
-      netBorrowingApy: 0 - matchedMarket.trailing30DaysBorrowingAPY,
+      trailing30DaysNetAPY: 0 - matchedMarket.trailing30DaysBorrowingAPY,
       debt: newDebt,
       market: matchedMarket
     });
