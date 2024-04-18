@@ -526,12 +526,12 @@ export async function getRecommendedDebtDetail(
   });
 
   // check if the new max LTV >= (the old max LTV - 5%)
+  let newMaxLtV: number | undefined;
   matchedMarkets = matchedMarkets.filter(async (matchedMarket) => {
     const matchedMarketContract =
       matchedMarket.debtToken.address === USDC.address
         ? CompoundV3cUSDC
         : CompoundV3cWETH;
-    let newMaxLtV;
     if (
       protocol === Protocol.AaveV3 ||
       protocol === Protocol.Spark ||
@@ -560,48 +560,69 @@ export async function getRecommendedDebtDetail(
       0.03;
   });
 
-  // const recommendedDebtDetails: CompoundV3RecommendedDebtDetail[] = [];
-  // matchedMarkets.forEach((matchedMarket) => {
-  //   let matchedDebtToken: TokenAmount;
-  //   if (protocol === Protocol.AaveV3 || protocol === Protocol.Spark) {
-  //     matchedDebtToken = (debtPosition as DebtPosition).debts.find(
-  //       (debt) => debt.token.address === matchedMarket.debtToken.address
-  //     ) as TokenAmount;
-  //   } else if (protocol === Protocol.CompoundV3) {
-  //     matchedDebtToken = (debtPosition as CompoundV3DebtPosition).debt;
-  //   } else if (protocol === Protocol.MorphoBlue) {
-  //     matchedDebtToken = (debtPosition as MorphoBlueDebtPosition).debt;
-  //   }
+  const recommendedDebtDetails: CompoundV3RecommendedDebtDetail[] = [];
+  matchedMarkets.forEach(async (matchedMarket) => {
+    let matchedDebtToken: TokenAmount;
+    if (protocol === Protocol.AaveV3 || protocol === Protocol.Spark) {
+      matchedDebtToken = (debtPosition as DebtPosition).debts.find(
+        (debt) => debt.token.address === matchedMarket.debtToken.address
+      ) as TokenAmount;
+    } else if (
+      protocol === Protocol.CompoundV3 ||
+      protocol === Protocol.MorphoBlue
+    ) {
+      matchedDebtToken = (
+        (debtPosition as CompoundV3DebtPosition) ||
+        (debtPosition as MorphoBlueDebtPosition)
+      ).debt;
+    } else {
+      return null;
+    }
 
-  //   let matchedCollateral: TokenAmount;
-  //   if (protocol === Protocol.AaveV3 || protocol === Protocol.Spark) {
-  //     matchedCollateral = (debtPosition as DebtPosition).collaterals.find(
-  //       (collateral) =>
-  //         collateral.token.address === matchedMarket.collateralToken.address
-  //     ) as TokenAmount;
-  //   } else if (protocol === Protocol.CompoundV3) {
-  //     matchedCollateral = (
-  //       debtPosition as CompoundV3DebtPosition
-  //     ).collaterals.find(
-  //       (collateral) =>
-  //         collateral.token.address === matchedMarket.collateralToken.address
-  //     ) as TokenAmount;
-  //   } else {
-  //     matchedCollateral = (debtPosition as MorphoBlueDebtPosition).collateral;
-  //   }
-  //   const newDebt = {
-  //     maxLTV: matchedMarket.maxLTV,
-  //     LTV: matchedDebtToken!.amountInUSD / matchedCollateral.amountInUSD,
-  //     marketId: matchedMarket.marketId,
-  //     debt: matchedDebtToken!,
-  //     collateral: matchedCollateral
-  //   };
-  //   recommendedDebtDetails.push({
-  //     protocol: Protocol.MorphoBlue,
-  //     netBorrowingApy: matchedMarket.trailing30DaysBorrowingAPY,
-  //     debt: newDebt,
-  //     market: matchedMarket
-  //   });
-  // });
-  // return recommendedDebtDetails;
+    let matchedCollaterals: TokenAmount[] | TokenAmount;
+    if (
+      protocol === Protocol.AaveV3 ||
+      protocol === Protocol.Spark ||
+      protocol === Protocol.CompoundV3
+    ) {
+      matchedCollaterals = (
+        (debtPosition as DebtPosition) ||
+        (debtPosition as CompoundV3DebtPosition)
+      ).collaterals.filter((collateral) =>
+        matchedMarket.collateralTokens.some(
+          (collateralInMarket) =>
+            collateral.token.address === collateralInMarket.address
+        )
+      ) as TokenAmount[] | TokenAmount;
+    } else {
+      matchedCollaterals = (debtPosition as MorphoBlueDebtPosition).collateral;
+    }
+
+    const matchedMarketContract =
+      matchedMarket.debtToken.address === USDC.address
+        ? CompoundV3cUSDC
+        : CompoundV3cWETH;
+
+    let newLtv: number = await getLtv(
+      matchedMarketContract,
+      BigInt(matchedDebtToken.amountInUSD),
+      matchedCollaterals as TokenAmount[]
+    );
+
+    const newDebt = {
+      maxLTV: newMaxLtV as number,
+      LTV: newLtv,
+      trailing30DaysNetAPY: matchedMarket.trailing30DaysBorrowingAPY,
+      debt: matchedDebtToken,
+      collaterals: matchedCollaterals as TokenAmount[]
+    };
+
+    recommendedDebtDetails.push({
+      protocol: Protocol.MorphoBlue,
+      netBorrowingApy: matchedMarket.trailing30DaysBorrowingAPY,
+      debt: newDebt,
+      market: matchedMarket
+    });
+  });
+  return recommendedDebtDetails;
 }
