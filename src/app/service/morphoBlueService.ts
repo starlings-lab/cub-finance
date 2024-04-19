@@ -61,7 +61,12 @@ export async function getMorphoBlueUserDebtDetails(
     )
     .catch((error) => {
       console.error(error);
-      throw error;
+      return {
+        protocol: Protocol.MorphoBlue,
+        userAddress: address,
+        markets: [],
+        debtPositions: []
+      };
     });
 }
 
@@ -69,6 +74,19 @@ function parseMarketPositionsQueryResult(
   queryResult: any,
   address: Address
 ): MorphoBlueUserDebtDetails {
+  if (
+    !queryResult.userByAddress ||
+    !queryResult.userByAddress.marketPositions ||
+    queryResult.userByAddress.marketPositions.length === 0
+  ) {
+    return {
+      protocol: Protocol.MorphoBlue,
+      userAddress: address,
+      markets: [],
+      debtPositions: []
+    };
+  }
+
   // Parse out the debt positions and markets
   const markets: Map<string, MorphoBlueMarket> = new Map();
   const debtPositions: MorphoBlueDebtPosition[] = [];

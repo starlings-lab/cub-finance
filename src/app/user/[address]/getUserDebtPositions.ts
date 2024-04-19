@@ -24,8 +24,8 @@ export async function getUserDebtPositions(address: Address) {
   return await Promise.all([
     getAaveDebtDetails(address),
     getSparkDebtDetails(address),
-    getCompoundV3DebtDetails(address)
-    // getMorphoBlueDebtDetails(1, address)
+    getCompoundV3DebtDetails(address),
+    getMorphoBlueDebtDetails(1, address)
   ]).then((results) => {
     const allDebtPositions: DebtPositionTableRow[] = [];
 

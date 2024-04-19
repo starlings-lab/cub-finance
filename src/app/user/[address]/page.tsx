@@ -15,7 +15,7 @@ export default async function DebtPage({
   const debtPositions: DebtPositionTableRow[] = await getUserDebtPositions(
     userAddress as Address
   );
-  console.dir(debtPositions, { depth: null });
+  // console.dir(debtPositions, { depth: null });
 
   return (
     <div>

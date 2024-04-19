@@ -17,28 +17,15 @@ import {
 import Link from "next/link";
 
 export default function Home() {
-  const [value, setValue] = useState<string>(
-    "0x00171ab2f44c1c9b21c7696eb1a5c601f05a9167"
-  );
+  // TODO: remove test users
+  const aaveUser = "0x00171ab2f44c1c9b21c7696eb1a5c601f05a9167";
+  const compoundUser1 = "0xfe99cc4664a939f826dbeb545c1aad4c89ee737a";
+  const compoundUser2 = "0x9CF423E929d661a0fB25e4AEf05bEB1037298fFb";
+
+  const [value, setValue] = useState<string>(aaveUser);
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setValue(event.target.value);
   };
-
-  // AaveV3 test
-  // getUserDebtDetails("0x00171ab2f44c1c9b21c7696eb1a5c601f05a9167")
-  //   .then((debtDetails) => {
-  //     console.dir(debtDetails, { depth: null });
-  //   })
-  //   .catch((error) => {
-  //     console.error(error);
-  //   });
-
-  // test getCompoundV3UserDebtDetails
-  // const compoundV3UserDebtDetails = await getCompoundV3UserDebtDetails(
-  //   // "0xfe99cc4664a939f826dbeb545c1aad4c89ee737a"
-  //   "0x9CF423E929d661a0fB25e4AEf05bEB1037298fFb"
-  // );
-  // console.dir(compoundV3UserDebtDetails, { depth: null });
 
   // const allRecommendations = await getRecommendations(
   //   Protocol.CompoundV3,

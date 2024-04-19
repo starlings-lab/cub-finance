@@ -1,3 +1,4 @@
+"use client";
 import { DebtPositionTableRow } from "@/app/type/type";
 import { ColumnDef } from "@tanstack/react-table";
 
@@ -9,11 +10,19 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
   },
   {
     header: "Debt Tokens",
-    accessorKey: "debtToken"
+    // accessorKey: "debtToken"
+    accessorFn: (originalRow) => {
+      return originalRow.debtToken.map((token) => token.symbol).join(", ");
+    }
   },
   {
     header: "Collateral Tokens",
-    accessorKey: "collateralTokens"
+    // accessorKey: "collateralTokens"
+    accessorFn: (originalRow) => {
+      return originalRow.collateralTokens
+        .map((token) => token.symbol)
+        .join(", ");
+    }
   },
   {
     header: "Total Debt Amount",
