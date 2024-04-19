@@ -201,18 +201,22 @@ async function getAllCompoundV3Markets(): Promise<CompoundV3Market[]> {
   return markets;
 }
 
-async function getUtilizationRatio(debtTokenAddress: Address): Promise<number> {
-  const UTILIZATION_SCALE = BigInt(10 ** 18);
+export async function getUtilizationRatio(
+  debtTokenAddress: Address
+): Promise<number> {
+  const UTILIZATION_SCALE = 10 ** 18;
   if (debtTokenAddress === USDC.address) {
     let cusdcUtilization: bigint =
       await COMPOUND_V3_CUSDC_CONTRACT.getUtilization();
-    cusdcUtilization = cusdcUtilization / UTILIZATION_SCALE;
-    return Number(cusdcUtilization);
+    const cusdcUtilizationNumber: number =
+      Number(cusdcUtilization) / UTILIZATION_SCALE;
+    return cusdcUtilizationNumber;
   } else if (debtTokenAddress === WETH.address) {
     let cwethUtilization: bigint =
       await COMPOUND_V3_CWETH_CONTRACT.getUtilization();
-    cwethUtilization = cwethUtilization / UTILIZATION_SCALE;
-    return Number(cwethUtilization);
+    const cwethUtilizationNumber: number =
+      Number(cwethUtilization) / UTILIZATION_SCALE;
+    return cwethUtilizationNumber;
   } else {
     throw new Error("Unsupported debt token address");
   }
