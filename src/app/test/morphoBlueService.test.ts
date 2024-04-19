@@ -16,7 +16,12 @@ describe("MorphoBlue Service Tests", () => {
       1,
       MORPHO_DEBT_POSITION_ADDRESS
     );
-    expect(userDebtDetails).toBeDefined();
+    expect(userDebtDetails).toHaveProperty("markets");
+    expect(Array.isArray(userDebtDetails.markets)).toBe(true);
+    expect(userDebtDetails).toHaveProperty("debtPositions");
+    expect(Array.isArray(userDebtDetails.debtPositions)).toBe(true);
+
+    console.log("userDebtDetails", userDebtDetails);
   });
 
   test("getMarkets function should return an array of MorphoBlueMarket", async () => {

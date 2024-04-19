@@ -4,18 +4,14 @@ import {
   DebtPosition,
   MorphoBlueDebtPosition,
   CompoundV3DebtPosition,
-  Market,
   MorphoBlueMarket,
-  CompoundV3Market,
   MorphoBlueUserDebtDetails,
   Protocol,
   MorphoBlueRecommendedDebtDetail,
-  TokenAmount,
-  Token
+  TokenAmount
 } from "../type/type";
 import { isZeroOrNegative, isZeroOrPositive } from "../utils/utils";
 import { MORPHO_GRAPHQL_URL } from "../constants";
-import { i } from "mathjs";
 
 export async function getMorphoBlueUserDebtDetails(
   chainId: number,
