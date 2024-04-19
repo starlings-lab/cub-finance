@@ -1,12 +1,14 @@
-/* eslint-disable @next/next/no-async-client-component */
 "use client";
 import React, { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
 import { getCompoundV3UserDebtDetails } from "./service/compoundV3Service";
 import { getRecommendedDebtDetail } from "./service/aaveV3Service";
 import { Protocol } from "./type/type";
 import { getRecommendations } from "./service/refiananceRecommendationService";
 
-export default async function Home() {
+export default function Home() {
   const [value, setValue] = useState<string>(
     "0xd8da6bf26964af9d7eed9e03e53415d37aa96045"
   );
@@ -24,30 +26,31 @@ export default async function Home() {
   //   });
 
   // test getCompoundV3UserDebtDetails
-  const compoundV3UserDebtDetails = await getCompoundV3UserDebtDetails(
-    // "0xfe99cc4664a939f826dbeb545c1aad4c89ee737a"
-    "0x9CF423E929d661a0fB25e4AEf05bEB1037298fFb"
-  );
-  console.dir(compoundV3UserDebtDetails, { depth: null });
+  // const compoundV3UserDebtDetails = await getCompoundV3UserDebtDetails(
+  //   // "0xfe99cc4664a939f826dbeb545c1aad4c89ee737a"
+  //   "0x9CF423E929d661a0fB25e4AEf05bEB1037298fFb"
+  // );
+  // console.dir(compoundV3UserDebtDetails, { depth: null });
 
-  const allRecommendations = await getRecommendations(
-    Protocol.CompoundV3,
-    compoundV3UserDebtDetails.debtPositions[0]
-  );
-  console.log("All Recommendations: ");
-  console.dir(allRecommendations, { depth: null });
+  // const allRecommendations = await getRecommendations(
+  //   Protocol.CompoundV3,
+  //   compoundV3UserDebtDetails.debtPositions[0]
+  // );
+  // console.log("All Recommendations: ");
+  // console.dir(allRecommendations, { depth: null });
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-lg mb-5">
-        Refinancing, Simplified
-      </div>
+    <main className="flex min-h-screen flex-col items-center">
+      <div className="font-mono text-lg m-5">Refinancing, Simplified</div>
 
       <p>
         ReFi analyzes your existing debt positions and find better terms for
         you.
       </p>
-      <input type="text" value={value} onChange={handleChange} />
+      <div className="flex w-full max-w-sm items-center space-x-2 mt-5">
+        <Input type="text" value={value} onChange={handleChange}></Input>
+        <Button>Find Now</Button>
+      </div>
     </main>
   );
 }
