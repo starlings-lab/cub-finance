@@ -14,13 +14,6 @@ export default async function Home() {
     setValue(event.target.value);
   };
 
-  // test getDebtPositionTableRows from morpho blue service
-  // const debtPositionTableRows = await getMorphoBlueUserDebtDetails(
-  //   1,
-  //   "0xf603265f91f58F1EfA4fAd57694Fb3B77b25fC18"
-  // );
-  // console.dir(debtPositionTableRows, { depth: null });
-
   // AaveV3 test
   // getUserDebtDetails("0x00171ab2f44c1c9b21c7696eb1a5c601f05a9167")
   //   .then((debtDetails) => {

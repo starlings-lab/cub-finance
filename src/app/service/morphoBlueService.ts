@@ -114,7 +114,7 @@ function parseMarketPositionsQueryResult(
   };
 }
 
-function getMarkets(): Promise<MorphoBlueMarket[]> {
+export function getMarkets(): Promise<MorphoBlueMarket[]> {
   const query = gql`
     query {
       markets {
