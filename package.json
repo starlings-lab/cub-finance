@@ -15,6 +15,7 @@
     "@bgd-labs/aave-address-book": "^2.25.0",
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-toast": "^1.1.5",
+    "@tanstack/react-table": "^8.16.0",
     "@types/jest": "^29.5.12",
     "abitype": "^1.0.2",
     "class-variance-authority": "^0.7.0",
