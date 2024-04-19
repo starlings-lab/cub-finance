@@ -1,3 +1,4 @@
+import { COMPOUND_V3_DEBT_POSITION_ADDRESS } from "../contracts/compoundV3";
 import { getCompoundV3UserDebtDetails } from "../service/compoundV3Service";
 import {
   getMorphoBlueUserDebtDetails,
@@ -8,8 +9,6 @@ import { Protocol } from "../type/type";
 
 const MORPHO_DEBT_POSITION_ADDRESS =
   "0xf603265f91f58F1EfA4fAd57694Fb3B77b25fC18";
-const COMPOUND_V3_DEBT_POSITION_ADDRESS =
-  "0x9CF423E929d661a0fB25e4AEf05bEB1037298fFb";
 
 describe("MorphoBlue Service Tests", () => {
   test("getMorphoBlueUserDebtDetails function should return MorphoBlueUserDebtDetails", async () => {
