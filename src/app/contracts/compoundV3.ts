@@ -1,4 +1,6 @@
 import { Address } from "abitype";
+import { ethers, Contract } from "ethers";
+import { ALCHEMY_API_URL_2 } from "../constants";
 import { Token } from "../type/type";
 import {
   COMP,
@@ -10,6 +12,9 @@ import {
   wstETH,
   rETH
 } from "./ERC20Tokens";
+
+export const COMPOUND_V3_DEBT_POSITION_ADDRESS =
+  "0x9CF423E929d661a0fB25e4AEf05bEB1037298fFb";
 
 export const COMPOUND_V3_CUSDC_ADDRESS = `0x${"c3d688B66703497DAA19211EEdff47f25384cdc3"}`;
 export const COMPOUND_V3_CWETH_ADDRESS = `0x${"A17581A9E3356d9A858b789D68B4d866e593aE94"}`;
@@ -1109,3 +1114,17 @@ export const COMPOUND_V3_ABI: object[] = [
     type: "function"
   }
 ];
+
+const provider = new ethers.JsonRpcProvider(ALCHEMY_API_URL_2);
+
+export const COMPOUND_V3_CUSDC_CONTRACT = new Contract(
+  COMPOUND_V3_CUSDC_ADDRESS,
+  COMPOUND_V3_ABI,
+  provider
+);
+
+export const COMPOUND_V3_CWETH_CONTRACT = new Contract(
+  COMPOUND_V3_CWETH_ADDRESS,
+  COMPOUND_V3_ABI,
+  provider
+);

@@ -1,0 +1,118 @@
+import {
+  COMPOUND_V3_DEBT_POSITION_ADDRESS,
+  COMPOUND_V3_CUSDC_ADDRESS,
+  COMPOUND_V3_CWETH_ADDRESS,
+  COMPOUND_V3_CUSDC_CONTRACT,
+  COMPOUND_V3_CWETH_CONTRACT,
+  COMPOUND_V3_CUSDC_COLLATERALS,
+  COMPOUND_V3_CWETH_COLLATERALS
+} from "../contracts/compoundV3";
+import { USDC, WETH } from "../contracts/ERC20Tokens";
+import {
+  getCollateralsByUserAddress,
+  getBorrowBalance,
+  getSupportedCollateral,
+  getSupportedCollateralTokens,
+  getCollateralBalance
+} from "../service/compoundV3Service";
+
+describe("CompoundV3 Service Tests", () => {
+  test("getCollateralsByUserAddress function should return an array of TokenAmount for for CUSDC contract", async () => {
+    const collaterals = await getCollateralsByUserAddress(
+      COMPOUND_V3_CUSDC_CONTRACT,
+      COMPOUND_V3_DEBT_POSITION_ADDRESS
+    );
+
+    expect(Array.isArray(collaterals)).toBe(true);
+    collaterals.forEach((collateral) => {
+      expect(collateral).toHaveProperty("token");
+      expect(collateral).toHaveProperty("amount");
+      expect(collateral).toHaveProperty("amountInUSD");
+    });
+  });
+
+  test("getCollateralsByUserAddress function should return an array of TokenAmount for CWETH contract", async () => {
+    const collaterals = await getCollateralsByUserAddress(
+      COMPOUND_V3_CWETH_CONTRACT,
+      COMPOUND_V3_DEBT_POSITION_ADDRESS
+    );
+    expect(Array.isArray(collaterals)).toBe(true);
+    collaterals.forEach((collateral) => {
+      expect(collateral).toHaveProperty("token");
+      expect(collateral).toHaveProperty("amount");
+      expect(collateral).toHaveProperty("amountInUSD");
+    });
+  });
+
+  test("getBorrowBalance function should return a bigint value for CUSDC contract", async () => {
+    const borrowBalanceCUSDC = await getBorrowBalance(
+      COMPOUND_V3_CUSDC_CONTRACT,
+      COMPOUND_V3_DEBT_POSITION_ADDRESS
+    );
+    expect(typeof borrowBalanceCUSDC).toBe("bigint");
+  });
+
+  test("getBorrowBalance function should return a bigint value for CWETH contract", async () => {
+    const borrowBalanceCWETH = await getBorrowBalance(
+      COMPOUND_V3_CWETH_CONTRACT,
+      COMPOUND_V3_DEBT_POSITION_ADDRESS
+    );
+    expect(typeof borrowBalanceCWETH).toBe("bigint");
+  });
+
+  test("getSupportedCollateral function should return an array of Token for CUSDC and CWETH", () => {
+    const supportedCollateralsCUSDC = getSupportedCollateral(
+      COMPOUND_V3_CUSDC_ADDRESS
+    );
+    expect(Array.isArray(supportedCollateralsCUSDC)).toBe(true);
+    supportedCollateralsCUSDC.forEach((collateral) => {
+      expect(collateral).toHaveProperty("address");
+      expect(collateral).toHaveProperty("symbol");
+      expect(collateral).toHaveProperty("decimals");
+      expect(collateral).toHaveProperty("name");
+    });
+
+    const supportedCollateralsCWETH = getSupportedCollateral(
+      COMPOUND_V3_CWETH_ADDRESS
+    );
+    expect(Array.isArray(supportedCollateralsCWETH)).toBe(true);
+    supportedCollateralsCWETH.forEach((collateral) => {
+      expect(collateral).toHaveProperty("address");
+      expect(collateral).toHaveProperty("symbol");
+      expect(collateral).toHaveProperty("decimals");
+      expect(collateral).toHaveProperty("name");
+    });
+  });
+
+  test("getCollateralBalance function should return a bigint value for CUSDC contract", async () => {
+    const collateralBalancesCUSDC = [];
+    for (const collateral of COMPOUND_V3_CUSDC_COLLATERALS) {
+      const collateralBalance = await getCollateralBalance(
+        COMPOUND_V3_CUSDC_CONTRACT,
+        COMPOUND_V3_DEBT_POSITION_ADDRESS,
+        collateral.address
+      );
+      collateralBalancesCUSDC.push(collateralBalance);
+      expect(typeof collateralBalance).toBe("bigint");
+    }
+    expect(
+      collateralBalancesCUSDC.every((balance) => typeof balance === "bigint")
+    ).toBe(true);
+  });
+
+  test("getCollateralBalance function should return a bigint value for CWETH contract", async () => {
+    const collateralBalancesCWETH = [];
+    for (const collateral of COMPOUND_V3_CWETH_COLLATERALS) {
+      const collateralBalance = await getCollateralBalance(
+        COMPOUND_V3_CWETH_CONTRACT,
+        COMPOUND_V3_DEBT_POSITION_ADDRESS,
+        collateral.address
+      );
+      collateralBalancesCWETH.push(collateralBalance);
+      expect(typeof collateralBalance).toBe("bigint");
+    }
+    expect(
+      collateralBalancesCWETH.every((balance) => typeof balance === "bigint")
+    ).toBe(true);
+  });
+});

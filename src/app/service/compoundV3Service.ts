@@ -1,7 +1,6 @@
 import type { Address } from "abitype";
-import { ethers, Contract } from "ethers";
+import { Contract } from "ethers";
 import {
-  ALCHEMY_API_URL_2,
   DEFILLAMA_COMPOUND_ETH_POOL_ID,
   DEFILLAMA_COMPOUND_USDC_POOL_ID
 } from "../constants";
@@ -11,7 +10,8 @@ import {
   COMPOUND_V3_CUSDC_COLLATERALS,
   COMPOUND_V3_CWETH_COLLATERALS,
   COMPOUND_V3_PRICEFEEDS,
-  COMPOUND_V3_ABI
+  COMPOUND_V3_CUSDC_CONTRACT,
+  COMPOUND_V3_CWETH_CONTRACT
 } from "../contracts/compoundV3";
 import { USDC, WETH } from "../contracts/ERC20Tokens";
 import {
@@ -33,20 +33,6 @@ import {
   isZeroOrNegative
 } from "../utils/utils";
 import { calculate30DayTrailingBorrowingAndLendingAPYs } from "./defiLlamaDataService";
-
-const provider = new ethers.JsonRpcProvider(ALCHEMY_API_URL_2);
-
-const CompoundV3cUSDC = new Contract(
-  COMPOUND_V3_CUSDC_ADDRESS,
-  COMPOUND_V3_ABI,
-  provider
-);
-
-const CompoundV3cWETH = new Contract(
-  COMPOUND_V3_CWETH_ADDRESS,
-  COMPOUND_V3_ABI,
-  provider
-);
 
 const USD_SCALE = BigInt(10 ** 8);
 
@@ -74,17 +60,17 @@ async function getDebtPositions(
 ): Promise<CompoundV3DebtPosition[]> {
   let debtPositions: CompoundV3DebtPosition[] = [];
   const cUSDCBorrowBalance: bigint = await getBorrowBalance(
-    CompoundV3cUSDC,
+    COMPOUND_V3_CUSDC_CONTRACT,
     userAddress
   );
   if (cUSDCBorrowBalance != BigInt(0)) {
     const debtAmountInUSD: bigint = await getDebtUsdPrice(
-      CompoundV3cUSDC,
+      COMPOUND_V3_CUSDC_CONTRACT,
       COMPOUND_V3_PRICEFEEDS.USDC,
       cUSDCBorrowBalance
     );
     const cUSDCcollaterals: TokenAmount[] = await getCollateralsByUserAddress(
-      CompoundV3cUSDC,
+      COMPOUND_V3_CUSDC_CONTRACT,
       userAddress
     );
     const amountInUSD = Number(
@@ -92,8 +78,12 @@ async function getDebtPositions(
     );
 
     const debtPosition: CompoundV3DebtPosition = {
-      maxLTV: await getMaxLtv(CompoundV3cUSDC, cUSDCcollaterals),
-      LTV: await getLtv(CompoundV3cUSDC, amountInUSD, cUSDCcollaterals),
+      maxLTV: await getMaxLtv(COMPOUND_V3_CUSDC_CONTRACT, cUSDCcollaterals),
+      LTV: await getLtv(
+        COMPOUND_V3_CUSDC_CONTRACT,
+        amountInUSD,
+        cUSDCcollaterals
+      ),
       debt: {
         token: USDC,
         amount: cUSDCBorrowBalance,
@@ -105,17 +95,17 @@ async function getDebtPositions(
     debtPositions.push(debtPosition);
   }
   const cWETHBorrowBalance: bigint = await getBorrowBalance(
-    CompoundV3cWETH,
+    COMPOUND_V3_CWETH_CONTRACT,
     userAddress
   );
   if (cWETHBorrowBalance != BigInt(0)) {
     const debtAmountInUSD: bigint = await getDebtUsdPrice(
-      CompoundV3cWETH,
+      COMPOUND_V3_CWETH_CONTRACT,
       COMPOUND_V3_PRICEFEEDS.WETH,
       cWETHBorrowBalance
     );
     const cWETHcollaterals = await getCollateralsByUserAddress(
-      CompoundV3cWETH,
+      COMPOUND_V3_CWETH_CONTRACT,
       userAddress
     );
     const amountInUSD = Number(
@@ -123,8 +113,12 @@ async function getDebtPositions(
     );
 
     const cWETHdebtPosition: CompoundV3DebtPosition = {
-      maxLTV: await getMaxLtv(CompoundV3cWETH, cWETHcollaterals),
-      LTV: await getLtv(CompoundV3cWETH, amountInUSD, cWETHcollaterals),
+      maxLTV: await getMaxLtv(COMPOUND_V3_CWETH_CONTRACT, cWETHcollaterals),
+      LTV: await getLtv(
+        COMPOUND_V3_CWETH_CONTRACT,
+        amountInUSD,
+        cWETHcollaterals
+      ),
       debt: {
         token: WETH,
         amount: cWETHBorrowBalance,
@@ -210,11 +204,13 @@ async function getAllCompoundV3Markets(): Promise<CompoundV3Market[]> {
 async function getUtilizationRatio(debtTokenAddress: Address): Promise<number> {
   const UTILIZATION_SCALE = BigInt(10 ** 18);
   if (debtTokenAddress === USDC.address) {
-    let cusdcUtilization: bigint = await CompoundV3cUSDC.getUtilization();
+    let cusdcUtilization: bigint =
+      await COMPOUND_V3_CUSDC_CONTRACT.getUtilization();
     cusdcUtilization = cusdcUtilization / UTILIZATION_SCALE;
     return Number(cusdcUtilization);
   } else if (debtTokenAddress === WETH.address) {
-    let cwethUtilization: bigint = await CompoundV3cWETH.getUtilization();
+    let cwethUtilization: bigint =
+      await COMPOUND_V3_CWETH_CONTRACT.getUtilization();
     cwethUtilization = cwethUtilization / UTILIZATION_SCALE;
     return Number(cwethUtilization);
   } else {
@@ -239,7 +235,7 @@ async function getBorrowingAPYsByTokenAddress(): Promise<Map<string, number>> {
   });
 }
 
-async function getCollateralsByUserAddress(
+export async function getCollateralsByUserAddress(
   market: Contract,
   userAddress: Address
 ): Promise<TokenAmount[]> {
@@ -273,7 +269,7 @@ async function getCollateralsByUserAddress(
   ) as TokenAmount[];
 }
 
-async function getBorrowBalance(
+export async function getBorrowBalance(
   market: Contract,
   userAddress: Address
 ): Promise<bigint> {
@@ -286,7 +282,7 @@ async function getBorrowBalance(
 }
 
 // there seems to be no easy way to fetch supported collaterals for each market. So we store them as constant values. Even compound.js keeps constant values.
-function getSupportedCollateral(marketAddress: Address): Token[] {
+export function getSupportedCollateral(marketAddress: Address): Token[] {
   try {
     let supportedCollaterals: Token[];
     if (marketAddress === COMPOUND_V3_CUSDC_ADDRESS) {
@@ -307,7 +303,9 @@ function getSupportedCollateral(marketAddress: Address): Token[] {
   }
 }
 
-function getSupportedCollateralTokens(debtTokenAddress?: Address): Token[] {
+export function getSupportedCollateralTokens(
+  debtTokenAddress?: Address
+): Token[] {
   try {
     let supportedCollateralTokens: Token[];
     if (debtTokenAddress === USDC.address) {
@@ -324,7 +322,7 @@ function getSupportedCollateralTokens(debtTokenAddress?: Address): Token[] {
   }
 }
 
-async function getCollateralBalance(
+export async function getCollateralBalance(
   market: Contract,
   userAddress: Address,
   tokenAddress: Address
@@ -548,8 +546,8 @@ export async function getRecommendedDebtDetail(
   matchedMarkets = matchedMarkets.filter(async (matchedMarket) => {
     const matchedMarketContract =
       matchedMarket.debtToken.address === USDC.address
-        ? CompoundV3cUSDC
-        : CompoundV3cWETH;
+        ? COMPOUND_V3_CUSDC_CONTRACT
+        : COMPOUND_V3_CWETH_CONTRACT;
     if (
       protocol === Protocol.AaveV3 ||
       protocol === Protocol.Spark ||
@@ -623,8 +621,8 @@ export async function getRecommendedDebtDetail(
 
     const matchedMarketContract =
       matchedMarket.debtToken.address === USDC.address
-        ? CompoundV3cUSDC
-        : CompoundV3cWETH;
+        ? COMPOUND_V3_CUSDC_CONTRACT
+        : COMPOUND_V3_CWETH_CONTRACT;
 
     let newLtv: number = await getLtv(
       matchedMarketContract,
