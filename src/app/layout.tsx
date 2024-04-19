@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Inter } from "next/font/google";
+import { Toaster } from "@/components/ui/toaster";
+
 import "./globals.css";
 import Navbar from "./navbar";
 import dotenv from "dotenv";
@@ -18,9 +21,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className={inter.className}>
-      <Navbar />
-      {children}
-    </div>
+    <html lang="en">
+      <body className={inter.className}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Navbar />
+        </Suspense>
+        <main className="flex min-h-screen flex-col p-12 pt-16">
+          {children}
+        </main>
+        <Toaster />
+      </body>
+    </html>
   );
 }
