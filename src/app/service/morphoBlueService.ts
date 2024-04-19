@@ -60,7 +60,8 @@ export async function getMorphoBlueUserDebtDetails(
       parseMarketPositionsQueryResult(queryResult, address)
     )
     .catch((error) => {
-      console.error(error);
+      console.log("MorphoBlue query error: ", error);
+
       return {
         protocol: Protocol.MorphoBlue,
         userAddress: address,
