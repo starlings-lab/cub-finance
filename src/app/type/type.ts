@@ -31,6 +31,7 @@ export interface DebtPositionTableRow {
   trailing30DaysNetAPY: number; // negative, 0 or positive
   trailing30DaysLendingAPY: number; // >=0
   trailing30DaysBorrowingAPY: number; // >=0
+  isAggregate: boolean;
 }
 
 export interface UserDebtDetailsBase {

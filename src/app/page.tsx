@@ -18,7 +18,7 @@ import Link from "next/link";
 
 export default function Home() {
   const [value, setValue] = useState<string>(
-    "0xd8da6bf26964af9d7eed9e03e53415d37aa96045"
+    "0x00171ab2f44c1c9b21c7696eb1a5c601f05a9167"
   );
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setValue(event.target.value);
@@ -48,7 +48,7 @@ export default function Home() {
   // console.dir(allRecommendations, { depth: null });
 
   return (
-    <main className="flex min-h-screen flex-col items-center">
+    <div className="flex min-h-screen flex-col items-center">
       <Card className="border-none shadow-none">
         <CardHeader>
           <CardTitle>
@@ -63,13 +63,18 @@ export default function Home() {
             you.
           </CardDescription>
           <div className="flex w-full max-w-sm items-center space-x-2 mt-5">
-            <Input type="text" value={value} onChange={handleChange}></Input>
+            <Input
+              className=""
+              type="text"
+              value={value}
+              onChange={handleChange}
+            ></Input>
             <Button className="bg-[#F43F5E] text-white">
-              <Link href={`/debt?address=${value}`}>Find Now</Link>
+              <Link href={`/user/${value}`}>Find Now</Link>
             </Button>
           </div>
         </CardContent>
       </Card>
-    </main>
+    </div>
   );
 }

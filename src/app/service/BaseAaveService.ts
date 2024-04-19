@@ -103,7 +103,7 @@ export class BaseAaveService {
 
       // Get user's combined account data
       const userAccountData = await this.getUserAccountData(userAddress);
-      console.log("User account data: ", userAccountData);
+      // console.log("User account data: ", userAccountData);
 
       const debts: TokenAmount[] = debtTokens.map((debtToken) => {
         const debtUserReserve = userReservesMap.get(debtToken.address);
