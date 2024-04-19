@@ -7,6 +7,14 @@ import { getCompoundV3UserDebtDetails } from "./service/compoundV3Service";
 import { getRecommendedDebtDetail } from "./service/aaveV3Service";
 import { Protocol } from "./type/type";
 import { getRecommendations } from "./service/refiananceRecommendationService";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
+import Link from "next/link";
 
 export default function Home() {
   const [value, setValue] = useState<string>(
@@ -41,16 +49,27 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center">
-      <div className="font-mono text-lg m-5">Refinancing, Simplified</div>
-
-      <p>
-        ReFi analyzes your existing debt positions and find better terms for
-        you.
-      </p>
-      <div className="flex w-full max-w-sm items-center space-x-2 mt-5">
-        <Input type="text" value={value} onChange={handleChange}></Input>
-        <Button>Find Now</Button>
-      </div>
+      <Card className="border-none shadow-none">
+        <CardHeader>
+          <CardTitle>
+            <div className="font-mono text-xlg m-10">
+              Refinancing, Simplified
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CardDescription className="home-desc">
+            ReFi analyzes your existing debt positions and find better terms for
+            you.
+          </CardDescription>
+          <div className="flex w-full max-w-sm items-center space-x-2 mt-5">
+            <Input type="text" value={value} onChange={handleChange}></Input>
+            <Button className="bg-[#F43F5E] text-white">
+              <Link href={`/debt?address=${value}`}>Find Now</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </main>
   );
 }
