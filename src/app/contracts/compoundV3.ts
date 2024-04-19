@@ -39,7 +39,7 @@ export const COMPOUND_V3_PRICEFEEDS = {
   WETH: `0x${"D72ac1bCE9177CFe7aEb5d0516a38c88a64cE0AB"}` as Address,
   cbETH: `0x${"23a982b74a3236A5F2297856d4391B2edBBB5549"}` as Address,
   wstETH: `0x${"4F67e4d9BD67eFa28236013288737D39AeF48e79"}` as Address,
-  rETH: "" // TODO: add rETH price feed
+  rETH: `0x${"A3A7fB5963D1d69B95EEC4957f77678EF073Ba08"}` as Address
 };
 
 export const COMPOUND_V3_ABI: object[] = [
