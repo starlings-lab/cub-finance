@@ -18,8 +18,6 @@ import {
   Token,
   TokenAmount,
   CompoundV3UserDebtDetails,
-  Market,
-  MorphoBlueMarket,
   CompoundV3Market,
   DebtPosition,
   MorphoBlueDebtPosition,

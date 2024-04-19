@@ -9,14 +9,35 @@ import {
 } from "../contracts/compoundV3";
 import { USDC, WETH } from "../contracts/ERC20Tokens";
 import {
+  getCompoundV3UserDebtDetails,
+  getUtilizationRatio,
   getCollateralsByUserAddress,
   getBorrowBalance,
   getSupportedCollateral,
-  getSupportedCollateralTokens,
   getCollateralBalance
 } from "../service/compoundV3Service";
 
 describe("CompoundV3 Service Tests", () => {
+  test("getCompoundV3UserDebtDetails function should return CompoundV3UserDebtDetails object for a user address", async () => {
+    const userDebtDetails = await getCompoundV3UserDebtDetails(
+      COMPOUND_V3_DEBT_POSITION_ADDRESS
+    );
+
+    expect(userDebtDetails).toHaveProperty("markets");
+    expect(Array.isArray(userDebtDetails.markets)).toBe(true);
+    expect(userDebtDetails).toHaveProperty("debtPositions");
+    expect(Array.isArray(userDebtDetails.debtPositions)).toBe(true);
+    console.log("userDebtDetails", userDebtDetails);
+  });
+
+  test("getUtilizationRatio function should return the utilization ratio for a given debt token address", async () => {
+    const cusdcUtilizationRatio = await getUtilizationRatio(USDC.address);
+    const cwethUtilizationRatio = await getUtilizationRatio(WETH.address);
+
+    expect(typeof cusdcUtilizationRatio).toBe("number");
+    expect(typeof cwethUtilizationRatio).toBe("number");
+  });
+
   test("getCollateralsByUserAddress function should return an array of TokenAmount for for CUSDC contract", async () => {
     const collaterals = await getCollateralsByUserAddress(
       COMPOUND_V3_CUSDC_CONTRACT,
