@@ -1,4 +1,4 @@
-import { AlchemyProvider, Contract } from "ethers";
+import { providers, Contract } from "ethers";
 import {
   CompoundV3DebtPosition,
   CompoundV3Market,
@@ -29,7 +29,7 @@ export class BaseAaveService {
   private protocol: Protocol;
   private poolAddressProvider: Address;
   private uiPoolDataProvider: Address;
-  private provider: AlchemyProvider;
+  private provider: providers.AlchemyProvider;
   private poolDataProviderContract: Contract;
   private poolAddressProviderContract: Contract;
 
@@ -42,7 +42,7 @@ export class BaseAaveService {
     this.poolAddressProvider = poolAddressProvider;
     this.uiPoolDataProvider = uiPoolDataProvider;
 
-    this.provider = new AlchemyProvider(
+    this.provider = new providers.AlchemyProvider(
       1, // MAINNET
       process.env.ALCHEMY_API_KEY_ETH_MAINNET
     );

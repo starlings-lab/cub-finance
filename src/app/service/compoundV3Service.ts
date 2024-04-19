@@ -34,7 +34,7 @@ import {
 } from "../utils/utils";
 import { calculate30DayTrailingBorrowingAndLendingAPYs } from "./defiLlamaDataService";
 
-const provider = new ethers.JsonRpcProvider(ALCHEMY_API_URL_2);
+const provider = new ethers.providers.JsonRpcProvider(ALCHEMY_API_URL_2);
 
 const CompoundV3cUSDC = new Contract(
   COMPOUND_V3_CUSDC_ADDRESS,
