@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -15,6 +15,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Home() {
   // TODO: remove test users
@@ -27,6 +28,24 @@ export default function Home() {
     setValue(event.target.value);
   };
 
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.metaKey && event.key === "k") {
+        // Check for Cmd + K
+        event.preventDefault(); // Prevent default behavior (like browser search)
+        inputRef.current?.focus(); // Focus on the input box
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []); // Run this effect only once on component mount
+
   // const allRecommendations = await getRecommendations(
   //   Protocol.CompoundV3,
   //   compoundV3UserDebtDetails.debtPositions[0]
@@ -35,30 +54,40 @@ export default function Home() {
   // console.dir(allRecommendations, { depth: null });
 
   return (
-    <div className="flex min-h-screen flex-col items-center">
+    <div className="flex min-h-screen pt-20 flex-col items-center">
       <Card className="border-none shadow-none">
         <CardHeader>
           <CardTitle>
-            <div className="font-mono text-xlg m-10">
+            <div className="font-mono text-6xl m-10">
               Refinancing, Simplified
             </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <CardDescription className="home-desc">
+          <CardDescription className="home-desc text-lg font-sans text-center -mt-8">
             ReFi analyzes your existing debt positions and find better terms for
             you.
           </CardDescription>
-          <div className="flex w-full max-w-sm items-center space-x-2 mt-5">
-            <Input
-              className=""
-              type="text"
-              value={value}
-              onChange={handleChange}
-            ></Input>
-            <Button className="bg-[#F43F5E] text-white">
-              <Link href={`/user/${value}`}>Find Now</Link>
-            </Button>
+          <div className="flex w-full items-center justify-center space-x-2">
+            <div className="flex w-full max-w-xl space-x-2 mt-16 py-1 pl-3 pr-1 border rounded-3xl">
+              <Image
+                src={"/search_black.svg"}
+                alt="icon"
+                width="32"
+                height="32"
+              />
+              <Input
+                ref={inputRef}
+                className="placeholder:text-slate-400"
+                type="text"
+                value={value}
+                placeholder="Enter your wallet address"
+                onChange={handleChange}
+              ></Input>
+              <Button className="bg-[#F43F5E] text-white rounded-3xl w-36">
+                <Link href={`/user/${value}`}>Find Now</Link>
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
