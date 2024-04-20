@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function Navbar() {
@@ -13,15 +13,15 @@ export default function Navbar() {
           </div>
 
           <div className="mt-auto mb-auto">
-            <Link target="_blank" href="https://t.me/+WN0vHN-RU2g1ZTkx">
-              <Image
-                className="mr-1 hover:opacity-80"
-                alt="icon"
-                width="32"
-                height="32"
-                src={`/Telegram.svg`}
-              />
-            </Link>
+            <Button className="bg-[#F43F5E3a] hover:bg-[#F43F5E] text-black hover:text-white rounded-3xl w-36">
+              <Link
+                target="_blank"
+                href="https://t.me/+WN0vHN-RU2g1ZTkx"
+                passHref
+              >
+                <p className="text-md font-normal">Talk to us</p>
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
