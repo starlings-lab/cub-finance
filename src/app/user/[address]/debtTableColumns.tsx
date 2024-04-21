@@ -17,7 +17,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
       <div
         className="flex items-center"
         style={{
-          paddingLeft: `${row.depth * 2}rem`
+          paddingLeft: `${row.depth * 1}rem`
         }}
       >
         {row.getCanExpand() ? (
@@ -56,8 +56,21 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
               </svg>
             )}
           </div>
+        ) : row.depth === 1 ? (
+          <svg
+            className="mr-3"
+            xmlns="http://www.w3.org/2000/svg"
+            width="1rem"
+            height="1rem"
+            viewBox="0 0 256 256"
+          >
+            <path
+              fill="currentColor"
+              d="m224.49 136.49l-72 72a12 12 0 0 1-17-17L187 140H40a12 12 0 0 1 0-24h147l-51.49-51.52a12 12 0 0 1 17-17l72 72a12 12 0 0 1-.02 17.01"
+            />
+          </svg>
         ) : (
-          "🔵"
+          ""
         )}{" "}
         {getValue<boolean>()}
       </div>
@@ -70,7 +83,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
       <div
         className="flex"
         style={{
-          paddingLeft: `${row.depth * 2}rem`
+          paddingLeft: `${row.depth * 1}rem`
         }}
       >
         {row.original.debtToken.map((debtToken) => (
@@ -93,7 +106,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
       <div
         className="flex"
         style={{
-          paddingLeft: `${row.depth * 2}rem`
+          paddingLeft: `${row.depth * 1}rem`
         }}
       >
         {row.original.collateralTokens.map((collateralToken) => (

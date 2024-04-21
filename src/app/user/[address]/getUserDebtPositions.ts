@@ -103,7 +103,11 @@ function convertAaveDebtPositions(
     };
     return {
       ...data,
-      subRows: data
+      subRows: [
+        { ...data, subRows: undefined },
+        { ...data, subRows: undefined },
+        { ...data, subRows: undefined }
+      ]
     };
   });
 }
@@ -141,7 +145,7 @@ function convertCompoundDebtPositions(
     };
     return {
       ...data,
-      subRows: data
+      subRows: [{ ...data, subRows: undefined }]
     };
   });
 }
@@ -174,7 +178,7 @@ function convertMorphoDebtPositions(
 
     return {
       ...data,
-      subRows: data
+      subRows: [{ ...data, subRows: undefined }]
     };
   });
 }

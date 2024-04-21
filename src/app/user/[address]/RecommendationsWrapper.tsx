@@ -4,6 +4,9 @@ import { Protocol } from "@/app/type/type";
 import React, { useContext, useEffect, useState } from "react";
 import { StoreContext } from "./context";
 import Loading from "./loading";
+import { DataTable } from "@/components/ui/data-table";
+import { debtTableColumns } from "./debtTableColumns";
+import { RefiTableWrapper } from "./RefiTableWrapper";
 
 const RecommendationsWrapper = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -35,12 +38,22 @@ const RecommendationsWrapper = () => {
     return;
   }
 
-  if (isLoading) {
-    return <Loading />;
-  }
-
   return (
-    <div className="max-w-screen-xl mx-auto py-2">Show recommendation data</div>
+    <div>
+      <div className="mt-5 text-4xl font-medium tracking-wide">
+        Refinance Options
+      </div>
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <div className="max-w-screen-xl mx-auto py-5">
+          <RefiTableWrapper
+            columns={debtTableColumns}
+            data={[state?.activeDebtPosition]}
+          />
+        </div>
+      )}
+    </div>
   );
 };
 

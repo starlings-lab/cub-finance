@@ -4,6 +4,7 @@ import {
   ColumnDef,
   ExpandedState,
   Row,
+  RowSelectionState,
   flexRender,
   getCoreRowModel,
   getExpandedRowModel,
@@ -34,23 +35,28 @@ export function DataTable<TData, TValue>({
   const [expanded, setExpanded] = useState<ExpandedState>({
     0: true
   });
+  const [rowSelection, setRowSelected] = useState<RowSelectionState>({
+    "0.0": true
+  });
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    getRowCanExpand: (row: Row<TData>) => true,
-    autoResetExpanded: true,
+    enableSubRowSelection: true,
+    enableMultiRowSelection: false,
     onExpandedChange: setExpanded,
-    getSubRows: (row) => row.subRows,
+    onRowSelectionChange: setRowSelected,
+    getSubRows: ({ subRows }) => subRows,
     state: {
-      expanded
+      expanded,
+      rowSelection
     }
   });
 
   useEffect(() => {
     if (table.getRow("0")) {
-      state?.setActiveDebtPosition(table.getRow('0').original);
+      state?.setActiveDebtPosition(table.getRow("0").original);
     }
   }, [data]);
 
@@ -76,18 +82,25 @@ export function DataTable<TData, TValue>({
           ))}
         </TableHeader>
         <TableBody>
-          {/* TODO: find a more neat way to add images in the cell*/}
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               <Fragment key={row.id}>
                 <TableRow
                   key={row.id}
                   onClick={(e) => {
-                    table.resetExpanded();
-                    row.toggleExpanded();
-                    state?.setActiveDebtPosition(row.original);
+                    if (row?.depth === 0) {
+                      state?.setActiveDebtPosition(null);
+                      table.resetExpanded();
+                      row.toggleExpanded();
+                    }
+                    if (row?.depth === 1) {
+                      row.toggleSelected();
+                      state?.setActiveDebtPosition(row.original);
+                    }
                   }}
-                  data-state={row.getIsSelected() && "selected"}
+                  data-state={
+                    row?.depth === 1 && row.getIsSelected() && "selected"
+                  }
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -98,41 +111,6 @@ export function DataTable<TData, TValue>({
                     </TableCell>
                   ))}
                 </TableRow>
-                {row.getIsExpanded() && (
-                  <TableRow
-                    key={row.id + "expanded"}
-                    onClick={() => state?.setActiveDebtPosition(row.original)}
-                    data-state={row.getIsExpanded() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      // TODO: add sub rows logic here
-                      <TableCell key={cell.id}>
-                        {cell.column.id === "protocol" ? (
-                          <div className="ml-3 flex min-w-max items-center">
-                            <svg
-                              className="mr-3"
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="1rem"
-                              height="1rem"
-                              viewBox="0 0 256 256"
-                            >
-                              <path
-                                fill="currentColor"
-                                d="m224.49 136.49l-72 72a12 12 0 0 1-17-17L187 140H40a12 12 0 0 1 0-24h147l-51.49-51.52a12 12 0 0 1 17-17l72 72a12 12 0 0 1-.02 17.01"
-                              />
-                            </svg>{" "}
-                            {row.original?.protocol}
-                          </div>
-                        ) : (
-                          flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                )}
               </Fragment>
             ))
           ) : (

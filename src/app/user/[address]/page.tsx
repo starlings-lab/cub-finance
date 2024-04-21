@@ -32,9 +32,6 @@ export default async function DebtPage({
           </Suspense>
         </div>
         <div className="pt-5">
-          <div className="mt-5 text-4xl font-medium tracking-wide">
-            Recommendations
-          </div>
           <Suspense fallback={<Loading />}>
             <RecommendationsWrapper />
           </Suspense>
