@@ -64,7 +64,7 @@ export default function Home() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <CardDescription className="home-desc text-lg font-sans text-center -mt-8">
+          <CardDescription className="home-desc text-lg font-sans text-center -mt-8 tracking-wide">
             ReFi analyzes your existing debt positions and find better terms for
             you.
           </CardDescription>
