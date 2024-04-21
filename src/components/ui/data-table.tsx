@@ -32,7 +32,7 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const state = useContext(StoreContext);
   const [expanded, setExpanded] = useState<ExpandedState>({
-    0:true
+    0: true
   });
   const table = useReactTable({
     data,
@@ -40,6 +40,7 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     getRowCanExpand: (row: Row<TData>) => true,
+    autoResetExpanded: true,
     onExpandedChange: setExpanded,
     getSubRows: (row) => row.subRows,
     state: {
@@ -48,8 +49,10 @@ export function DataTable<TData, TValue>({
   });
 
   useEffect(() => {
-    console.log(data, expanded);
-  }, [data, expanded]);
+    if (table.getRow("0")) {
+      state?.setActiveDebtPosition(table.getRow('0').original);
+    }
+  }, [data]);
 
   return (
     <div className="rounded-md border">
@@ -80,7 +83,9 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   onClick={(e) => {
+                    table.resetExpanded();
                     row.toggleExpanded();
+                    state?.setActiveDebtPosition(row.original);
                   }}
                   data-state={row.getIsSelected() && "selected"}
                 >
@@ -105,7 +110,7 @@ export function DataTable<TData, TValue>({
                         {cell.column.id === "protocol" ? (
                           <div className="ml-3 flex min-w-max items-center">
                             <svg
-                            className="mr-3"
+                              className="mr-3"
                               xmlns="http://www.w3.org/2000/svg"
                               width="1rem"
                               height="1rem"
