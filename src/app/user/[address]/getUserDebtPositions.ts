@@ -75,8 +75,9 @@ function convertAaveDebtPositions(
   );
 
   return userDebtDetails.debtPositions.map((debtPosition, index) => {
-    return {
+    const data = {
       protocol: userDebtDetails.protocol,
+      debtPositions: userDebtDetails?.debtPositions,
       debtToken: debtPosition.debts.map((debt) => debt.token),
       collateralTokens: debtPosition.collaterals.map(
         (collateral) => collateral.token
@@ -100,6 +101,10 @@ function convertAaveDebtPositions(
       )!.trailing30DaysBorrowingAPY,
       isAggregate: index === 0 && debtPosition.debts.length > 1
     };
+    return {
+      ...data,
+      subRows: data
+    };
   });
 }
 
@@ -113,8 +118,9 @@ function convertCompoundDebtPositions(
     }, new Map<string, CompoundV3Market>());
 
   return userDebtDetails.debtPositions.map((debtPosition) => {
-    return {
+    const data = {
       protocol: userDebtDetails.protocol,
+      debtPositions: userDebtDetails?.debtPositions,
       debtToken: [debtPosition.debt.token],
       collateralTokens: debtPosition.collaterals.map(
         (collateral) => collateral.token
@@ -133,6 +139,10 @@ function convertCompoundDebtPositions(
       )!.trailing30DaysBorrowingAPY,
       isAggregate: false
     };
+    return {
+      ...data,
+      subRows: data
+    };
   });
 }
 
@@ -146,8 +156,9 @@ function convertMorphoDebtPositions(
     }, new Map<string, MorphoBlueMarket>());
 
   return userDebtDetails.debtPositions.map((debtPosition) => {
-    return {
+    const data = {
       protocol: userDebtDetails.protocol,
+      debtPositions: userDebtDetails?.debtPositions,
       debtToken: [debtPosition.debt.token],
       collateralTokens: [debtPosition.collateral.token],
       totalDebtAmountInUSD: debtPosition.debt.amountInUSD,
@@ -159,6 +170,11 @@ function convertMorphoDebtPositions(
       trailing30DaysBorrowingAPY: debtMarketsMap.get(debtPosition.marketId)!
         .trailing30DaysBorrowingAPY,
       isAggregate: false
+    };
+
+    return {
+      ...data,
+      subRows: data
     };
   });
 }

@@ -32,6 +32,7 @@ export interface DebtPositionTableRow {
   trailing30DaysLendingAPY: number; // >=0
   trailing30DaysBorrowingAPY: number; // >=0
   isAggregate: boolean;
+  subRows?: DebtPositionTableRow;
 }
 
 export interface UserDebtDetailsBase {
