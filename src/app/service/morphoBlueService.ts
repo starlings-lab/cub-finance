@@ -1,5 +1,6 @@
 import type { Address } from "abitype";
 import { request, gql } from "graphql-request";
+import { MORPHO_BLUE_DEBT_STABLECOINS } from "../contracts/ERC20Tokens";
 import {
   DebtPosition,
   MorphoBlueDebtPosition,
@@ -193,17 +194,31 @@ export async function getRecommendedDebtDetail(
   const debtTokenMatchedMarkets = markets.filter((market) => {
     if (protocol === Protocol.AaveV3 || protocol === Protocol.Spark) {
       return (debtPosition as DebtPosition).debts.some(
-        (debt) => market.debtToken.address === debt.token.address
+        (debt) =>
+          market.debtToken.address === debt.token.address ||
+          MORPHO_BLUE_DEBT_STABLECOINS.some(
+            (debtStablecoin) => debtStablecoin.address === debt.token.address
+          )
       );
     } else if (protocol === Protocol.CompoundV3) {
       return (
         market.debtToken.address ===
-        (debtPosition as CompoundV3DebtPosition).debt.token.address
+          (debtPosition as CompoundV3DebtPosition).debt.token.address ||
+        MORPHO_BLUE_DEBT_STABLECOINS.some(
+          (debtStablecoin) =>
+            debtStablecoin.address ===
+            (debtPosition as CompoundV3DebtPosition).debt.token.address
+        )
       );
     } else if (protocol === Protocol.MorphoBlue) {
       return (
         market.debtToken.address ===
-        (debtPosition as MorphoBlueDebtPosition).debt.token.address
+          (debtPosition as MorphoBlueDebtPosition).debt.token.address ||
+        MORPHO_BLUE_DEBT_STABLECOINS.some(
+          (debtStablecoin) =>
+            debtStablecoin.address ===
+            (debtPosition as CompoundV3DebtPosition).debt.token.address
+        )
       );
     }
   });
