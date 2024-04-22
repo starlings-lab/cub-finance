@@ -1,6 +1,10 @@
 "use client";
 
 import {
+  DebtPositionTableRow,
+  RecommendedDebtDetailTableRow
+} from "@/app/type/type";
+import {
   Table,
   TableBody,
   TableCell,
@@ -16,18 +20,28 @@ import {
 } from "@tanstack/react-table";
 import React from "react";
 
-interface RefiTableWrapperProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+interface RefiTableWrapperProps {
+  debtColumns: ColumnDef<DebtPositionTableRow>[];
+  activeDebtPositionData: DebtPositionTableRow[];
+  recommendedColumns: ColumnDef<RecommendedDebtDetailTableRow>[];
+  recommendationsData: RecommendedDebtDetailTableRow[];
 }
 
-export function RefiTableWrapper<TData, TValue>({
-  columns,
-  data
-}: RefiTableWrapperProps<TData, TValue>) {
-  const table = useReactTable({
-    data,
-    columns,
+export function RefiTableWrapper({
+  debtColumns,
+  activeDebtPositionData,
+  recommendedColumns,
+  recommendationsData
+}: RefiTableWrapperProps) {
+  const debtSelectedTable = useReactTable({
+    data: activeDebtPositionData,
+    columns: debtColumns,
+    getCoreRowModel: getCoreRowModel()
+  });
+
+  const recommendationTable = useReactTable({
+    data: recommendationsData,
+    columns: recommendedColumns,
     getCoreRowModel: getCoreRowModel()
   });
 
@@ -35,7 +49,7 @@ export function RefiTableWrapper<TData, TValue>({
     <div className="rounded-md border">
       <Table>
         <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
+          {debtSelectedTable.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 return (
@@ -52,11 +66,11 @@ export function RefiTableWrapper<TData, TValue>({
             </TableRow>
           ))}
         </TableHeader>
-      </Table>
-      <div className="w-max p-4 font-medium">Selected debt position</div>
-      <Table>
         <TableBody>
-          {table.getRowModel().rows.map((row) => (
+          <TableRow className="hover:bg-white">
+            <div className="w-max p-4 font-medium">Selected debt position</div>
+          </TableRow>
+          {debtSelectedTable.getRowModel().rows.map((row) => (
             <TableRow key={row.id} data-state={"selected"}>
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>
@@ -66,16 +80,13 @@ export function RefiTableWrapper<TData, TValue>({
             </TableRow>
           ))}
         </TableBody>
-      </Table>
 
-      <div className="w-max p-4 font-medium">
-        Refinancing options for debt position
-      </div>
-      {/* TODO: change when real data comes in */}
-      <Table>
         <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
+          <TableRow className="hover:bg-white">
+            <div className="w-max p-4 font-medium">Refinancing options</div>
+          </TableRow>
+          {recommendationTable.getRowModel().rows?.length ? (
+            recommendationTable.getRowModel().rows.map((row) => (
               <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
@@ -94,7 +105,10 @@ export function RefiTableWrapper<TData, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+              <TableCell
+                colSpan={recommendedColumns.length}
+                className="h-24 text-center"
+              >
                 No results.
               </TableCell>
             </TableRow>

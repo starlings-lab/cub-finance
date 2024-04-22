@@ -1,5 +1,8 @@
 "use client";
-import { DebtPositionTableRow } from "@/app/type/type";
+import {
+  DebtPositionTableRow,
+  RecommendedDebtDetailTableRow
+} from "@/app/type/type";
 import { ColumnDef } from "@tanstack/react-table";
 import Image from "next/image";
 
@@ -154,7 +157,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
   },
   // TODO: check if we can shorten the header name
   {
-    header: "Trailing 30 Days Net APY",
+    header: "Net APY",
     // accessorKey: "trailing30DaysNetAPY",
     accessorFn: (originalRow) => {
       return `${(originalRow.trailing30DaysNetAPY * 100).toFixed(2)}%`;
@@ -162,7 +165,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
   },
   // TODO: check if we can shorten the header name
   {
-    header: "Trailing 30 Days Lending APY",
+    header: "Lending APY",
     // accessorKey: "trailing30DaysLendingAPY",
     accessorFn: (originalRow) => {
       return `${(originalRow.trailing30DaysLendingAPY * 100).toFixed(2)}%`;
@@ -170,10 +173,128 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
   },
   // TODO: check if we can shorten the header name
   {
-    header: "Trailing 30 Days Borrowing APY",
+    header: "Borrowing APY",
     // accessorKey: "trailing30DaysBorrowingAPY",
     accessorFn: (originalRow) => {
       return `${(originalRow.trailing30DaysBorrowingAPY * 100).toFixed(2)}%`;
     }
   }
 ];
+
+export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[] =
+  [
+    {
+      header: "Protocol",
+      accessorKey: "protocol",
+      cell: ({ row, getValue }) => (
+        <div
+          className="flex items-center"
+          style={{
+            paddingLeft: `${row.depth * 1}rem`
+          }}
+        >
+          {getValue<boolean>()}
+        </div>
+      )
+    },
+    {
+      header: "Debt Tokens",
+      accessorKey: "debtToken",
+      cell: ({ row, getValue }) => (
+        <div
+          className="flex"
+          style={{
+            paddingLeft: `${row.depth * 1}rem`
+          }}
+        >
+          {row.original.debtToken.map((debtToken) => (
+            <Image
+              key={debtToken.name}
+              src={`/${debtToken.symbol}.png`}
+              alt="USDT"
+              width={"20"}
+              height={"20"}
+              className="mr-1"
+            />
+          ))}
+        </div>
+      )
+    },
+    {
+      header: "Collateral Tokens",
+      accessorKey: "collateralTokens",
+      cell: ({ row, getValue }) => (
+        <div
+          className="flex"
+          style={{
+            paddingLeft: `${row.depth * 1}rem`
+          }}
+        >
+          {row.original.collateralTokens.map((collateralToken) => (
+            <Image
+              key={collateralToken.name}
+              src={`/${collateralToken.symbol}.png`}
+              alt="USDT"
+              width={"20"}
+              height={"20"}
+              className="mr-1"
+            />
+          ))}
+        </div>
+      )
+    },
+    // TODO: check if we can shorten the header name
+    {
+      header: "Total Debt Amount",
+      // accessorKey: "totalDebtAmountInUSD"
+      accessorFn: (originalRow) => {
+        return USDollar.format(originalRow.totalDebtAmountInUSD);
+      }
+    },
+    // TODO: check if we can shorten the header name
+    {
+      header: "Total Collateral Amount",
+      // accessorKey: "totalCollateralAmountInUSD",
+      accessorFn: (originalRow) => {
+        return USDollar.format(originalRow.totalCollateralAmountInUSD);
+      }
+    },
+    {
+      header: "LTV",
+      accessorKey: "LTV",
+      accessorFn: (originalRow) => {
+        return `${(originalRow.LTV * 100).toFixed(2)}%`;
+      }
+    },
+    {
+      header: "Max LTV",
+      // accessorKey: "maxLTV",
+      accessorFn: (originalRow) => {
+        return `${(originalRow.maxLTV * 100).toFixed(2)}%`;
+      }
+    },
+    // TODO: check if we can shorten the header name
+    {
+      header: "Net APY",
+      // accessorKey: "trailing30DaysNetAPY",
+      accessorFn: (originalRow) => {
+        return `${(originalRow.trailing30DaysNetAPY * 100).toFixed(2)}%`;
+      }
+    },
+    // TODO: check if we can shorten the header name
+    {
+      header: "Lending APY",
+      // accessorKey: "trailing30DaysLendingAPY",
+      accessorFn: (originalRow) => {
+        return `${(originalRow.trailing30DaysLendingAPY * 100).toFixed(2)}%`;
+      }
+    },
+    // TODO: check if we can shorten the header name
+    {
+      header: "Borrowing APY",
+      // accessorKey: "trailing30DaysBorrowingAPY",
+      accessorFn: (originalRow) => {
+        return `${(originalRow.trailing30DaysBorrowingAPY * 100).toFixed(2)}%`;
+      }
+    }
+  ];

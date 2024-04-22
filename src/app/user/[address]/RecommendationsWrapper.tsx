@@ -1,38 +1,35 @@
 "use client";
 import { getRecommendations } from "@/app/service/refiananceRecommendationService";
-import { Protocol } from "@/app/type/type";
+import { RecommendedDebtDetailTableRow } from "@/app/type/type";
 import React, { useContext, useEffect, useState } from "react";
 import { StoreContext } from "./context";
 import Loading from "./loading";
-import { DataTable } from "@/components/ui/data-table";
-import { debtTableColumns } from "./debtTableColumns";
+import { debtTableColumns, recommendedTableColumns } from "./debtTableColumns";
 import { RefiTableWrapper } from "./RefiTableWrapper";
 
 const RecommendationsWrapper = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [recommendations, setRecommendations] = useState([]);
+  const [recommendations, setRecommendations] = useState<
+    RecommendedDebtDetailTableRow[]
+  >([]);
 
   const state = useContext(StoreContext);
 
   useEffect(() => {
     const fetchRecommendations = async () => {
       setIsLoading(true);
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 4000);
-
-      // TODO: check here why this call is failing
       const data = await getRecommendations(
         state!.activeDebtPosition?.protocol!,
         state!.activeDebtPosition?.debtPosition!
       );
       console.log("Recommendations: ", data);
-      // setRecommendations(data);
+      setRecommendations(data);
+      setIsLoading(false);
     };
     if (state?.activeDebtPosition) {
       fetchRecommendations();
     }
-  }, [state?.activeDebtPosition]);
+  }, [state]);
 
   if (!state?.activeDebtPosition) {
     return;
@@ -48,8 +45,10 @@ const RecommendationsWrapper = () => {
       ) : (
         <div className="max-w-screen-xl mx-auto py-5">
           <RefiTableWrapper
-            columns={debtTableColumns}
-            data={[state?.activeDebtPosition]}
+            debtColumns={debtTableColumns}
+            activeDebtPositionData={[state?.activeDebtPosition]}
+            recommendationsData={recommendations}
+            recommendedColumns={recommendedTableColumns}
           />
         </div>
       )}

@@ -130,3 +130,16 @@ export interface CompoundV3RecommendedDebtDetail
   debt: CompoundV3DebtPosition; // The recommended/new debt position
   market: CompoundV3Market; // The market where the debt is recommended
 }
+
+export interface RecommendedDebtDetailTableRow {
+  protocol: Protocol;
+  debtToken: Token[];
+  collateralTokens: Token[];
+  totalDebtAmountInUSD: number;
+  totalCollateralAmountInUSD: number;
+  LTV: number; // debtAmountInUSD / sum of collateralAmountInUSD array
+  maxLTV: number;
+  trailing30DaysNetAPY: number; // negative, 0 or positive
+  trailing30DaysLendingAPY: number; // >=0
+  trailing30DaysBorrowingAPY: number; // >=0
+}

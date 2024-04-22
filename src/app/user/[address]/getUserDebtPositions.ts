@@ -145,7 +145,7 @@ function convertCompoundDebtPositions(
     };
     return {
       ...data,
-      subRows: []
+      subRows: undefined
     };
   });
 }
@@ -177,7 +177,7 @@ function convertMorphoDebtPositions(
 
     return {
       ...data,
-      subRows: []
+      subRows: undefined
     };
   });
 }
