@@ -92,6 +92,10 @@ export function DataTable<TData, TValue>({
                       state?.setActiveDebtPosition(null);
                       table.resetExpanded();
                       row.toggleExpanded();
+                      if(!row.getCanExpand()){
+                        row.toggleSelected();
+                        state?.setActiveDebtPosition(row.original);
+                      }
                     }
                     if (row?.depth === 1) {
                       row.toggleSelected();
@@ -99,7 +103,7 @@ export function DataTable<TData, TValue>({
                     }
                   }}
                   data-state={
-                    row?.depth === 1 && row.getIsSelected() && "selected"
+                    ((row?.depth === 1 && row.getIsSelected()) || (row.depth === 0 && !row.getCanExpand())) && "selected"
                   }
                 >
                   {row.getVisibleCells().map((cell) => (
