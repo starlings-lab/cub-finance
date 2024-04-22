@@ -1,3 +1,5 @@
+"use server";
+
 import {
   CompoundV3DebtPosition,
   CompoundV3RecommendedDebtDetail,

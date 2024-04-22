@@ -22,12 +22,12 @@ const RecommendationsWrapper = () => {
       }, 4000);
 
       // TODO: check here why this call is failing
-      // const data = await getRecommendations(
-      //   activeDebtPosition?.protocol,
-      //   activeDebtPosition?.debtPositions?.[0]
-      // );
-
-      //   setRecommendations(data);
+      const data = await getRecommendations(
+        state!.activeDebtPosition?.protocol!,
+        state!.activeDebtPosition?.debtPosition!
+      );
+      console.log("Recommendations: ", data);
+      // setRecommendations(data);
     };
     if (state?.activeDebtPosition) {
       fetchRecommendations();

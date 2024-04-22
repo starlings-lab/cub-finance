@@ -23,7 +23,6 @@ import { MESSARI_GRAPHQL_URL } from "../constants";
 import { getTokenMetadata } from "./tokenService";
 import { calculateAPYFromAPR } from "../utils/utils";
 import { formatReservesAndIncentives, formatReserve } from "@aave/math-utils";
-import { e } from "mathjs";
 
 export class BaseAaveService {
   private protocol: Protocol;

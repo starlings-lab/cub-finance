@@ -41,7 +41,7 @@ export default function Home() {
           <SearchBar
             className="mt-16"
             isHome={true}
-            defaultUserAddress={aaveUser}
+            defaultUserAddress={compoundUser1}
           />
         </CardContent>
       </Card>
