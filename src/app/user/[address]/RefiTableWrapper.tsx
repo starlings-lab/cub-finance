@@ -93,11 +93,6 @@ export function RefiTableWrapper({
                     key={cell.id}
                     className={`${cell.column.id === "protocol" ? "flex" : ""}`}
                   >
-                    {cell.column.id === "protocol" ? (
-                      <div className="mx-2">•</div>
-                    ) : (
-                      ""
-                    )}
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -109,7 +104,7 @@ export function RefiTableWrapper({
                 colSpan={recommendedColumns.length}
                 className="h-24 text-center"
               >
-                No results.
+                No refinancing options found.
               </TableCell>
             </TableRow>
           )}

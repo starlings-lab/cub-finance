@@ -75,6 +75,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
         ) : (
           ""
         )}{" "}
+        <Image src={`/${row.original.protocol}.png`} alt={row.original.protocol} width={20} height={20} className="mr-2"/>
         {getValue<boolean>()}
       </div>
     )
@@ -193,6 +194,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
             paddingLeft: `${row.depth * 1}rem`
           }}
         >
+          <Image src={`/${row.original.protocol}.png`} alt={row.original.protocol} width={20} height={20} className="mr-2"/>
           {getValue<boolean>()}
         </div>
       )
