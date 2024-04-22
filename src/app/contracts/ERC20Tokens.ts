@@ -105,4 +105,7 @@ export const rETH: Token = {
   symbol: "rETH"
 };
 
-export const DEBT_STABLECOINS = [USDC, DAI, USDT, PYUSD, USDA, LUSD, crvUSD];
+export const MORPHO_BLUE_DEBT_STABLECOINS = [USDC, DAI, USDT, PYUSD, USDA];
+export const AAVE_V3_DEBT_STABLECOINS = [USDC, DAI, USDT, PYUSD, LUSD, crvUSD];
+export const COMPOUND_V3_DEBT_STABLECOINS = [USDC];
+export const SPARKFI_DEBT_STABLECOINS = [DAI];
