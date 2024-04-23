@@ -647,11 +647,11 @@ function createNewDebtPosition(
   marketsMap: Map<string, AaveMarket>,
   baseCurrencyData: BaseCurrencyInfo
 ): DebtPosition {
-  const newCollateralAmount = newCollaterals.reduce(
+  const newCollateralAmountInUsd = newCollaterals.reduce(
     (acc, curr) => acc + curr.amountInUSD,
     0
   );
-  let newLTV = existingDebt.amountInUSD / newCollateralAmount;
+  let newLTV = existingDebt.amountInUSD / newCollateralAmountInUsd;
   let newDebt = existingDebt;
 
   if (newLTV > newMaxLTV) {
@@ -659,13 +659,14 @@ function createNewDebtPosition(
     // on the new max LTV and collateral value
     console.log(`New LTV: ${newLTV} is higher than new max LTV: ${newMaxLTV}`);
 
-    const newDebtAmountInUSD = Math.floor(newMaxLTV * newCollateralAmount);
+    const newDebtAmountInUSD = Math.floor(newMaxLTV * newCollateralAmountInUsd);
     // console.dir(marketsMap.get(existingDebt.token.address.toLowerCase()), {
     //   depth: null
     // });
     const priceInUSD = marketsMap.get(
       existingDebt.token.address.toLowerCase()
     )!.priceInMarketReferenceCurrency;
+
     const newDebtAmount =
       (BigInt(newDebtAmountInUSD) *
         BigInt(10 ** existingDebt.token.decimals) *
