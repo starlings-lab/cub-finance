@@ -93,7 +93,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
     accessorKey: "debtToken",
     cell: ({ row, getValue }) => (
       <div
-        className="flex"
+        className="flex w-max"
         style={{
           paddingLeft: `${row.depth * 1}rem`
         }}
@@ -124,7 +124,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
     accessorKey: "collateralTokens",
     cell: ({ row, getValue }) => (
       <div
-        className="flex"
+        className="flex w-max"
         style={{
           paddingLeft: `${row.depth * 1}rem`
         }}
@@ -294,7 +294,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       accessorKey: "debtToken",
       cell: ({ row, getValue }) => (
         <div
-          className="flex"
+          className="flex w-max"
           style={{
             paddingLeft: `${row.depth * 1}rem`
           }}
@@ -325,7 +325,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       accessorKey: "collateralTokens",
       cell: ({ row, getValue }) => (
         <div
-          className="flex"
+          className="flex w-max"
           style={{
             paddingLeft: `${row.depth * 1}rem`
           }}
