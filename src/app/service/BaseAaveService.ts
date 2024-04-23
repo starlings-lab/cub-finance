@@ -404,7 +404,7 @@ export class BaseAaveService {
                 maxLTVTolerance
               );
               if (isMaxLTVAcceptable) {
-                const debtAndCollateralMarkets = new Map<string, Market>(
+                const debtAndCollateralMarkets = new Map<string, AaveMarket>(
                   Array.from(newCollateralMarkets).concat([
                     [debtToken.address.toLowerCase(), newDebtMarket]
                   ])
