@@ -3,8 +3,10 @@ import {
   DebtPositionTableRow,
   RecommendedDebtDetailTableRow
 } from "@/app/type/type";
+import PopoverWrapper from "@/components/ui/popover";
 import { ColumnDef } from "@tanstack/react-table";
 import Image from "next/image";
+import { Fragment } from "react";
 
 let USDollar = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -75,7 +77,13 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
         ) : (
           ""
         )}{" "}
-        <Image src={`/${row.original.protocol}.png`} alt={row.original.protocol} width={20} height={20} className="mr-2"/>
+        <Image
+          src={`/${row.original.protocol}.png`}
+          alt={row.original.protocol}
+          width={20}
+          height={20}
+          className="mr-2 rounded-full"
+        />
         {getValue<boolean>()}
       </div>
     )
@@ -91,13 +99,21 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
         }}
       >
         {row.original.debtToken.map((debtToken) => (
-          <Image
+          <PopoverWrapper
             key={debtToken.name}
-            src={`/${debtToken.symbol}.png`}
-            alt="USDT"
-            width={"20"}
-            height={"20"}
-            className="mr-1"
+            title={
+              <Image
+                key={debtToken.name}
+                src={`/${debtToken.symbol}.png`}
+                alt={debtToken.name}
+                width={"20"}
+                height={"20"}
+                className="mr-1 rounded-full"
+              />
+            }
+            content={
+              <div className="text-sm text-slate-800">{debtToken.name}</div>
+            }
           />
         ))}
       </div>
@@ -114,19 +130,28 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
         }}
       >
         {row.original.collateralTokens.map((collateralToken) => (
-          <Image
+          <PopoverWrapper
             key={collateralToken.name}
-            src={`/${collateralToken.symbol}.png`}
-            alt="USDT"
-            width={"20"}
-            height={"20"}
-            className="mr-1"
+            title={
+              <Image
+                key={collateralToken.name}
+                src={`/${collateralToken.symbol}.png`}
+                alt={collateralToken.name}
+                width={"20"}
+                height={"20"}
+                className="mr-1 rounded-full"
+              />
+            }
+            content={
+              <div className="text-sm text-slate-800">
+                {collateralToken.name}
+              </div>
+            }
           />
         ))}
       </div>
     )
   },
-  // TODO: check if we can shorten the header name
   {
     header: "Total Debt Amount",
     // accessorKey: "totalDebtAmountInUSD"
@@ -134,7 +159,6 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
       return USDollar.format(originalRow.totalDebtAmountInUSD);
     }
   },
-  // TODO: check if we can shorten the header name
   {
     header: "Total Collateral Amount",
     // accessorKey: "totalCollateralAmountInUSD",
@@ -156,26 +180,86 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
       return `${(originalRow.maxLTV * 100).toFixed(2)}%`;
     }
   },
-  // TODO: check if we can shorten the header name
   {
-    header: "Net APY",
-    // accessorKey: "trailing30DaysNetAPY",
+    header: () => (
+      <Fragment>
+        <PopoverWrapper
+          title={
+            <div className="flex">
+              <div className="mr-2">{"Net APY"}</div>
+              <Image
+                src={"/info.svg"}
+                alt={"Trailing 30 days Net APY"}
+                width={20}
+                height={20}
+              />
+            </div>
+          }
+          content={
+            <div className="text-sm text-slate-800">
+              {"Trailing 30 days Net APY"}
+            </div>
+          }
+        />
+      </Fragment>
+    ),
+    accessorKey: "trailing30DaysNetAPY",
     accessorFn: (originalRow) => {
       return `${(originalRow.trailing30DaysNetAPY * 100).toFixed(2)}%`;
     }
   },
-  // TODO: check if we can shorten the header name
   {
-    header: "Lending APY",
-    // accessorKey: "trailing30DaysLendingAPY",
+    header: () => (
+      <Fragment>
+        <PopoverWrapper
+          title={
+            <div className="flex">
+              <div className="mr-2">{"Lending APY"}</div>
+              <Image
+                src={"/info.svg"}
+                alt={"Trailing 30 days Lending APY"}
+                width={20}
+                height={20}
+              />
+            </div>
+          }
+          content={
+            <div className="text-sm text-slate-800">
+              {"Trailing 30 days Lending APY"}
+            </div>
+          }
+        />
+      </Fragment>
+    ),
+    accessorKey: "trailing30DaysLendingAPY",
     accessorFn: (originalRow) => {
       return `${(originalRow.trailing30DaysLendingAPY * 100).toFixed(2)}%`;
     }
   },
-  // TODO: check if we can shorten the header name
   {
-    header: "Borrowing APY",
-    // accessorKey: "trailing30DaysBorrowingAPY",
+    header: () => (
+      <Fragment>
+        <PopoverWrapper
+          title={
+            <div className="flex">
+              <div className="mr-2">{"Borrowing APY"}</div>
+              <Image
+                src={"/info.svg"}
+                alt={"Trailing 30 days Borrowing APY"}
+                width={20}
+                height={20}
+              />
+            </div>
+          }
+          content={
+            <div className="text-sm text-slate-800">
+              {"Trailing 30 days Borrowing APY"}
+            </div>
+          }
+        />
+      </Fragment>
+    ),
+    accessorKey: "trailing30DaysBorrowingAPY",
     accessorFn: (originalRow) => {
       return `${(originalRow.trailing30DaysBorrowingAPY * 100).toFixed(2)}%`;
     }
@@ -194,7 +278,13 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
             paddingLeft: `${row.depth * 1}rem`
           }}
         >
-          <Image src={`/${row.original.protocol}.png`} alt={row.original.protocol} width={20} height={20} className="mr-2"/>
+          <Image
+            src={`/${row.original.protocol}.png`}
+            alt={row.original.protocol}
+            width={20}
+            height={20}
+            className="mr-2 rounded-full"
+          />
           {getValue<boolean>()}
         </div>
       )
@@ -210,13 +300,21 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
           }}
         >
           {row.original.debtToken.map((debtToken) => (
-            <Image
+            <PopoverWrapper
               key={debtToken.name}
-              src={`/${debtToken.symbol}.png`}
-              alt="USDT"
-              width={"20"}
-              height={"20"}
-              className="mr-1"
+              title={
+                <Image
+                  key={debtToken.name}
+                  src={`/${debtToken.symbol}.png`}
+                  alt={debtToken.name}
+                  width={"20"}
+                  height={"20"}
+                  className="mr-1 rounded-full"
+                />
+              }
+              content={
+                <div className="text-sm text-slate-800">{debtToken.name}</div>
+              }
             />
           ))}
         </div>
@@ -233,19 +331,28 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
           }}
         >
           {row.original.collateralTokens.map((collateralToken) => (
-            <Image
+            <PopoverWrapper
               key={collateralToken.name}
-              src={`/${collateralToken.symbol}.png`}
-              alt="USDT"
-              width={"20"}
-              height={"20"}
-              className="mr-1"
+              title={
+                <Image
+                  key={collateralToken.name}
+                  src={`/${collateralToken.symbol}.png`}
+                  alt={collateralToken.name}
+                  width={"20"}
+                  height={"20"}
+                  className="mr-1 rounded-full"
+                />
+              }
+              content={
+                <div className="text-sm text-slate-800">
+                  {collateralToken.name}
+                </div>
+              }
             />
           ))}
         </div>
       )
     },
-    // TODO: check if we can shorten the header name
     {
       header: "Total Debt Amount",
       // accessorKey: "totalDebtAmountInUSD"
@@ -253,7 +360,6 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
         return USDollar.format(originalRow.totalDebtAmountInUSD);
       }
     },
-    // TODO: check if we can shorten the header name
     {
       header: "Total Collateral Amount",
       // accessorKey: "totalCollateralAmountInUSD",
@@ -275,26 +381,86 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
         return `${(originalRow.maxLTV * 100).toFixed(2)}%`;
       }
     },
-    // TODO: check if we can shorten the header name
     {
-      header: "Net APY",
-      // accessorKey: "trailing30DaysNetAPY",
+      header: () => (
+        <Fragment>
+          <PopoverWrapper
+            title={
+              <div className="flex">
+                <div className="mr-2">{"Net APY"}</div>
+                <Image
+                  src={"/info.svg"}
+                  alt={"Trailing 30 days Net APY"}
+                  width={20}
+                  height={20}
+                />
+              </div>
+            }
+            content={
+              <div className="text-sm text-slate-800">
+                {"Trailing 30 days Net APY"}
+              </div>
+            }
+          />
+        </Fragment>
+      ),
+      accessorKey: "trailing30DaysNetAPY",
       accessorFn: (originalRow) => {
         return `${(originalRow.trailing30DaysNetAPY * 100).toFixed(2)}%`;
       }
     },
-    // TODO: check if we can shorten the header name
     {
-      header: "Lending APY",
-      // accessorKey: "trailing30DaysLendingAPY",
+      header: () => (
+        <Fragment>
+          <PopoverWrapper
+            title={
+              <div className="flex">
+                <div className="mr-2">{"Lending APY"}</div>
+                <Image
+                  src={"/info.svg"}
+                  alt={"Trailing 30 days Lending APY"}
+                  width={20}
+                  height={20}
+                />
+              </div>
+            }
+            content={
+              <div className="text-sm text-slate-800">
+                {"Trailing 30 days Lending APY"}
+              </div>
+            }
+          />
+        </Fragment>
+      ),
+      accessorKey: "trailing30DaysLendingAPY",
       accessorFn: (originalRow) => {
         return `${(originalRow.trailing30DaysLendingAPY * 100).toFixed(2)}%`;
       }
     },
-    // TODO: check if we can shorten the header name
     {
-      header: "Borrowing APY",
-      // accessorKey: "trailing30DaysBorrowingAPY",
+      header: () => (
+        <Fragment>
+          <PopoverWrapper
+            title={
+              <div className="flex">
+                <div className="mr-2">{"Borrowing APY"}</div>
+                <Image
+                  src={"/info.svg"}
+                  alt={"Trailing 30 days Borrowing APY"}
+                  width={20}
+                  height={20}
+                />
+              </div>
+            }
+            content={
+              <div className="text-sm text-slate-800">
+                {"Trailing 30 days Borrowing APY"}
+              </div>
+            }
+          />
+        </Fragment>
+      ),
+      accessorKey: "trailing30DaysBorrowingAPY",
       accessorFn: (originalRow) => {
         return `${(originalRow.trailing30DaysBorrowingAPY * 100).toFixed(2)}%`;
       }

@@ -20,7 +20,14 @@ import { request, gql } from "graphql-request";
 import { MESSARI_GRAPHQL_URL } from "../constants";
 import { getTokenMetadata } from "./tokenService";
 import { calculateAPYFromAPR } from "../utils/utils";
-import { formatReservesAndIncentives, formatReserve } from "@aave/math-utils";
+
+interface AaveMarket extends Market {
+  priceInMarketReferenceCurrency: number;
+}
+
+interface BaseCurrencyInfo {
+  marketReferenceCurrencyUnit: bigint;
+}
 
 export class BaseAaveService {
   private protocol: Protocol;
@@ -280,11 +287,11 @@ export class BaseAaveService {
     borrowingAPYTolerance = 0.03 // 3%
   ): Promise<RecommendedDebtDetail | null> {
     // get market reserve data
-    const { reservesMap } = await this.getReservesData();
+    const { reservesMap, baseCurrencyData } = await this.getReservesData();
 
     // get debt & collateral token based on type of debt position
-    let existingDebt = null;
-    let existingCollateralTokens = null;
+    let existingDebt: null;
+    let existingCollateralTokens: null;
     let existingCollateralAmountByAddress = new Map<string, TokenAmount>();
     let existingNetBorrowingApy = 0;
 
@@ -448,7 +455,7 @@ export class BaseAaveService {
         }
         return acc;
       },
-      new Map<string, Market>()
+      new Map<string, AaveMarket>()
     );
     return newCollateralMarkets;
   }
@@ -501,7 +508,7 @@ export class BaseAaveService {
   // Ref: https://docs.aave.com/developers/periphery-contracts/uipooldataproviderv3#aggregatedreservedata
   private async getReservesData(): Promise<{
     reservesMap: Map<string, any>;
-    baseCurrencyData: any;
+    baseCurrencyData: BaseCurrencyInfo;
   }> {
     const { 0: reservesRaw, 1: poolBaseCurrencyRaw } =
       await this.poolDataProviderContract.getReservesData(
@@ -605,7 +612,7 @@ export class BaseAaveService {
   private async getAaveMarket(
     reservesMap: any,
     underlyingAssetToken: Token
-  ): Promise<Market> {
+  ): Promise<AaveMarket> {
     const tokenReserve = reservesMap.get(
       underlyingAssetToken.address.toLowerCase()
     );
@@ -615,7 +622,9 @@ export class BaseAaveService {
       return {
         underlyingAsset: underlyingAssetToken,
         trailing30DaysLendingAPY: trailingDayBorrowingAPY,
-        trailing30DaysBorrowingAPY: trailingDayLendingAPY
+        trailing30DaysBorrowingAPY: trailingDayLendingAPY,
+        priceInMarketReferenceCurrency:
+          tokenReserve.priceInMarketReferenceCurrency
       };
     });
   }
@@ -624,53 +633,80 @@ export class BaseAaveService {
 function createNewDebtPosition(
   newMaxLTV: number,
   existingDebt: TokenAmount,
-  existingCollateralAmountByAddress: Map<string, TokenAmount>,
   newCollaterals: TokenAmount[],
-  marketsMap: Map<string, Market>
+  marketsMap: Map<string, AaveMarket>,
+  baseCurrencyData: BaseCurrencyInfo
 ): DebtPosition {
-  const newLTV =
-    existingDebt.amountInUSD /
-    newCollaterals.reduce((acc, curr) => acc + curr.amountInUSD, 0);
+  const newCollateralAmountInUsd = newCollaterals.reduce(
+    (acc, curr) => acc + curr.amountInUSD,
+    0
+  );
+
+  // Determine new LTV and debt amount based on new max LTV and collateral value
+  let { newLTV, newDebt } = determineNewLTVAndDebtAmount(
+    existingDebt,
+    newCollateralAmountInUsd,
+    newMaxLTV,
+    marketsMap,
+    baseCurrencyData
+  );
+
   return {
     maxLTV: newMaxLTV,
     LTV: newLTV,
-    debts: [existingDebt],
+    debts: [newDebt],
     collaterals: newCollaterals,
     trailing30DaysNetAPY: calculateNetBorrowingAPY(
       newCollaterals,
-      [existingDebt],
+      [newDebt],
       marketsMap
     )
   };
 }
 
-function calculateNetBorrowingAPYs(
-  existingLendingAPY: number,
-  existingBorrowingAPY: number,
-  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
-  newCollateralMarkets: Map<string, Market>,
+function determineNewLTVAndDebtAmount(
+  existingDebt: TokenAmount,
+  newCollateralAmountInUsd: number,
   newMaxLTV: number,
-  debtMarket: Market
+  marketsMap: Map<string, AaveMarket>,
+  baseCurrencyData: BaseCurrencyInfo
 ) {
-  const existingLendingInterest = existingLendingAPY * 100;
-  const existingBorrowingInterest =
-    existingBorrowingAPY * (debtPosition.LTV * 100);
+  let newLTV = existingDebt.amountInUSD / newCollateralAmountInUsd;
+  let newDebt = existingDebt;
 
-  const existingNetBorrowingApy =
-    (existingLendingInterest - existingBorrowingInterest) / 100;
+  if (newLTV > newMaxLTV) {
+    // We need to make a recommendation with reduced debt based
+    // on the new max LTV and collateral value
+    console.log(`New LTV: ${newLTV} is higher than new max LTV: ${newMaxLTV}`);
 
-  console.log("Existing Net borrowing APY: ", existingNetBorrowingApy);
+    const newDebtAmountInUSD = newMaxLTV * newCollateralAmountInUsd;
 
-  // Calculate new borrowing cost assuming an user wants
-  // to use same LTV as an existing LTV but cap it with new max LTV
-  const ltvToUse = debtPosition.LTV > newMaxLTV ? newMaxLTV : debtPosition.LTV;
-  console.log("LTV to use: ", ltvToUse);
-  const newLendingInterest = calculateAvgLendingAPY(newCollateralMarkets) * 100;
-  const newBorrowingInterest =
-    debtMarket.trailing30DaysBorrowingAPY * (ltvToUse * 100);
-  const newNetBorrowingApy = (newLendingInterest - newBorrowingInterest) / 100;
-  console.log("New Net borrowing APY: ", newNetBorrowingApy);
-  return { newNetBorrowingApy, existingNetBorrowingApy };
+    // console.dir(marketsMap.get(existingDebt.token.address.toLowerCase()), {
+    //   depth: null
+    // });
+
+    // Calculate debt token's price in USD
+    const priceInUSD = marketsMap.get(
+      existingDebt.token.address.toLowerCase()
+    )!.priceInMarketReferenceCurrency;
+
+    // new debt amount in token = (newDebtAmountInUSD * 10 ** tokenDecimals) / price in USD
+    const newDebtTokenAmount =
+      (BigInt(Math.floor(newDebtAmountInUSD)) *
+        BigInt(10 ** existingDebt.token.decimals) *
+        baseCurrencyData.marketReferenceCurrencyUnit) /
+      BigInt(priceInUSD);
+
+    newDebt = {
+      ...existingDebt,
+      amountInUSD: newDebtAmountInUSD,
+      amount: newDebtTokenAmount
+    };
+
+    // cap the new LTV to new max LTV
+    newLTV = newMaxLTV;
+  }
+  return { newLTV, newDebt };
 }
 
 function validateMaxLTV(
@@ -699,11 +735,13 @@ function validateMaxLTV(
         tokenAddress.toLowerCase()
       )!;
 
-      return (
-        acc +
-        (Number(collateralReserve.baseLTVasCollateral) / 10000) *
-          (collateralAmount.amountInUSD / totalCollateralAmountInUSD)
-      );
+      const maxLTV = Number(collateralReserve.baseLTVasCollateral) / 10000;
+      const weightedMaxLTV =
+        maxLTV * (collateralAmount.amountInUSD / totalCollateralAmountInUSD);
+      // console.log(
+      //   `Max LTV for ${tokenAddress}: ${maxLTV}, Weighted: ${weightedMaxLTV}`
+      // );
+      return acc + weightedMaxLTV;
     }, 0) / collateralMarkets.length;
 
   // new Max ltv should be >= current LTV - maxLTVTolerance
@@ -782,16 +820,6 @@ function calculateCollateralAmountInBaseCurrency(
     Number((supplyAmountInBaseCurrency * BigInt(10000)) / baseCurrencyUnit) /
     10000
   );
-}
-
-function calculateAvgLendingAPY(collateralMarkets: Map<string, Market>) {
-  const avgApy =
-    Array.from(collateralMarkets.values()).reduce(
-      (acc, curr) => acc + curr.trailing30DaysLendingAPY,
-      0
-    ) / collateralMarkets.size;
-  console.log("Avg lending APY: ", avgApy);
-  return avgApy;
 }
 
 /**
