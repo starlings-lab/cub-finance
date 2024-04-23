@@ -186,7 +186,9 @@ function parseMarketsQueryResult(queryResult: any): MorphoBlueMarket[] {
 
 export async function getRecommendedDebtDetail(
   protocol: Protocol,
-  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition
+  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
+  maxLTVTolerance = 0.1, // 10%
+  borrowingAPYTolerance = 0.03 // 3%
 ): Promise<MorphoBlueRecommendedDebtDetail[] | null> {
   const markets: MorphoBlueMarket[] = await getMarkets();
 
@@ -272,7 +274,7 @@ export async function getRecommendedDebtDetail(
       const spread: number =
         matchedMarket.trailing30DaysBorrowingAPY -
         Math.abs(debtPosition.trailing30DaysNetAPY);
-      return spread > 0.03;
+      return spread > borrowingAPYTolerance;
     } else if (isZeroOrPositive(debtPosition.trailing30DaysNetAPY)) {
       return false;
     }

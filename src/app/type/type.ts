@@ -31,7 +31,9 @@ export interface DebtPositionTableRow {
   trailing30DaysNetAPY: number; // negative, 0 or positive
   trailing30DaysLendingAPY: number; // >=0
   trailing30DaysBorrowingAPY: number; // >=0
-  isAggregate: boolean;
+  subRows?: DebtPositionTableRow[] | undefined;
+  // Original debt position
+  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition;
 }
 
 export interface UserDebtDetailsBase {
@@ -127,4 +129,17 @@ export interface CompoundV3RecommendedDebtDetail
   extends RecommendedDebtDetailBase {
   debt: CompoundV3DebtPosition; // The recommended/new debt position
   market: CompoundV3Market; // The market where the debt is recommended
+}
+
+export interface RecommendedDebtDetailTableRow {
+  protocol: Protocol;
+  debtToken: Token[];
+  collateralTokens: Token[];
+  totalDebtAmountInUSD: number;
+  totalCollateralAmountInUSD: number;
+  LTV: number; // debtAmountInUSD / sum of collateralAmountInUSD array
+  maxLTV: number;
+  trailing30DaysNetAPY: number; // negative, 0 or positive
+  trailing30DaysLendingAPY: number; // >=0
+  trailing30DaysBorrowingAPY: number; // >=0
 }

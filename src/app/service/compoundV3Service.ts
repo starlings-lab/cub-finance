@@ -447,8 +447,33 @@ async function getMaxLtv(
   let maxLtvAmountInUsd = BigInt(0);
   let totalCollateralAmountInUsd = BigInt(0);
 
+  const COLLATERAL_FACTOR_SCALE = BigInt(10 ** 18);
+
+  if (!Array.isArray(collaterals)) {
+    const COLLATERAL_AMOUNT_SCALE = BigInt(10 ** collaterals.token.decimals);
+    let collateralFactor: bigint = await getCollateralFactor(
+      market,
+      collaterals.token
+    );
+    const maxLtvAmountForCollateral: bigint =
+      (collaterals.amount * collateralFactor) /
+      COLLATERAL_FACTOR_SCALE /
+      COLLATERAL_AMOUNT_SCALE;
+    const maxLtvAmountForCollateralInUSD: bigint = await getDebtUsdPrice(
+      market,
+      getPriceFeedFromTokenSymbol(collaterals.token.symbol),
+      maxLtvAmountForCollateral
+    );
+    maxLtvAmountInUsd += maxLtvAmountForCollateralInUSD / USD_SCALE;
+    const collateralAmountInUSD: bigint = await getDebtUsdPrice(
+      market,
+      getPriceFeedFromTokenSymbol(collaterals.token.symbol),
+      collaterals.amount / COLLATERAL_AMOUNT_SCALE
+    );
+    totalCollateralAmountInUsd += collateralAmountInUSD / USD_SCALE;
+  }
+
   const promises = (collaterals as TokenAmount[]).map(async (collateral) => {
-    const COLLATERAL_FACTOR_SCALE = BigInt(10 ** 18);
     const COLLATERAL_AMOUNT_SCALE = BigInt(10 ** collateral.token.decimals);
 
     let collateralFactor: bigint = await getCollateralFactor(
@@ -484,7 +509,9 @@ async function getMaxLtv(
 
 export async function getRecommendedDebtDetail(
   protocol: Protocol,
-  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition
+  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
+  maxLTVTolerance = 0.1, // 10%
+  borrowingAPYTolerance = 0.03 // 3%
 ): Promise<CompoundV3RecommendedDebtDetail[] | null> {
   const markets: CompoundV3Market[] = await getAllCompoundV3Markets();
 
@@ -558,7 +585,7 @@ export async function getRecommendedDebtDetail(
 
   // check if the utilization ratio is small enough
   matchedMarkets = matchedMarkets.filter((matchedMarket) => {
-    matchedMarket.utilizationRatio < 0.98;
+    return matchedMarket.utilizationRatio < 0.98;
   });
 
   // check if the new max LTV >= (the old max LTV - 5%)
@@ -595,7 +622,7 @@ export async function getRecommendedDebtDetail(
       const spread: number =
         matchedMarket.trailing30DaysBorrowingAPY -
         Math.abs(debtPosition.trailing30DaysNetAPY);
-      return spread > 0.03;
+      return spread > borrowingAPYTolerance;
     } else if (isZeroOrPositive(debtPosition.trailing30DaysNetAPY)) {
       return false;
     }

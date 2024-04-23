@@ -1,27 +1,33 @@
-import Image from "next/image";
+"use client";
+import { Button } from "@/components/ui/button";
+import { SearchBar } from "@/components/ui/search-bar";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
+  const pathname = usePathname();
   return (
     <div className="bg-white shadow-sm">
       <div className="mx-auto max-w-8xl px-4 lg:px-8">
         <div className="flex h-16 justify-between">
-          <div className="flex flex-row p-5 ml-5 items-center">
+          <div className="flex flex-row py-5 items-center">
             <Link href="/" passHref>
               <p className="nav-home text-2xl text-[#F43F5E] font-bold">ReFi</p>
             </Link>
           </div>
-
+          {pathname.includes("user") && (
+            <SearchBar isHome={false} defaultUserAddress=""/>
+          )}
           <div className="mt-auto mb-auto">
-            <Link target="_blank" href="https://t.me/+WN0vHN-RU2g1ZTkx">
-              <Image
-                className="mr-1 hover:opacity-80"
-                alt="icon"
-                width="32"
-                height="32"
-                src={`/Telegram.svg`}
-              />
-            </Link>
+            <Button className="bg-[#F43F5E3a] hover:bg-[#F43F5E] text-black hover:text-white rounded-3xl w-36">
+              <Link
+                target="_blank"
+                href="https://t.me/+WN0vHN-RU2g1ZTkx"
+                passHref
+              >
+                <p className="text-md font-normal">Talk to us</p>
+              </Link>
+            </Button>
           </div>
         </div>
       </div>

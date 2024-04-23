@@ -26,7 +26,7 @@ export default function RootLayout({
         <Suspense fallback={<div>Loading...</div>}>
           <Navbar />
         </Suspense>
-        <main className="flex min-h-screen flex-col p-12 pt-16">
+        <main className="flex min-h-screen max-w-screen-xl mx-auto flex-col p-12 pt-16">
           {children}
         </main>
         <Toaster />

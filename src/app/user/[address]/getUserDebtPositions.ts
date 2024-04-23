@@ -24,8 +24,8 @@ export async function getUserDebtPositions(address: Address) {
   return await Promise.all([
     getAaveDebtDetails(address),
     getSparkDebtDetails(address),
-    getCompoundV3DebtDetails(address),
-    getMorphoBlueDebtDetails(1, address)
+    getCompoundV3DebtDetails(address)
+    // getMorphoBlueDebtDetails(1, address)
   ]).then((results) => {
     const allDebtPositions: DebtPositionTableRow[] = [];
 
@@ -74,33 +74,43 @@ function convertAaveDebtPositions(
     new Map<string, Market>()
   );
 
-  return userDebtDetails.debtPositions.map((debtPosition, index) => {
-    return {
-      protocol: userDebtDetails.protocol,
-      debtToken: debtPosition.debts.map((debt) => debt.token),
-      collateralTokens: debtPosition.collaterals.map(
-        (collateral) => collateral.token
-      ),
-      totalDebtAmountInUSD: debtPosition.debts.reduce(
-        (sum, debt) => sum + debt.amountInUSD,
-        0
-      ),
-      totalCollateralAmountInUSD: debtPosition.collaterals.reduce(
-        (sum, collateral) => sum + collateral.amountInUSD,
-        0
-      ),
-      LTV: debtPosition.LTV,
-      maxLTV: debtPosition.maxLTV,
-      trailing30DaysNetAPY: debtPosition.trailing30DaysNetAPY,
-      trailing30DaysLendingAPY: marketMap.get(
-        debtPosition.debts[0].token.address.toLowerCase()
-      )!.trailing30DaysLendingAPY,
-      trailing30DaysBorrowingAPY: marketMap.get(
-        debtPosition.debts[0].token.address.toLowerCase()
-      )!.trailing30DaysBorrowingAPY,
-      isAggregate: index === 0 && debtPosition.debts.length > 1
-    };
-  });
+  const debtPositionTableRows: DebtPositionTableRow[] =
+    userDebtDetails.debtPositions.map((debtPosition, index) => {
+      return {
+        protocol: userDebtDetails.protocol,
+        debtPosition: debtPosition,
+        debtToken: debtPosition.debts.map((debt) => debt.token),
+        collateralTokens: debtPosition.collaterals.map(
+          (collateral) => collateral.token
+        ),
+        totalDebtAmountInUSD: debtPosition.debts.reduce(
+          (sum, debt) => sum + debt.amountInUSD,
+          0
+        ),
+        totalCollateralAmountInUSD: debtPosition.collaterals.reduce(
+          (sum, collateral) => sum + collateral.amountInUSD,
+          0
+        ),
+        LTV: debtPosition.LTV,
+        maxLTV: debtPosition.maxLTV,
+        trailing30DaysNetAPY: debtPosition.trailing30DaysNetAPY,
+        trailing30DaysLendingAPY: marketMap.get(
+          debtPosition.debts[0].token.address.toLowerCase()
+        )!.trailing30DaysLendingAPY,
+        trailing30DaysBorrowingAPY: marketMap.get(
+          debtPosition.debts[0].token.address.toLowerCase()
+        )!.trailing30DaysBorrowingAPY
+      };
+    });
+
+  // if Aave3 has multiple debt positions, then 1st one is aggregated debt position
+  // and rest are individual debt positions
+  const aggregatedDebtPosition = debtPositionTableRows[0];
+  if (debtPositionTableRows.length > 1) {
+    aggregatedDebtPosition.subRows = debtPositionTableRows.splice(1);
+  }
+
+  return [aggregatedDebtPosition];
 }
 
 function convertCompoundDebtPositions(
@@ -113,8 +123,9 @@ function convertCompoundDebtPositions(
     }, new Map<string, CompoundV3Market>());
 
   return userDebtDetails.debtPositions.map((debtPosition) => {
-    return {
+    const data = {
       protocol: userDebtDetails.protocol,
+      debtPosition: debtPosition,
       debtToken: [debtPosition.debt.token],
       collateralTokens: debtPosition.collaterals.map(
         (collateral) => collateral.token
@@ -130,8 +141,11 @@ function convertCompoundDebtPositions(
       trailing30DaysLendingAPY: 0,
       trailing30DaysBorrowingAPY: debtMarketsMap.get(
         debtPosition.debt.token.address.toLowerCase()
-      )!.trailing30DaysBorrowingAPY,
-      isAggregate: false
+      )!.trailing30DaysBorrowingAPY
+    };
+    return {
+      ...data,
+      subRows: undefined
     };
   });
 }
@@ -146,8 +160,9 @@ function convertMorphoDebtPositions(
     }, new Map<string, MorphoBlueMarket>());
 
   return userDebtDetails.debtPositions.map((debtPosition) => {
-    return {
+    const data = {
       protocol: userDebtDetails.protocol,
+      debtPosition: debtPosition,
       debtToken: [debtPosition.debt.token],
       collateralTokens: [debtPosition.collateral.token],
       totalDebtAmountInUSD: debtPosition.debt.amountInUSD,
@@ -157,8 +172,12 @@ function convertMorphoDebtPositions(
       trailing30DaysNetAPY: debtPosition.trailing30DaysNetAPY,
       trailing30DaysLendingAPY: 0,
       trailing30DaysBorrowingAPY: debtMarketsMap.get(debtPosition.marketId)!
-        .trailing30DaysBorrowingAPY,
-      isAggregate: false
+        .trailing30DaysBorrowingAPY
+    };
+
+    return {
+      ...data,
+      subRows: undefined
     };
   });
 }
