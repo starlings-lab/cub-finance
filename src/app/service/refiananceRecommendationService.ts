@@ -37,15 +37,15 @@ export async function getRecommendations(
     ),
     getCompoundRecommendedDebtDetail(
       existingProtocol,
-      debtPosition
-      // maxLTVTolerance,
-      // borrowingAPYTolerance
+      debtPosition,
+      maxLTVTolerance,
+      borrowingAPYTolerance
     ),
     getMorphoRecommendedDebtDetail(
       existingProtocol,
-      debtPosition
-      // maxLTVTolerance,
-      // borrowingAPYTolerance
+      debtPosition,
+      maxLTVTolerance,
+      borrowingAPYTolerance
     )
   ]).then((recommendationResults) => {
     const allRecommendations: (
