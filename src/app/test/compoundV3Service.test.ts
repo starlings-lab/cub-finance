@@ -14,8 +14,14 @@ import {
   getCollateralsByUserAddress,
   getBorrowBalance,
   getSupportedCollateral,
-  getCollateralBalance
+  getCollateralBalance,
+  getRecommendedDebtDetail
 } from "../service/compoundV3Service";
+import { getMorphoBlueUserDebtDetails } from "../service/morphoBlueService";
+import { Protocol } from "../type/type";
+
+const MORPHO_DEBT_POSITION_ADDRESS =
+  "0xf603265f91f58F1EfA4fAd57694Fb3B77b25fC18";
 
 describe("CompoundV3 Service Tests", () => {
   test("getCompoundV3UserDebtDetails function should return CompoundV3UserDebtDetails object for a user address", async () => {
@@ -135,5 +141,39 @@ describe("CompoundV3 Service Tests", () => {
     expect(
       collateralBalancesCWETH.every((balance) => typeof balance === "bigint")
     ).toBe(true);
+  });
+
+  test("getRecommendedDebtDetail function should return an array of CompoundV3RecommendedDebtDetail", async () => {
+    const morphoBlueUserDebtDetails = await getMorphoBlueUserDebtDetails(
+      1,
+      MORPHO_DEBT_POSITION_ADDRESS
+    );
+    // console.log("morphoBlueUserDebtDetails", morphoBlueUserDebtDetails);
+    const recommendedDebtDetails = await Promise.all(
+      morphoBlueUserDebtDetails.debtPositions.map(async (debtPosition) => {
+        return await getRecommendedDebtDetail(
+          Protocol.MorphoBlue,
+          debtPosition
+        );
+      })
+    );
+    recommendedDebtDetails.forEach((recommendedDebtDetails) => {
+      expect(
+        Array.isArray(recommendedDebtDetails) || recommendedDebtDetails === null
+      ).toBe(true);
+      recommendedDebtDetails?.forEach((recommendedDebtDetail) => {
+        expect(recommendedDebtDetail).toHaveProperty(
+          "protocol",
+          Protocol.CompoundV3
+        );
+        expect(recommendedDebtDetail).toHaveProperty(
+          "trailing30DaysNetAPY",
+          expect.any(Number)
+        );
+        expect(recommendedDebtDetail).toHaveProperty("debt");
+        expect(recommendedDebtDetail).toHaveProperty("market");
+      });
+    });
+    console.log("recommendedDebtDetails", recommendedDebtDetails);
   });
 });

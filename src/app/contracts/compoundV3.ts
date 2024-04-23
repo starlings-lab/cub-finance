@@ -1,6 +1,6 @@
 import { Address } from "abitype";
 import { ethers, Contract } from "ethers";
-import { ALCHEMY_API_URL_2 } from "../constants";
+import { ALCHEMY_API_URL } from "../constants";
 import { Token } from "../type/type";
 import {
   COMP,
@@ -1115,7 +1115,7 @@ export const COMPOUND_V3_ABI: object[] = [
   }
 ];
 
-const provider = new ethers.JsonRpcProvider(ALCHEMY_API_URL_2);
+const provider = new ethers.JsonRpcProvider(ALCHEMY_API_URL);
 
 export const COMPOUND_V3_CUSDC_CONTRACT = new Contract(
   COMPOUND_V3_CUSDC_ADDRESS,
