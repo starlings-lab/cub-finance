@@ -293,11 +293,9 @@ export class BaseAaveService {
       case Protocol.Spark:
         const convertedDebtPosition = debtPosition as DebtPosition;
         existingDebt = convertedDebtPosition.debts[0];
-        existingCollateralTokens = convertedDebtPosition.collaterals.map(
-          (collateral) => collateral.token
-        );
         existingNetBorrowingApy = convertedDebtPosition.trailing30DaysNetAPY;
         convertedDebtPosition.collaterals.forEach((collateral) => {
+          existingCollateralTokens.push(collateral.token);
           existingCollateralAmountByAddress.set(
             collateral.token.address.toLowerCase(),
             collateral
@@ -307,8 +305,8 @@ export class BaseAaveService {
       case Protocol.MorphoBlue:
         const morphoBlueDebtPosition = debtPosition as MorphoBlueDebtPosition;
         existingDebt = morphoBlueDebtPosition.debt;
-        existingCollateralTokens = [morphoBlueDebtPosition.debt.token];
         existingNetBorrowingApy = morphoBlueDebtPosition.trailing30DaysNetAPY;
+        existingCollateralTokens = [morphoBlueDebtPosition.debt.token];
         existingCollateralAmountByAddress.set(
           morphoBlueDebtPosition.collateral.token.address.toLowerCase(),
           morphoBlueDebtPosition.collateral
@@ -317,21 +315,18 @@ export class BaseAaveService {
       case Protocol.CompoundV3:
         const compoundV3DebtPosition = debtPosition as CompoundV3DebtPosition;
         existingDebt = compoundV3DebtPosition.debt;
-        existingCollateralTokens = compoundV3DebtPosition.collaterals.map(
-          (collateral) => collateral.token
-        );
+        existingNetBorrowingApy = compoundV3DebtPosition.trailing30DaysNetAPY;
         compoundV3DebtPosition.collaterals.forEach((collateral) => {
+          existingCollateralTokens.push(collateral.token);
           existingCollateralAmountByAddress.set(
             collateral.token.address.toLowerCase(),
             collateral
           );
         });
-        existingNetBorrowingApy = compoundV3DebtPosition.trailing30DaysNetAPY;
         break;
       default:
         throw new Error("Unsupported protocol");
     }
-
     const debtToken = existingDebt.token;
     const debtReserve = reservesMap.get(debtToken!.address.toLowerCase());
     // console.log("Debt reserve", debtReserve);
@@ -387,12 +382,12 @@ export class BaseAaveService {
             const borrowingApySpread =
               newNetBorrowingApy - existingNetBorrowingApy;
 
+            const isBorrowingAPYSpreadAcceptable = borrowingApySpread >= 0.03;
             console.log("Borrowing APY spread: ", borrowingApySpread);
-            if (borrowingApySpread >= 0.03) {
+            if (isBorrowingAPYSpreadAcceptable) {
+              const betterBorrowingCostPercentage = borrowingAPYTolerance * 100;
               console.log(
-                `New borrowing cost is at least ${
-                  borrowingAPYTolerance * 100
-                }% better than existing borrowing cost`
+                `New borrowing cost is at least ${betterBorrowingCostPercentage}% better than existing borrowing cost`
               );
 
               // construct and return new recommended debt detail
