@@ -7,6 +7,48 @@ export const USDC: Token = {
   symbol: "USDC"
 };
 
+export const DAI: Token = {
+  address: `0x${"6B175474E89094C44Da98b954EedeAC495271d0F"}`,
+  name: "Dai Stablecoin",
+  decimals: 18,
+  symbol: "DAI"
+};
+
+export const USDT: Token = {
+  address: `0x${"dAC17F958D2ee523a2206206994597C13D831ec7"}`,
+  name: "Tether USD",
+  decimals: 6,
+  symbol: "USDT"
+};
+
+export const PYUSD: Token = {
+  address: `0x${"6c3ea9036406852006290770BEdFcAbA0e23A0e8"}`,
+  name: "PayPal USD",
+  decimals: 6,
+  symbol: "PYUSD"
+};
+
+export const USDA: Token = {
+  address: `0x${"0000206329b97DB379d5E1Bf586BbDB969C63274"}`,
+  name: "USDA",
+  decimals: 18,
+  symbol: "USDA"
+};
+
+export const LUSD: Token = {
+  address: `0x${"5f98805A4E8be255a32880FDeC7F6728C6568bA0"}`,
+  name: "LUSD Stablecoin",
+  decimals: 18,
+  symbol: "LUSD"
+};
+
+export const crvUSD: Token = {
+  address: `0x${"f939E0A03FB07F59A73314E73794Be0E57ac1b4E"}`,
+  name: "Curve.Fi USD Stablecoin",
+  decimals: 18,
+  symbol: "crvUSD"
+};
+
 export const WETH: Token = {
   address: `0x${"C02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"}`,
   name: "Wrapped Ether",
@@ -62,3 +104,8 @@ export const rETH: Token = {
   decimals: 18,
   symbol: "rETH"
 };
+
+export const MORPHO_BLUE_DEBT_STABLECOINS = [USDC, DAI, USDT, PYUSD, USDA];
+export const AAVE_V3_DEBT_STABLECOINS = [USDC, DAI, USDT, PYUSD, LUSD, crvUSD];
+export const COMPOUND_V3_DEBT_STABLECOINS = [USDC];
+export const SPARKFI_DEBT_STABLECOINS = [DAI];

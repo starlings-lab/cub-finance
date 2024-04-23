@@ -1,11 +1,9 @@
 import { AlchemyProvider, Contract } from "ethers";
 import {
   CompoundV3DebtPosition,
-  CompoundV3Market,
   DebtPosition,
   Market,
   MorphoBlueDebtPosition,
-  MorphoBlueMarket,
   Protocol,
   RecommendedDebtDetail,
   Token,
@@ -20,9 +18,12 @@ import {
 } from "../contracts/aaveV3";
 import { request, gql } from "graphql-request";
 import { MESSARI_GRAPHQL_URL } from "../constants";
+import {
+  SPARKFI_DEBT_STABLECOINS,
+  AAVE_V3_DEBT_STABLECOINS
+} from "../contracts/ERC20Tokens";
 import { getTokenMetadata } from "./tokenService";
 import { calculateAPYFromAPR } from "../utils/utils";
-import { formatReservesAndIncentives, formatReserve } from "@aave/math-utils";
 
 export class BaseAaveService {
   private protocol: Protocol;
@@ -280,13 +281,13 @@ export class BaseAaveService {
       | CompoundV3DebtPosition,
     maxLTVTolerance = 0.1, // 10%
     borrowingAPYTolerance = 0.03 // 3%
-  ): Promise<RecommendedDebtDetail | null> {
+  ): Promise<RecommendedDebtDetail[] | null> {
     // get market reserve data
     const { reservesMap } = await this.getReservesData();
 
     // get debt & collateral token based on type of debt position
-    let existingDebt = null;
-    let existingCollateralTokens = null;
+    let existingDebt: TokenAmount;
+    let existingCollateralTokens: Token[];
     let existingCollateralAmountByAddress = new Map<string, TokenAmount>();
     let existingNetBorrowingApy = 0;
 
@@ -335,102 +336,120 @@ export class BaseAaveService {
     }
 
     const debtToken = existingDebt.token;
-    const debtReserve = reservesMap.get(debtToken!.address.toLowerCase());
-    // console.log("Debt reserve", debtReserve);
-
-    if (
-      debtToken &&
-      debtReserve &&
-      debtReserve.borrowingEnabled &&
-      debtReserve.isActive
-    ) {
-      const newDebtMarket = await this.getAaveMarket(reservesMap, debtToken!);
-
-      // find new collateral markets
-      let newCollateralMarkets = await this.fetchCollateralMarkets(
-        existingCollateralTokens,
-        reservesMap
+    const DEBT_STABLECOINS = [
+      ...SPARKFI_DEBT_STABLECOINS,
+      ...AAVE_V3_DEBT_STABLECOINS
+    ];
+    const debtIsStablecoin = DEBT_STABLECOINS.some(
+      (token) =>
+        token.address.toLowerCase() === debtToken?.address.toLowerCase()
+    );
+    let debtReserves;
+    if (!debtIsStablecoin) {
+      debtReserves = reservesMap.get(debtToken.address.toLowerCase());
+    } else if (debtIsStablecoin) {
+      debtReserves = DEBT_STABLECOINS.map((token) =>
+        reservesMap.get(token.address.toLowerCase())
       );
+    }
+    // console.log("Debt reserves", debtReserves);
 
-      if (newCollateralMarkets && newCollateralMarkets.size > 0) {
-        // Verify if pool has enough liquidity to borrow
-        if (checkBorrowingAvailability(debtReserve, existingDebt.amount)) {
-          // Determine new collateral amounts
-          const newCollaterals = Array.from(newCollateralMarkets.values()).map(
-            (collateralMarket: Market) => {
+    const recommendedDebtDetails = debtReserves.map(async (debtReserve: any) => {
+      if (
+        debtToken &&
+        debtReserve &&
+        debtReserve.borrowingEnabled &&
+        debtReserve.isActive
+      ) {
+        const newDebtMarket = await this.getAaveMarket(reservesMap, debtToken!);
+
+        // find new collateral markets
+        let newCollateralMarkets = await this.fetchCollateralMarkets(
+          existingCollateralTokens,
+          reservesMap
+        );
+
+        if (newCollateralMarkets && newCollateralMarkets.size > 0) {
+          // Verify if pool has enough liquidity to borrow
+          if (checkBorrowingAvailability(debtReserve, existingDebt.amount)) {
+            // Determine new collateral amounts
+            const newCollaterals = Array.from(
+              newCollateralMarkets.values()
+            ).map((collateralMarket: Market) => {
               const collateralToken = collateralMarket.underlyingAsset;
               return existingCollateralAmountByAddress.get(
                 collateralToken.address.toLowerCase()
               )!;
-            }
-          );
+            });
 
-          // Verify that new max ltv is within tolerance
-          const { isMaxLTVAcceptable, newMaxLTV } = validateMaxLTV(
-            debtPosition.maxLTV,
-            newCollaterals,
-            Array.from(newCollateralMarkets.keys()),
-            reservesMap,
-            maxLTVTolerance
-          );
-          if (isMaxLTVAcceptable) {
-            const debtAndCollateralMarkets = new Map<string, Market>(
-              Array.from(newCollateralMarkets).concat([
-                [debtToken.address.toLowerCase(), newDebtMarket]
-              ])
-            );
-
-            const newNetBorrowingApy = calculateNetBorrowingAPY(
+            // Verify that new max ltv is within tolerance
+            const { isMaxLTVAcceptable, newMaxLTV } = validateMaxLTV(
+              debtPosition.maxLTV,
               newCollaterals,
-              [existingDebt],
-              debtAndCollateralMarkets
+              Array.from(newCollateralMarkets.keys()),
+              reservesMap,
+              maxLTVTolerance
             );
-            console.log("New net borrowing APY: ", newNetBorrowingApy);
-            const borrowingApySpread =
-              newNetBorrowingApy - existingNetBorrowingApy;
-
-            console.log("Borrowing APY spread: ", borrowingApySpread);
-            if (borrowingApySpread >= 0.03) {
-              console.log(
-                `New borrowing cost is at least ${
-                  borrowingAPYTolerance * 100
-                }% better than existing borrowing cost`
+            if (isMaxLTVAcceptable) {
+              const debtAndCollateralMarkets = new Map<string, Market>(
+                Array.from(newCollateralMarkets).concat([
+                  [debtToken.address.toLowerCase(), newDebtMarket]
+                ])
               );
 
-              // construct and return new recommended debt detail
-              return {
-                protocol: Protocol.AaveV3,
-                market: newDebtMarket,
-                debt: createNewDebtPosition(
-                  newMaxLTV,
-                  existingDebt,
-                  existingCollateralAmountByAddress,
-                  newCollaterals,
-                  debtAndCollateralMarkets
-                ),
-                trailing30DaysNetAPY: newNetBorrowingApy
-              };
+              const newNetBorrowingApy = calculateNetBorrowingAPY(
+                newCollaterals,
+                [existingDebt],
+                debtAndCollateralMarkets
+              );
+              console.log("New net borrowing APY: ", newNetBorrowingApy);
+              const borrowingApySpread =
+                newNetBorrowingApy - existingNetBorrowingApy;
+
+              console.log("Borrowing APY spread: ", borrowingApySpread);
+              if (borrowingApySpread >= borrowingAPYTolerance) {
+                console.log(
+                  `New borrowing cost is at least ${
+                    borrowingAPYTolerance * 100
+                  }% better than existing borrowing cost`
+                );
+
+                // construct and return new recommended debt detail
+                return {
+                  protocol: Protocol.AaveV3,
+                  market: newDebtMarket,
+                  debt: createNewDebtPosition(
+                    newMaxLTV,
+                    existingDebt,
+                    existingCollateralAmountByAddress,
+                    newCollaterals,
+                    debtAndCollateralMarkets
+                  ),
+                  trailing30DaysNetAPY: newNetBorrowingApy
+                };
+              } else {
+                console.log("New net borrowing cost is not within tolerance");
+                return null;
+              }
             } else {
-              console.log("New net borrowing cost is not within tolerance");
+              console.log("New max LTV is not within tolerance");
+
               return null;
             }
           } else {
-            console.log("New max LTV is not within tolerance");
-
+            console.log("Debt market doesn't have enough liquidity to borrow");
             return null;
           }
         } else {
-          console.log("Debt market doesn't have enough liquidity to borrow");
+          console.log("Collateral market doesn't exist");
           return null;
         }
       } else {
-        console.log("Collateral market doesn't exist");
+        console.log("There is no debt token market for position", debtPosition);
         return null;
       }
-    } else {
-      console.log("There is no debt token market for position", debtPosition);
-      return null;
-    }
+    });
+    return recommendedDebtDetails;
   }
 
   private async fetchCollateralMarkets(
