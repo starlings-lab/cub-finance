@@ -423,9 +423,9 @@ export class BaseAaveService {
       debt: createNewDebtPosition(
         newMaxLTV,
         existingDebt,
-        existingCollateralAmountByAddress,
         newCollaterals,
-        debtAndCollateralMarkets
+        debtAndCollateralMarkets,
+        baseCurrencyData
       ),
       trailing30DaysNetAPY: newNetBorrowingApy
     };
