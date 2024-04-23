@@ -82,7 +82,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           alt={row.original.protocol}
           width={20}
           height={20}
-          className="mr-2"
+          className="mr-2 rounded-full"
         />
         {getValue<boolean>()}
       </div>
@@ -108,7 +108,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
                 alt={debtToken.name}
                 width={"20"}
                 height={"20"}
-                className="mr-1"
+                className="mr-1 rounded-full"
               />
             }
             content={
@@ -139,7 +139,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
                 alt={collateralToken.name}
                 width={"20"}
                 height={"20"}
-                className="mr-1"
+                className="mr-1 rounded-full"
               />
             }
             content={
@@ -283,7 +283,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
             alt={row.original.protocol}
             width={20}
             height={20}
-            className="mr-2"
+            className="mr-2 rounded-full"
           />
           {getValue<boolean>()}
         </div>
@@ -309,7 +309,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
                   alt={debtToken.name}
                   width={"20"}
                   height={"20"}
-                  className="mr-1"
+                  className="mr-1 rounded-full"
                 />
               }
               content={
@@ -340,7 +340,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
                   alt={collateralToken.name}
                   width={"20"}
                   height={"20"}
-                  className="mr-1"
+                  className="mr-1 rounded-full"
                 />
               }
               content={
