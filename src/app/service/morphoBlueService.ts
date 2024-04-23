@@ -56,21 +56,19 @@ export async function getMorphoBlueUserDebtDetails(
     }
   `;
 
-  return request(MORPHO_GRAPHQL_URL, query)
-    .then((queryResult) =>
-      parseMarketPositionsQueryResult(queryResult, address)
-    )
-    .catch((error) => {
-      console.log("MorphoBlue query error: ", error);
+  try {
+    const queryResult = await request(MORPHO_GRAPHQL_URL, query);
+    return parseMarketPositionsQueryResult(queryResult, address);
+  } catch (error) {
+    console.log("MorphoBlue query error: ", error);
 
-      return {
-        protocol: Protocol.MorphoBlue,
-        userAddress: address,
-        markets: [],
-        debtPositions: []
-      };
-    });
-}
+    return {
+      protocol: Protocol.MorphoBlue,
+      userAddress: address,
+      markets: [],
+      debtPositions: []
+    };
+  }
 
 function parseMarketPositionsQueryResult(
   queryResult: any,
@@ -203,23 +201,19 @@ export async function getRecommendedDebtDetail(
           )
       );
     } else if (protocol === Protocol.CompoundV3) {
+      const debtTokenAddress = (debtPosition as CompoundV3DebtPosition).debt.token.address;
       return (
-        market.debtToken.address ===
-          (debtPosition as CompoundV3DebtPosition).debt.token.address ||
+        market.debtToken.address === debtTokenAddress ||
         MORPHO_BLUE_DEBT_STABLECOINS.some(
-          (debtStablecoin) =>
-            debtStablecoin.address ===
-            (debtPosition as CompoundV3DebtPosition).debt.token.address
+          (debtStablecoin) => debtStablecoin.address === debtTokenAddress
         )
       );
     } else if (protocol === Protocol.MorphoBlue) {
+      const debtTokenAddress = (debtPosition as MorphoBlueDebtPosition).debt.token.address;
       return (
-        market.debtToken.address ===
-          (debtPosition as MorphoBlueDebtPosition).debt.token.address ||
+        market.debtToken.address === debtTokenAddress ||
         MORPHO_BLUE_DEBT_STABLECOINS.some(
-          (debtStablecoin) =>
-            debtStablecoin.address ===
-            (debtPosition as CompoundV3DebtPosition).debt.token.address
+          (debtStablecoin) => debtStablecoin.address === debtTokenAddress
         )
       );
     }
@@ -326,3 +320,4 @@ export async function getRecommendedDebtDetail(
   });
   return recommendedDebtDetails;
 }
+
