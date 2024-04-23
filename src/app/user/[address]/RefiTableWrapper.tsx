@@ -50,10 +50,10 @@ export function RefiTableWrapper({
       <Table>
         <TableHeader>
           {debtSelectedTable.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className="hover:bg-white">
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id} className="py-2">
+                  <TableHead key={header.id} className="py-2 hover:bg-muted/50">
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -71,7 +71,11 @@ export function RefiTableWrapper({
             <div className="w-max p-4 font-medium">Selected debt position</div>
           </TableRow>
           {debtSelectedTable.getRowModel().rows.map((row) => (
-            <TableRow key={row.id} data-state={"selected"}>
+            <TableRow
+              key={row.id}
+              data-state={"selected"}
+              className="data-[state=selected]:hover:bg-muted"
+            >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}

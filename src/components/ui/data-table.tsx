@@ -56,6 +56,7 @@ export function DataTable<TData, TValue>({
 
   useEffect(() => {
     if (table.getRow("0")) {
+      table.getRow("0").toggleSelected();
       state?.setActiveDebtPosition(table.getRow("0").original);
     }
   }, [data]);
@@ -65,10 +66,10 @@ export function DataTable<TData, TValue>({
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className="hover:bg-white">
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className="hover:bg-muted/50">
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -89,21 +90,23 @@ export function DataTable<TData, TValue>({
                   key={row.id}
                   onClick={(e) => {
                     if (row?.depth === 0) {
-                      state?.setActiveDebtPosition(null);
+                      !row.getIsSelected() && state?.setActiveDebtPosition(null);
                       table.resetExpanded();
                       row.toggleExpanded();
-                      if(!row.getCanExpand()){
+                      if(!row.getCanExpand() && !row.getIsSelected()){
                         row.toggleSelected();
                         state?.setActiveDebtPosition(row.original);
                       }
                     }
                     if (row?.depth === 1) {
-                      row.toggleSelected();
-                      state?.setActiveDebtPosition(row.original);
+                      if(!row.getIsSelected()){
+                        row.toggleSelected();
+                        state?.setActiveDebtPosition(row.original);
+                      }
                     }
                   }}
                   data-state={
-                    ((row?.depth === 1 && row.getIsSelected()) || (row.depth === 0 && !row.getCanExpand())) && "selected"
+                    ((row?.depth === 1 && row.getIsSelected()) || (row.depth === 0 && !row.getCanExpand() && row.getIsSelected())) && "selected"
                   }
                 >
                   {row.getVisibleCells().map((cell) => (

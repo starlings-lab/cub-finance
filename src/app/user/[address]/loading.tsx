@@ -9,7 +9,7 @@ import {
 
 const TableRowWrapper = () => {
   return (
-    <TableRow className="animate-pulse">
+    <TableRow className="animate-pulse hover:bg-white">
       <TableCell>
         <div className="h-3 w-10 bg-gray-300 rounded" />
       </TableCell>
@@ -58,7 +58,7 @@ export default function Loading() {
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="hover:bg-white">
               <TableHead>Protocol</TableHead>
               <TableHead>Debt Tokens</TableHead>
               <TableHead>Collateral Tokens</TableHead>
@@ -66,9 +66,9 @@ export default function Loading() {
               <TableHead>Total Collateral Amount</TableHead>
               <TableHead>LTV</TableHead>
               <TableHead>Max LTV</TableHead>
-              <TableHead>Trailing 30 Days Net APY</TableHead>
-              <TableHead>Trailing 30 Days Lending APY</TableHead>
-              <TableHead>Trailing 30 Days Borrowing APY</TableHead>
+              <TableHead>Net APY</TableHead>
+              <TableHead>Lending APY</TableHead>
+              <TableHead>Borrowing APY</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
