@@ -313,7 +313,7 @@ export async function getRecommendedDebtDetail(
     // When newLTV is higher than new maxLTV,
     // then We need to make a recommendation with reduced debt based
     // on the new max LTV and collateral value
-    const newLTV = matchedDebt!.amountInUSD / matchedCollateral.amountInUSD;
+    let newLTV = matchedDebt!.amountInUSD / matchedCollateral.amountInUSD;
     const newMaxLTV = matchedMarket.maxLTV;
     let newDebtAmount: TokenAmount = matchedDebt!;
 
@@ -321,6 +321,7 @@ export async function getRecommendedDebtDetail(
       console.log(
         `New LTV: ${newLTV} is higher than new max LTV: ${newMaxLTV}`
       );
+
       // Multiply maxLTV by 10^8 and divide by 10^8 to preserve precision
       const newDebtAmountInToken =
         (BigInt(matchedMarket.maxLTV * 10 ** 8) * matchedCollateral.amount) /
@@ -330,7 +331,11 @@ export async function getRecommendedDebtDetail(
         amount: newDebtAmountInToken,
         amountInUSD: matchedMarket.maxLTV * matchedCollateral.amountInUSD
       };
+
+      // cap the new LTV to the new max LTV
+      newLTV = newMaxLTV;
     }
+
     const newDebt = {
       maxLTV: newMaxLTV,
       LTV: newLTV,

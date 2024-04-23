@@ -681,37 +681,15 @@ function createNewDebtPosition(
     (acc, curr) => acc + curr.amountInUSD,
     0
   );
-  let newLTV = existingDebt.amountInUSD / newCollateralAmountInUsd;
-  let newDebt = existingDebt;
 
-  if (newLTV > newMaxLTV) {
-    // We need to make a recommendation with reduced debt based
-    // on the new max LTV and collateral value
-    console.log(`New LTV: ${newLTV} is higher than new max LTV: ${newMaxLTV}`);
-
-    const newDebtAmountInUSD = newMaxLTV * newCollateralAmountInUsd;
-    // console.dir(marketsMap.get(existingDebt.token.address.toLowerCase()), {
-    //   depth: null
-    // });
-    // Calculate debt token's price in USD
-    const priceInUSD = marketsMap.get(
-      existingDebt.token.address.toLowerCase()
-    )!.priceInMarketReferenceCurrency;
-
-    // new debt amount in token = (newDebtAmountInUSD * 10 ** tokenDecimals) / price in USD
-    const newDebtTokenAmount =
-      (BigInt(newDebtAmountInUSD) *
-        BigInt(10 ** existingDebt.token.decimals) *
-        baseCurrencyData.marketReferenceCurrencyUnit) /
-      BigInt(priceInUSD);
-
-    newDebt = {
-      ...existingDebt,
-      amountInUSD: newDebtAmountInUSD,
-      amount: newDebtTokenAmount
-    };
-    newLTV = newMaxLTV;
-  }
+  // Determine new LTV and debt amount based on new max LTV and collateral value
+  let { newLTV, newDebt } = determineNewLTVAndDebtAmount(
+    existingDebt,
+    newCollateralAmountInUsd,
+    newMaxLTV,
+    marketsMap,
+    baseCurrencyData
+  );
 
   return {
     maxLTV: newMaxLTV,
@@ -724,6 +702,51 @@ function createNewDebtPosition(
       marketsMap
     )
   };
+}
+
+function determineNewLTVAndDebtAmount(
+  existingDebt: TokenAmount,
+  newCollateralAmountInUsd: number,
+  newMaxLTV: number,
+  marketsMap: Map<string, AaveMarket>,
+  baseCurrencyData: BaseCurrencyInfo
+) {
+  let newLTV = existingDebt.amountInUSD / newCollateralAmountInUsd;
+  let newDebt = existingDebt;
+
+  if (newLTV > newMaxLTV) {
+    // We need to make a recommendation with reduced debt based
+    // on the new max LTV and collateral value
+    console.log(`New LTV: ${newLTV} is higher than new max LTV: ${newMaxLTV}`);
+
+    const newDebtAmountInUSD = newMaxLTV * newCollateralAmountInUsd;
+
+    // console.dir(marketsMap.get(existingDebt.token.address.toLowerCase()), {
+    //   depth: null
+    // });
+
+    // Calculate debt token's price in USD
+    const priceInUSD = marketsMap.get(
+      existingDebt.token.address.toLowerCase()
+    )!.priceInMarketReferenceCurrency;
+
+    // new debt amount in token = (newDebtAmountInUSD * 10 ** tokenDecimals) / price in USD
+    const newDebtTokenAmount =
+      (BigInt(Math.floor(newDebtAmountInUSD)) *
+        BigInt(10 ** existingDebt.token.decimals) *
+        baseCurrencyData.marketReferenceCurrencyUnit) /
+      BigInt(priceInUSD);
+
+    newDebt = {
+      ...existingDebt,
+      amountInUSD: newDebtAmountInUSD,
+      amount: newDebtTokenAmount
+    };
+
+    // cap the new LTV to new max LTV
+    newLTV = newMaxLTV;
+  }
+  return { newLTV, newDebt };
 }
 
 function validateMaxLTV(
