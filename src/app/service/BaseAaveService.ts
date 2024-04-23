@@ -18,13 +18,8 @@ import {
 } from "../contracts/aaveV3";
 import { request, gql } from "graphql-request";
 import { MESSARI_GRAPHQL_URL } from "../constants";
-import {
-  SPARKFI_DEBT_STABLECOINS,
-  AAVE_V3_DEBT_STABLECOINS
-} from "../contracts/ERC20Tokens";
 import { getTokenMetadata } from "./tokenService";
 import { calculateAPYFromAPR } from "../utils/utils";
-import { formatReservesAndIncentives, formatReserve } from "@aave/math-utils";
 
 interface AaveMarket extends Market {
   priceInMarketReferenceCurrency: number;
@@ -290,13 +285,13 @@ export class BaseAaveService {
       | CompoundV3DebtPosition,
     maxLTVTolerance = 0.1, // 10%
     borrowingAPYTolerance = 0.03 // 3%
-  ): Promise<RecommendedDebtDetail[] | null> {
+  ): Promise<RecommendedDebtDetail | null> {
     // get market reserve data
     const { reservesMap, baseCurrencyData } = await this.getReservesData();
 
     // get debt & collateral token based on type of debt position
-    let existingDebt: TokenAmount;
-    let existingCollateralTokens: Token[];
+    let existingDebt: null;
+    let existingCollateralTokens: null;
     let existingCollateralAmountByAddress = new Map<string, TokenAmount>();
     let existingNetBorrowingApy = 0;
 
@@ -345,26 +340,9 @@ export class BaseAaveService {
     }
 
     const debtToken = existingDebt.token;
-    const DEBT_STABLECOINS = [
-      ...SPARKFI_DEBT_STABLECOINS,
-      ...AAVE_V3_DEBT_STABLECOINS
-    ];
-    const debtIsStablecoin = DEBT_STABLECOINS.some(
-      (token) =>
-        token.address.toLowerCase() === debtToken?.address.toLowerCase()
-    );
-    let debtReserves;
-    if (!debtIsStablecoin) {
-      debtReserves = reservesMap.get(debtToken.address.toLowerCase());
-    } else if (debtIsStablecoin) {
-      debtReserves = DEBT_STABLECOINS.map((token) =>
-        reservesMap.get(token.address.toLowerCase())
-      );
-    }
-    // console.log("Debt reserves", debtReserves);
+    const debtReserve = reservesMap.get(debtToken!.address.toLowerCase());
+    // console.log("Debt reserve", debtReserve);
 
-    const recommendedDebtDetails = debtReserves.map(
-      async (debtReserve: any) => {
         if (
           debtToken &&
           debtReserve &&
@@ -466,9 +444,6 @@ export class BaseAaveService {
           );
           return null;
         }
-      }
-    );
-    return recommendedDebtDetails;
   }
 
   private async fetchCollateralMarkets(
