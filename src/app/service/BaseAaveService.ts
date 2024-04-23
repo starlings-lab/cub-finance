@@ -693,35 +693,6 @@ function createNewDebtPosition(
   };
 }
 
-function calculateNetBorrowingAPYs(
-  existingLendingAPY: number,
-  existingBorrowingAPY: number,
-  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
-  newCollateralMarkets: Map<string, Market>,
-  newMaxLTV: number,
-  debtMarket: Market
-) {
-  const existingLendingInterest = existingLendingAPY * 100;
-  const existingBorrowingInterest =
-    existingBorrowingAPY * (debtPosition.LTV * 100);
-
-  const existingNetBorrowingApy =
-    (existingLendingInterest - existingBorrowingInterest) / 100;
-
-  console.log("Existing Net borrowing APY: ", existingNetBorrowingApy);
-
-  // Calculate new borrowing cost assuming an user wants
-  // to use same LTV as an existing LTV but cap it with new max LTV
-  const ltvToUse = debtPosition.LTV > newMaxLTV ? newMaxLTV : debtPosition.LTV;
-  console.log("LTV to use: ", ltvToUse);
-  const newLendingInterest = calculateAvgLendingAPY(newCollateralMarkets) * 100;
-  const newBorrowingInterest =
-    debtMarket.trailing30DaysBorrowingAPY * (ltvToUse * 100);
-  const newNetBorrowingApy = (newLendingInterest - newBorrowingInterest) / 100;
-  console.log("New Net borrowing APY: ", newNetBorrowingApy);
-  return { newNetBorrowingApy, existingNetBorrowingApy };
-}
-
 function validateMaxLTV(
   existingMaxLTV: number,
   newCollaterals: TokenAmount[],
@@ -751,9 +722,9 @@ function validateMaxLTV(
       const maxLTV = Number(collateralReserve.baseLTVasCollateral) / 10000;
       const weightedMaxLTV =
         maxLTV * (collateralAmount.amountInUSD / totalCollateralAmountInUSD);
-      console.log(
-        `Max LTV for ${tokenAddress}: ${maxLTV}, Weighted: ${weightedMaxLTV}`
-      );
+      // console.log(
+      //   `Max LTV for ${tokenAddress}: ${maxLTV}, Weighted: ${weightedMaxLTV}`
+      // );
       return acc + weightedMaxLTV;
     }, 0) / collateralMarkets.length;
 
@@ -833,16 +804,6 @@ function calculateCollateralAmountInBaseCurrency(
     Number((supplyAmountInBaseCurrency * BigInt(10000)) / baseCurrencyUnit) /
     10000
   );
-}
-
-function calculateAvgLendingAPY(collateralMarkets: Map<string, Market>) {
-  const avgApy =
-    Array.from(collateralMarkets.values()).reduce(
-      (acc, curr) => acc + curr.trailing30DaysLendingAPY,
-      0
-    ) / collateralMarkets.size;
-  console.log("Avg lending APY: ", avgApy);
-  return avgApy;
 }
 
 /**
