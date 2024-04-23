@@ -647,17 +647,13 @@ function createNewDebtPosition(
   marketsMap: Map<string, AaveMarket>,
   baseCurrencyData: BaseCurrencyInfo
 ): DebtPosition {
-  const newLTV =
-    existingDebt.amountInUSD /
-    newCollaterals.reduce((acc, curr) => acc + curr.amountInUSD, 0);
-
-  // When new LTV is higher than new max LTV, cap new debt amount with new max LTV & collateral amount
   const newCollateralAmount = newCollaterals.reduce(
     (acc, curr) => acc + curr.amountInUSD,
     0
   );
-
+  let newLTV = existingDebt.amountInUSD / newCollateralAmount;
   let newDebt = existingDebt;
+
   if (newLTV > newMaxLTV) {
     // We need to make a recommendation with reduced debt based
     // on the new max LTV and collateral value
@@ -681,6 +677,7 @@ function createNewDebtPosition(
       amountInUSD: newDebtAmountInUSD,
       amount: newDebtAmount
     };
+    newLTV = newMaxLTV;
   }
 
   return {
@@ -751,11 +748,13 @@ function validateMaxLTV(
         tokenAddress.toLowerCase()
       )!;
 
-      return (
-        acc +
-        (Number(collateralReserve.baseLTVasCollateral) / 10000) *
-          (collateralAmount.amountInUSD / totalCollateralAmountInUSD)
+      const maxLTV = Number(collateralReserve.baseLTVasCollateral) / 10000;
+      const weightedMaxLTV =
+        maxLTV * (collateralAmount.amountInUSD / totalCollateralAmountInUSD);
+      console.log(
+        `Max LTV for ${tokenAddress}: ${maxLTV}, Weighted: ${weightedMaxLTV}`
       );
+      return acc + weightedMaxLTV;
     }, 0) / collateralMarkets.length;
 
   // new Max ltv should be >= current LTV - maxLTVTolerance
