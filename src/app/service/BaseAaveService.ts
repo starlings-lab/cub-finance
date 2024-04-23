@@ -354,7 +354,7 @@ export class BaseAaveService {
     }
     // console.log("Debt reserves", debtReserves);
 
-    const recommendedDebtDetail = debtReserves.map(async (debtReserve: any) => {
+    const recommendedDebtDetails = debtReserves.map(async (debtReserve: any) => {
       if (
         debtToken &&
         debtReserve &&
@@ -449,7 +449,7 @@ export class BaseAaveService {
         return null;
       }
     });
-    return recommendedDebtDetail;
+    return recommendedDebtDetails;
   }
 
   private async fetchCollateralMarkets(
