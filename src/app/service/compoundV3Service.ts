@@ -590,23 +590,37 @@ export async function getRecommendedDebtDetail(
       matchedMarket.debtToken.address === USDC.address
         ? COMPOUND_V3_CUSDC_CONTRACT
         : COMPOUND_V3_CWETH_CONTRACT;
+    const matchedMarketCollaterals =
+      matchedMarket.debtToken.address === USDC.address
+        ? COMPOUND_V3_CUSDC_COLLATERALS
+        : COMPOUND_V3_CWETH_COLLATERALS;
     if (
       protocol === Protocol.AaveV3 ||
       protocol === Protocol.Spark ||
       protocol === Protocol.CompoundV3
     ) {
-      newMaxLTV = await getMaxLtv(
-        matchedMarketContract,
-        (
-          (debtPosition as DebtPosition) ||
-          (debtPosition as CompoundV3DebtPosition)
-        ).collaterals
+      const matchedCollaterals = (
+        (debtPosition as DebtPosition) ||
+        (debtPosition as CompoundV3DebtPosition)
+      ).collaterals.filter((collateralInDebtPosition) =>
+        matchedMarketCollaterals.some(
+          (collateral) =>
+            collateralInDebtPosition.token.address === collateral.address
+        )
       );
+      newMaxLTV = await getMaxLtv(matchedMarketContract, matchedCollaterals);
     } else if (protocol === Protocol.MorphoBlue) {
-      newMaxLTV = await getMaxLtv(
-        matchedMarketContract,
-        (debtPosition as MorphoBlueDebtPosition).collateral
+      const matchedCollateralExist = matchedMarketCollaterals.some(
+        (collateral) =>
+          (debtPosition as MorphoBlueDebtPosition).collateral.token.address ===
+          collateral.address
       );
+      if (matchedCollateralExist) {
+        newMaxLTV = await getMaxLtv(
+          matchedMarketContract,
+          (debtPosition as MorphoBlueDebtPosition).collateral
+        );
+      }
     }
     return newMaxLTV !== undefined && newMaxLTV >= debtPosition.maxLTV - 0.05;
   });
