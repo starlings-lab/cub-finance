@@ -90,17 +90,19 @@ export function DataTable<TData, TValue>({
                   key={row.id}
                   onClick={(e) => {
                     if (row?.depth === 0) {
-                      state?.setActiveDebtPosition(null);
+                      !row.getIsSelected() && state?.setActiveDebtPosition(null);
                       table.resetExpanded();
                       row.toggleExpanded();
-                      if(!row.getCanExpand()){
+                      if(!row.getCanExpand() && !row.getIsSelected()){
                         row.toggleSelected();
                         state?.setActiveDebtPosition(row.original);
                       }
                     }
                     if (row?.depth === 1) {
-                      row.toggleSelected();
-                      state?.setActiveDebtPosition(row.original);
+                      if(!row.getIsSelected()){
+                        row.toggleSelected();
+                        state?.setActiveDebtPosition(row.original);
+                      }
                     }
                   }}
                   data-state={
