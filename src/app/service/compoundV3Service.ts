@@ -505,7 +505,9 @@ async function getMaxLtv(
 
 export async function getRecommendedDebtDetail(
   protocol: Protocol,
-  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition
+  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
+  maxLTVTolerance = 0.1, // 10%
+  borrowingAPYTolerance = 0.03 // 3%
 ): Promise<CompoundV3RecommendedDebtDetail[] | null> {
   const markets: CompoundV3Market[] = await getAllCompoundV3Markets();
 
@@ -602,7 +604,7 @@ export async function getRecommendedDebtDetail(
       const spread: number =
         matchedMarket.trailing30DaysBorrowingAPY -
         Math.abs(debtPosition.trailing30DaysNetAPY);
-      return spread > 0.03;
+      return spread > borrowingAPYTolerance;
     } else if (isZeroOrPositive(debtPosition.trailing30DaysNetAPY)) {
       return false;
     }
