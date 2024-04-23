@@ -525,24 +525,19 @@ export async function getRecommendedDebtDetail(
             (debtStablecoin) => debtStablecoin.address === debt.token.address
           )
       );
-    } else if (protocol === Protocol.CompoundV3) {
+    } else if (
+      protocol === Protocol.CompoundV3 ||
+      protocol === Protocol.MorphoBlue
+    ) {
+      const debtTokenAddress =
+        protocol === Protocol.CompoundV3
+          ? (debtPosition as CompoundV3DebtPosition).debt.token.address
+          : (debtPosition as MorphoBlueDebtPosition).debt.token.address;
+
       return (
-        market.debtToken.address ===
-          (debtPosition as CompoundV3DebtPosition).debt.token.address ||
+        market.debtToken.address === debtTokenAddress ||
         COMPOUND_V3_DEBT_STABLECOINS.some(
-          (debtStablecoin) =>
-            debtStablecoin.address ===
-            (debtPosition as CompoundV3DebtPosition).debt.token.address
-        )
-      );
-    } else if (protocol === Protocol.MorphoBlue) {
-      return (
-        market.debtToken.address ===
-          (debtPosition as MorphoBlueDebtPosition).debt.token.address ||
-        COMPOUND_V3_DEBT_STABLECOINS.some(
-          (debtStablecoin) =>
-            debtStablecoin.address ===
-            (debtPosition as CompoundV3DebtPosition).debt.token.address
+          (debtStablecoin) => debtStablecoin.address === debtTokenAddress
         )
       );
     }
