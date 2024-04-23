@@ -69,6 +69,7 @@ export async function getMorphoBlueUserDebtDetails(
       debtPositions: []
     };
   }
+}
 
 function parseMarketPositionsQueryResult(
   queryResult: any,
@@ -201,7 +202,8 @@ export async function getRecommendedDebtDetail(
           )
       );
     } else if (protocol === Protocol.CompoundV3) {
-      const debtTokenAddress = (debtPosition as CompoundV3DebtPosition).debt.token.address;
+      const debtTokenAddress = (debtPosition as CompoundV3DebtPosition).debt
+        .token.address;
       return (
         market.debtToken.address === debtTokenAddress ||
         MORPHO_BLUE_DEBT_STABLECOINS.some(
@@ -209,7 +211,8 @@ export async function getRecommendedDebtDetail(
         )
       );
     } else if (protocol === Protocol.MorphoBlue) {
-      const debtTokenAddress = (debtPosition as MorphoBlueDebtPosition).debt.token.address;
+      const debtTokenAddress = (debtPosition as MorphoBlueDebtPosition).debt
+        .token.address;
       return (
         market.debtToken.address === debtTokenAddress ||
         MORPHO_BLUE_DEBT_STABLECOINS.some(
@@ -347,4 +350,3 @@ export async function getRecommendedDebtDetail(
   });
   return recommendedDebtDetails;
 }
-
