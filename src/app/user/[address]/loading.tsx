@@ -9,7 +9,7 @@ import {
 
 const TableRowWrapper = () => {
   return (
-    <TableRow className="animate-pulse">
+    <TableRow className="animate-pulse hover:bg-white">
       <TableCell>
         <div className="h-3 w-10 bg-gray-300 rounded" />
       </TableCell>
@@ -58,7 +58,7 @@ export default function Loading() {
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="hover:bg-white">
               <TableHead>Protocol</TableHead>
               <TableHead>Debt Tokens</TableHead>
               <TableHead>Collateral Tokens</TableHead>

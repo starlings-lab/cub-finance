@@ -56,6 +56,7 @@ export function DataTable<TData, TValue>({
 
   useEffect(() => {
     if (table.getRow("0")) {
+      table.getRow("0").toggleSelected();
       state?.setActiveDebtPosition(table.getRow("0").original);
     }
   }, [data]);
@@ -103,7 +104,7 @@ export function DataTable<TData, TValue>({
                     }
                   }}
                   data-state={
-                    ((row?.depth === 1 && row.getIsSelected()) || (row.depth === 0 && !row.getCanExpand())) && "selected"
+                    ((row?.depth === 1 && row.getIsSelected()) || (row.depth === 0 && !row.getCanExpand() && row.getIsSelected())) && "selected"
                   }
                 >
                   {row.getVisibleCells().map((cell) => (

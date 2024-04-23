@@ -71,7 +71,11 @@ export function RefiTableWrapper({
             <div className="w-max p-4 font-medium">Selected debt position</div>
           </TableRow>
           {debtSelectedTable.getRowModel().rows.map((row) => (
-            <TableRow key={row.id} data-state={"selected"}>
+            <TableRow
+              key={row.id}
+              data-state={"selected"}
+              className="data-[state=selected]:hover:bg-muted"
+            >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
