@@ -3,7 +3,7 @@ import {
   DebtPositionTableRow,
   RecommendedDebtDetailTableRow
 } from "@/app/type/type";
-import TooltipWrapper from "@/components/ui/tootltip";
+import PopoverWrapper from "@/components/ui/popover";
 import { ColumnDef } from "@tanstack/react-table";
 import Image from "next/image";
 import { Fragment } from "react";
@@ -99,7 +99,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
         }}
       >
         {row.original.debtToken.map((debtToken) => (
-          <TooltipWrapper
+          <PopoverWrapper
             key={debtToken.name}
             title={
               <Image
@@ -130,7 +130,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
         }}
       >
         {row.original.collateralTokens.map((collateralToken) => (
-          <TooltipWrapper
+          <PopoverWrapper
             key={collateralToken.name}
             title={
               <Image
@@ -183,7 +183,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
   {
     header: () => (
       <Fragment>
-        <TooltipWrapper
+        <PopoverWrapper
           title={
             <div className="flex">
               <div className="mr-2">{"Net APY"}</div>
@@ -211,7 +211,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
   {
     header: () => (
       <Fragment>
-        <TooltipWrapper
+        <PopoverWrapper
           title={
             <div className="flex">
               <div className="mr-2">{"Lending APY"}</div>
@@ -239,7 +239,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
   {
     header: () => (
       <Fragment>
-        <TooltipWrapper
+        <PopoverWrapper
           title={
             <div className="flex">
               <div className="mr-2">{"Borrowing APY"}</div>
@@ -300,7 +300,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
           }}
         >
           {row.original.debtToken.map((debtToken) => (
-            <TooltipWrapper
+            <PopoverWrapper
               key={debtToken.name}
               title={
                 <Image
@@ -331,7 +331,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
           }}
         >
           {row.original.collateralTokens.map((collateralToken) => (
-            <TooltipWrapper
+            <PopoverWrapper
               key={collateralToken.name}
               title={
                 <Image
@@ -384,7 +384,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
     {
       header: () => (
         <Fragment>
-          <TooltipWrapper
+          <PopoverWrapper
             title={
               <div className="flex">
                 <div className="mr-2">{"Net APY"}</div>
@@ -412,7 +412,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
     {
       header: () => (
         <Fragment>
-          <TooltipWrapper
+          <PopoverWrapper
             title={
               <div className="flex">
                 <div className="mr-2">{"Lending APY"}</div>
@@ -440,7 +440,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
     {
       header: () => (
         <Fragment>
-          <TooltipWrapper
+          <PopoverWrapper
             title={
               <div className="flex">
                 <div className="mr-2">{"Borrowing APY"}</div>
