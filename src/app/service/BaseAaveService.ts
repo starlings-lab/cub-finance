@@ -314,8 +314,8 @@ export class BaseAaveService {
       case Protocol.MorphoBlue:
         const morphoBlueDebtPosition = debtPosition as MorphoBlueDebtPosition;
         existingDebt = morphoBlueDebtPosition.debt;
-        existingCollateralTokens = [morphoBlueDebtPosition.debt.token];
         existingNetBorrowingApy = morphoBlueDebtPosition.trailing30DaysNetAPY;
+        existingCollateralTokens = [morphoBlueDebtPosition.debt.token];
         existingCollateralAmountByAddress.set(
           morphoBlueDebtPosition.collateral.token.address.toLowerCase(),
           morphoBlueDebtPosition.collateral
@@ -343,107 +343,92 @@ export class BaseAaveService {
     const debtReserve = reservesMap.get(debtToken!.address.toLowerCase());
     // console.log("Debt reserve", debtReserve);
 
-        if (
-          debtToken &&
-          debtReserve &&
-          debtReserve.borrowingEnabled &&
-          debtReserve.isActive
-        ) {
-          const newDebtMarket = await this.getAaveMarket(
-            reservesMap,
-            debtToken!
-          );
+    if (
+      !debtToken ||
+      !debtReserve ||
+      !debtReserve.borrowingEnabled ||
+      !debtReserve.isActive
+    ) {
+      console.log("There is no debt token market for position", debtPosition);
+      return null;
+    }
 
-          // find new collateral markets
-          let newCollateralMarkets = await this.fetchCollateralMarkets(
-            existingCollateralTokens,
-            reservesMap
-          );
+    const newDebtMarket = await this.getAaveMarket(reservesMap, debtToken!);
 
-          if (newCollateralMarkets && newCollateralMarkets.size > 0) {
-            // Verify if pool has enough liquidity to borrow
-            if (checkBorrowingAvailability(debtReserve, existingDebt.amount)) {
-              // Determine new collateral amounts
-              const newCollaterals = Array.from(
-                newCollateralMarkets.values()
-              ).map((collateralMarket: Market) => {
-                const collateralToken = collateralMarket.underlyingAsset;
-                return existingCollateralAmountByAddress.get(
-                  collateralToken.address.toLowerCase()
-                )!;
-              });
+    let newCollateralMarkets = await this.fetchCollateralMarkets(
+      existingCollateralTokens,
+      reservesMap
+    );
 
-              // Verify that new max ltv is within tolerance
-              const { isMaxLTVAcceptable, newMaxLTV } = validateMaxLTV(
-                debtPosition.maxLTV,
-                newCollaterals,
-                Array.from(newCollateralMarkets.keys()),
-                reservesMap,
-                maxLTVTolerance
-              );
-              if (isMaxLTVAcceptable) {
-                const debtAndCollateralMarkets = new Map<string, AaveMarket>(
-                  Array.from(newCollateralMarkets).concat([
-                    [debtToken.address.toLowerCase(), newDebtMarket]
-                  ])
-                );
+    if (!newCollateralMarkets || newCollateralMarkets.size === 0) {
+      console.log("Collateral market doesn't exist");
+      return null;
+    }
 
-                const newNetBorrowingApy = calculateNetBorrowingAPY(
-                  newCollaterals,
-                  [existingDebt],
-                  debtAndCollateralMarkets
-                );
-                console.log("New net borrowing APY: ", newNetBorrowingApy);
-                const borrowingApySpread =
-                  newNetBorrowingApy - existingNetBorrowingApy;
+    if (!checkBorrowingAvailability(debtReserve, existingDebt.amount)) {
+      console.log("Debt market doesn't have enough liquidity to borrow");
+      return null;
+    }
 
-                console.log("Borrowing APY spread: ", borrowingApySpread);
-                if (borrowingApySpread >= borrowingAPYTolerance) {
-                  console.log(
-                    `New borrowing cost is at least ${
-                      borrowingAPYTolerance * 100
-                    }% better than existing borrowing cost`
-                  );
+    const newCollaterals = Array.from(newCollateralMarkets.values()).map(
+      (collateralMarket: Market) => {
+        const collateralToken = collateralMarket.underlyingAsset;
+        return existingCollateralAmountByAddress.get(
+          collateralToken.address.toLowerCase()
+        )!;
+      }
+    );
 
-                  // construct and return new recommended debt detail
-                  return {
-                    protocol: Protocol.AaveV3,
-                    market: newDebtMarket,
-                    debt: createNewDebtPosition(
-                      newMaxLTV,
-                      existingDebt,
-                      newCollaterals,
-                      debtAndCollateralMarkets,
-                      baseCurrencyData
-                    ),
-                    trailing30DaysNetAPY: newNetBorrowingApy
-                  };
-                } else {
-                  console.log("New net borrowing cost is not within tolerance");
-                  return null;
-                }
-              } else {
-                console.log("New max LTV is not within tolerance");
+    const { isMaxLTVAcceptable, newMaxLTV } = validateMaxLTV(
+      debtPosition.maxLTV,
+      newCollaterals,
+      Array.from(newCollateralMarkets.keys()),
+      reservesMap,
+      maxLTVTolerance
+    );
 
-                return null;
-              }
-            } else {
-              console.log(
-                "Debt market doesn't have enough liquidity to borrow"
-              );
-              return null;
-            }
-          } else {
-            console.log("Collateral market doesn't exist");
-            return null;
-          }
-        } else {
-          console.log(
-            "There is no debt token market for position",
-            debtPosition
-          );
-          return null;
-        }
+    if (!isMaxLTVAcceptable) {
+      console.log("New max LTV is not within tolerance");
+      return null;
+    }
+
+    const debtAndCollateralMarkets = new Map<string, Market>(
+      Array.from(newCollateralMarkets).concat([
+        [debtToken.address.toLowerCase(), newDebtMarket]
+      ])
+    );
+
+    const newNetBorrowingApy = calculateNetBorrowingAPY(
+      newCollaterals,
+      [existingDebt],
+      debtAndCollateralMarkets
+    );
+    console.log("New net borrowing APY: ", newNetBorrowingApy);
+
+    const borrowingApySpread = newNetBorrowingApy - existingNetBorrowingApy;
+
+    if (borrowingApySpread < borrowingAPYTolerance) {
+      console.log("New net borrowing cost is not within tolerance");
+      return null;
+    }
+
+    const betterBorrowingCostPercentage = borrowingAPYTolerance * 100;
+    console.log(
+      `New borrowing cost is at least ${betterBorrowingCostPercentage}% better than existing borrowing cost`
+    );
+
+    return {
+      protocol: Protocol.AaveV3,
+      market: newDebtMarket,
+      debt: createNewDebtPosition(
+        newMaxLTV,
+        existingDebt,
+        existingCollateralAmountByAddress,
+        newCollaterals,
+        debtAndCollateralMarkets
+      ),
+      trailing30DaysNetAPY: newNetBorrowingApy
+    };
   }
 
   private async fetchCollateralMarkets(
