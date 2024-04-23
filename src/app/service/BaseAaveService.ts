@@ -24,6 +24,15 @@ import { getTokenMetadata } from "./tokenService";
 import { calculateAPYFromAPR } from "../utils/utils";
 import { formatReservesAndIncentives, formatReserve } from "@aave/math-utils";
 
+interface AaveMarket extends Market {
+  priceInUsd: number;
+}
+
+interface BaseCurrencyInfo {
+  marketReferenceCurrencyUnit: bigint;
+  marketReferenceCurrencyPriceInUsd: bigint;
+}
+
 export class BaseAaveService {
   private protocol: Protocol;
   private poolAddressProvider: Address;
@@ -141,7 +150,11 @@ export class BaseAaveService {
 
       const marketPromises = Array.from(underlyingAssets).map(
         (underlyingAssetToken: Token) =>
-          this.getAaveMarket(reservesMap, underlyingAssetToken)
+          this.getAaveMarket(
+            reservesMap,
+            underlyingAssetToken,
+            baseCurrencyData
+          )
       );
       (await Promise.all(marketPromises)).forEach((market) => {
         marketMap.set(market.underlyingAsset.address.toLowerCase(), market);
@@ -282,7 +295,7 @@ export class BaseAaveService {
     borrowingAPYTolerance = 0.03 // 3%
   ): Promise<RecommendedDebtDetail | null> {
     // get market reserve data
-    const { reservesMap } = await this.getReservesData();
+    const { reservesMap, baseCurrencyData } = await this.getReservesData();
 
     // get debt & collateral token based on type of debt position
     let existingDebt = null;
@@ -344,12 +357,17 @@ export class BaseAaveService {
       debtReserve.borrowingEnabled &&
       debtReserve.isActive
     ) {
-      const newDebtMarket = await this.getAaveMarket(reservesMap, debtToken!);
+      const newDebtMarket = await this.getAaveMarket(
+        reservesMap,
+        debtToken!,
+        baseCurrencyData
+      );
 
       // find new collateral markets
       let newCollateralMarkets = await this.fetchCollateralMarkets(
         existingCollateralTokens,
-        reservesMap
+        reservesMap,
+        baseCurrencyData
       );
 
       if (newCollateralMarkets && newCollateralMarkets.size > 0) {
@@ -374,7 +392,7 @@ export class BaseAaveService {
             maxLTVTolerance
           );
           if (isMaxLTVAcceptable) {
-            const debtAndCollateralMarkets = new Map<string, Market>(
+            const debtAndCollateralMarkets = new Map<string, AaveMarket>(
               Array.from(newCollateralMarkets).concat([
                 [debtToken.address.toLowerCase(), newDebtMarket]
               ])
@@ -404,7 +422,6 @@ export class BaseAaveService {
                 debt: createNewDebtPosition(
                   newMaxLTV,
                   existingDebt,
-                  existingCollateralAmountByAddress,
                   newCollaterals,
                   debtAndCollateralMarkets
                 ),
@@ -435,7 +452,8 @@ export class BaseAaveService {
 
   private async fetchCollateralMarkets(
     collateralTokens: Token[],
-    reservesMap: Map<string, any>
+    reservesMap: Map<string, any>,
+    baseCurrencyData: any
   ) {
     const promises = collateralTokens
       ?.map((collateralToken) => {
@@ -443,7 +461,11 @@ export class BaseAaveService {
           collateralToken.address.toLowerCase()
         );
         if (collateralMarket) {
-          return this.getAaveMarket(reservesMap, collateralToken);
+          return this.getAaveMarket(
+            reservesMap,
+            collateralToken,
+            baseCurrencyData
+          );
         } else {
           return null;
         }
@@ -457,7 +479,7 @@ export class BaseAaveService {
         }
         return acc;
       },
-      new Map<string, Market>()
+      new Map<string, AaveMarket>()
     );
     return newCollateralMarkets;
   }
@@ -510,7 +532,7 @@ export class BaseAaveService {
   // Ref: https://docs.aave.com/developers/periphery-contracts/uipooldataproviderv3#aggregatedreservedata
   private async getReservesData(): Promise<{
     reservesMap: Map<string, any>;
-    baseCurrencyData: any;
+    baseCurrencyData: BaseCurrencyInfo;
   }> {
     const { 0: reservesRaw, 1: poolBaseCurrencyRaw } =
       await this.poolDataProviderContract.getReservesData(
@@ -613,8 +635,9 @@ export class BaseAaveService {
 
   private async getAaveMarket(
     reservesMap: any,
-    underlyingAssetToken: Token
-  ): Promise<Market> {
+    underlyingAssetToken: Token,
+    baseCurrencyData: BaseCurrencyInfo
+  ): Promise<AaveMarket> {
     const tokenReserve = reservesMap.get(
       underlyingAssetToken.address.toLowerCase()
     );
@@ -624,7 +647,11 @@ export class BaseAaveService {
       return {
         underlyingAsset: underlyingAssetToken,
         trailing30DaysLendingAPY: trailingDayBorrowingAPY,
-        trailing30DaysBorrowingAPY: trailingDayLendingAPY
+        trailing30DaysBorrowingAPY: trailingDayLendingAPY,
+        priceInUsd: Number(
+          tokenReserve.priceInMarketReferenceCurrency /
+            baseCurrencyData.marketReferenceCurrencyUnit
+        )
       };
     });
   }
@@ -633,21 +660,42 @@ export class BaseAaveService {
 function createNewDebtPosition(
   newMaxLTV: number,
   existingDebt: TokenAmount,
-  existingCollateralAmountByAddress: Map<string, TokenAmount>,
   newCollaterals: TokenAmount[],
-  marketsMap: Map<string, Market>
+  marketsMap: Map<string, AaveMarket>
 ): DebtPosition {
   const newLTV =
     existingDebt.amountInUSD /
     newCollaterals.reduce((acc, curr) => acc + curr.amountInUSD, 0);
+
+  // When new LTV is higher than new max LTV, cap new debt amount with new max LTV & collateral amount
+  const newCollateralAmount = newCollaterals.reduce(
+    (acc, curr) => acc + curr.amountInUSD,
+    0
+  );
+  const newDebtAmountInUSD =
+    newLTV > newMaxLTV
+      ? newMaxLTV * newCollateralAmount
+      : existingDebt.amountInUSD;
+  const priceInUSD = marketsMap.get(
+    existingDebt.token.address.toLowerCase()
+  )!.priceInUsd;
+  const newDebtAmount =
+    (BigInt(newDebtAmountInUSD) * BigInt(10 ** existingDebt.token.decimals)) /
+    BigInt(priceInUSD);
+
+  const newDebt = {
+    ...existingDebt,
+    amountInUSD: newDebtAmountInUSD,
+    amount: newDebtAmount
+  };
   return {
     maxLTV: newMaxLTV,
     LTV: newLTV,
-    debts: [existingDebt],
+    debts: [newDebt],
     collaterals: newCollaterals,
     trailing30DaysNetAPY: calculateNetBorrowingAPY(
       newCollaterals,
-      [existingDebt],
+      [newDebt],
       marketsMap
     )
   };
