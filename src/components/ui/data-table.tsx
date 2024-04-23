@@ -65,10 +65,10 @@ export function DataTable<TData, TValue>({
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className="hover:bg-white">
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className="hover:bg-muted/50">
                     {header.isPlaceholder
                       ? null
                       : flexRender(

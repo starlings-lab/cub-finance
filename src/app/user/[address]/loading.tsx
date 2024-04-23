@@ -66,9 +66,9 @@ export default function Loading() {
               <TableHead>Total Collateral Amount</TableHead>
               <TableHead>LTV</TableHead>
               <TableHead>Max LTV</TableHead>
-              <TableHead>Trailing 30 Days Net APY</TableHead>
-              <TableHead>Trailing 30 Days Lending APY</TableHead>
-              <TableHead>Trailing 30 Days Borrowing APY</TableHead>
+              <TableHead>Net APY</TableHead>
+              <TableHead>Lending APY</TableHead>
+              <TableHead>Borrowing APY</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

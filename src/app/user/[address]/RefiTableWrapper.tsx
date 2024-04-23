@@ -50,10 +50,10 @@ export function RefiTableWrapper({
       <Table>
         <TableHeader>
           {debtSelectedTable.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className="hover:bg-white">
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id} className="py-2">
+                  <TableHead key={header.id} className="py-2 hover:bg-muted/50">
                     {header.isPlaceholder
                       ? null
                       : flexRender(
