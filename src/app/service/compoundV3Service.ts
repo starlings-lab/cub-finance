@@ -589,7 +589,7 @@ export async function getRecommendedDebtDetail(
   });
 
   // check if the new max LTV >= (the old max LTV - 5%)
-  let newMaxLtV: number | undefined;
+  let newMaxLTV: number | undefined;
   matchedMarkets = matchedMarkets.filter(async (matchedMarket) => {
     const matchedMarketContract =
       matchedMarket.debtToken.address === USDC.address
@@ -600,7 +600,7 @@ export async function getRecommendedDebtDetail(
       protocol === Protocol.Spark ||
       protocol === Protocol.CompoundV3
     ) {
-      newMaxLtV = await getMaxLtv(
+      newMaxLTV = await getMaxLtv(
         matchedMarketContract,
         (
           (debtPosition as DebtPosition) ||
@@ -608,12 +608,12 @@ export async function getRecommendedDebtDetail(
         ).collaterals
       );
     } else if (protocol === Protocol.MorphoBlue) {
-      newMaxLtV = await getMaxLtv(
+      newMaxLTV = await getMaxLtv(
         matchedMarketContract,
         (debtPosition as MorphoBlueDebtPosition).collateral
       );
     }
-    return newMaxLtV !== undefined && newMaxLtV >= debtPosition.maxLTV - 0.05;
+    return newMaxLTV !== undefined && newMaxLTV >= debtPosition.maxLTV - 0.05;
   });
 
   // check if the old borrowing cost - the new borrowing cost > 3%
@@ -630,16 +630,16 @@ export async function getRecommendedDebtDetail(
 
   const recommendedDebtDetails: CompoundV3RecommendedDebtDetail[] = [];
   matchedMarkets.forEach(async (matchedMarket) => {
-    let matchedDebtToken: TokenAmount;
+    let matchedDebtTokenAmount: TokenAmount;
     if (protocol === Protocol.AaveV3 || protocol === Protocol.Spark) {
-      matchedDebtToken = (debtPosition as DebtPosition).debts.find(
+      matchedDebtTokenAmount = (debtPosition as DebtPosition).debts.find(
         (debt) => debt.token.address === matchedMarket.debtToken.address
       ) as TokenAmount;
     } else if (
       protocol === Protocol.CompoundV3 ||
       protocol === Protocol.MorphoBlue
     ) {
-      matchedDebtToken = (
+      matchedDebtTokenAmount = (
         (debtPosition as CompoundV3DebtPosition) ||
         (debtPosition as MorphoBlueDebtPosition)
       ).debt;
@@ -647,7 +647,7 @@ export async function getRecommendedDebtDetail(
       return null;
     }
 
-    let matchedCollaterals: TokenAmount[] | TokenAmount;
+    let matchedCollaterals: TokenAmount[];
     if (
       protocol === Protocol.AaveV3 ||
       protocol === Protocol.Spark ||
@@ -661,9 +661,11 @@ export async function getRecommendedDebtDetail(
           (collateralInMarket) =>
             collateral.token.address === collateralInMarket.address
         )
-      ) as TokenAmount[] | TokenAmount;
+      ) as TokenAmount[];
     } else {
-      matchedCollaterals = (debtPosition as MorphoBlueDebtPosition).collateral;
+      matchedCollaterals = [
+        (debtPosition as MorphoBlueDebtPosition).collateral
+      ];
     }
 
     const matchedMarketContract =
@@ -671,17 +673,28 @@ export async function getRecommendedDebtDetail(
         ? COMPOUND_V3_CUSDC_CONTRACT
         : COMPOUND_V3_CWETH_CONTRACT;
 
-    let newLtv: number = await getLtv(
+    let newLTV: number = await getLtv(
       matchedMarketContract,
-      matchedDebtToken.amountInUSD,
+      matchedDebtTokenAmount.amountInUSD,
       matchedCollaterals as TokenAmount[]
     );
 
+    // When newLTV is higher than new maxLTV,
+    // then We need to make a recommendation with reduced debt based
+    // on the new max LTV and collateral value
+    const { newLTV: modifiedNewLTV, newDebtAmount } =
+      determineNewLTVAndDebtAmount(
+        matchedDebtTokenAmount,
+        matchedCollaterals,
+        newLTV,
+        newMaxLTV!
+      );
+
     const newDebt = {
-      maxLTV: newMaxLtV as number,
-      LTV: newLtv,
+      maxLTV: newMaxLTV!,
+      LTV: modifiedNewLTV,
       trailing30DaysNetAPY: 0 - matchedMarket.trailing30DaysBorrowingAPY,
-      debt: matchedDebtToken,
+      debt: newDebtAmount,
       collaterals: matchedCollaterals as TokenAmount[]
     };
 
@@ -693,4 +706,43 @@ export async function getRecommendedDebtDetail(
     });
   });
   return recommendedDebtDetails;
+}
+
+function determineNewLTVAndDebtAmount(
+  matchedDebtTokenAmount: TokenAmount,
+  matchedCollaterals: TokenAmount[],
+  newLTV: number,
+  newMaxLTV: number
+) {
+  let newDebtAmount: TokenAmount = matchedDebtTokenAmount;
+  const newCollateralAmountInUsd: number = matchedCollaterals.reduce(
+    (sum, collateral) => sum + collateral.amountInUSD,
+    0
+  );
+  if (newLTV > newMaxLTV) {
+    newLTV = newMaxLTV;
+    const newDebtAmountInUSD = newMaxLTV * newCollateralAmountInUsd;
+
+    // calculate debt token's price in USD using the matched debt token amount
+    // Using 10 ** 8 as the scale for USD price
+    const scaledPriceInUSD =
+      (BigInt(matchedDebtTokenAmount.amountInUSD * 10 ** 8) *
+        BigInt(10 ** 18)) /
+      matchedDebtTokenAmount.amount;
+
+    // calculate new debt amount in token
+    const newDebtAmountInToken =
+      (BigInt(Math.floor(newDebtAmountInUSD)) *
+        BigInt(10 ** matchedDebtTokenAmount.token.decimals) *
+        BigInt(10 ** 8)) /
+      scaledPriceInUSD;
+
+    newDebtAmount = {
+      ...matchedDebtTokenAmount,
+      amount: newDebtAmountInToken,
+      amountInUSD: newDebtAmountInUSD
+    };
+  }
+
+  return { newLTV, newDebtAmount };
 }
