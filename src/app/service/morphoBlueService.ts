@@ -188,7 +188,7 @@ export async function getRecommendedDebtDetail(
   const markets: MorphoBlueMarket[] = await getMarkets();
 
   // check if the debt token is in the markets
-  const debtTokenMatchedMarkets = markets.filter((market) => {
+  let matchedMarkets = markets.filter((market) => {
     if (protocol === Protocol.AaveV3 || protocol === Protocol.Spark) {
       return (debtPosition as DebtPosition).debts.some(
         (debt) =>
@@ -218,47 +218,44 @@ export async function getRecommendedDebtDetail(
     }
   });
 
-  // check if the collateral tokens are in the markets
-  let matchedMarkets: MorphoBlueMarket[] = [];
-  if (debtTokenMatchedMarkets.length > 0) {
-    matchedMarkets = debtTokenMatchedMarkets.filter(
-      (debtTokenMatchedMarket) => {
-        if (
-          protocol === Protocol.AaveV3 ||
-          protocol === Protocol.Spark ||
-          protocol === Protocol.CompoundV3
-        ) {
-          return (
-            (debtPosition as DebtPosition) ||
-            (debtPosition as CompoundV3DebtPosition)
-          ).collaterals.some(
-            (collateral) =>
-              debtTokenMatchedMarket.collateralToken?.address ===
-              collateral.token.address
-          );
-        }
-        return (
-          debtTokenMatchedMarket.collateralToken.address ===
-          (debtPosition as MorphoBlueDebtPosition).collateral.token.address
-        );
-      }
-    );
-  } else if (debtTokenMatchedMarkets.length === 0) {
+  if (matchedMarkets.length === 0) {
     return null;
   }
 
-  if (matchedMarkets.length === 0) {
+  // check if the collateral tokens are in the markets
+  if (matchedMarkets.length > 0) {
+    matchedMarkets = matchedMarkets.filter((matchedMarket) => {
+      if (
+        protocol === Protocol.AaveV3 ||
+        protocol === Protocol.Spark ||
+        protocol === Protocol.CompoundV3
+      ) {
+        return (
+          (debtPosition as DebtPosition) ||
+          (debtPosition as CompoundV3DebtPosition)
+        ).collaterals.some(
+          (collateral) =>
+            matchedMarket.collateralToken?.address === collateral.token.address
+        );
+      }
+      return (
+        matchedMarket.collateralToken.address ===
+        (debtPosition as MorphoBlueDebtPosition).collateral.token.address
+      );
+    });
+  } else if (matchedMarkets.length === 0) {
     return null;
   }
 
   // check if the utilization ratio is small enough
   matchedMarkets = matchedMarkets.filter((matchedMarket) => {
-    matchedMarket.utilizationRatio < 0.98;
+    const isUtilizationRatioSmallEnough = matchedMarket.utilizationRatio < 0.98;
+    return isUtilizationRatioSmallEnough;
   });
 
   // check if the new max LTV >= (the old max LTV - 5%)
   matchedMarkets = matchedMarkets.filter((matchedMarket) => {
-    matchedMarket.maxLTV >= debtPosition.maxLTV - 0.05;
+    return matchedMarket.maxLTV >= debtPosition.maxLTV - 0.05;
   });
 
   // check if the old borrowing cost - the new borrowing cost > 3%
