@@ -92,6 +92,10 @@ function parseMarketPositionsQueryResult(
   const markets: Map<string, MorphoBlueMarket> = new Map();
   const debtPositions: MorphoBlueDebtPosition[] = [];
   queryResult.userByAddress.marketPositions.forEach((position: any) => {
+    if (position.borrowAssetsUsd === 0 && position.collateralUsd === 0) {
+      return;
+    }
+
     const market: MorphoBlueMarket = {
       marketId: position.market.uniqueKey,
       utilizationRatio: position.market.state.utilization,
