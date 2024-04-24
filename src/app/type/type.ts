@@ -65,6 +65,7 @@ export interface DebtPositionBase {
 export interface DebtPosition extends DebtPositionBase {
   debts: TokenAmount[]; // if debt count > 0, the debt position is an aggregate of multiple debt positions.
   collaterals: TokenAmount[];
+  weightedAvgTrailing30DaysLendingAPY: number; // For multiple collateral positions, this is the weighted average = total interest/ total collateral.
 }
 
 export interface MorphoBlueDebtPosition extends DebtPositionBase {

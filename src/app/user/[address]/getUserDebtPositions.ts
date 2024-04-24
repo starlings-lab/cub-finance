@@ -24,8 +24,8 @@ export async function getUserDebtPositions(address: Address) {
   return await Promise.all([
     getAaveDebtDetails(address),
     getSparkDebtDetails(address),
-    getCompoundV3DebtDetails(address)
-    // getMorphoBlueDebtDetails(1, address)
+    getCompoundV3DebtDetails(address),
+    getMorphoBlueDebtDetails(1, address)
   ]).then((results) => {
     const allDebtPositions: DebtPositionTableRow[] = [];
 
@@ -35,12 +35,12 @@ export async function getUserDebtPositions(address: Address) {
         switch (result.protocol) {
           case Protocol.AaveV3:
             allDebtPositions.push(
-              ...convertAaveDebtPositions(result as UserDebtDetails)
+              ...convertAaveOrSparkDebtPositions(result as UserDebtDetails)
             );
             break;
           case Protocol.Spark:
             allDebtPositions.push(
-              ...convertAaveDebtPositions(result as UserDebtDetails)
+              ...convertAaveOrSparkDebtPositions(result as UserDebtDetails)
             );
             break;
           case Protocol.CompoundV3:
@@ -63,7 +63,7 @@ export async function getUserDebtPositions(address: Address) {
   });
 }
 
-function convertAaveDebtPositions(
+function convertAaveOrSparkDebtPositions(
   userDebtDetails: UserDebtDetails
 ): DebtPositionTableRow[] {
   const marketMap: Map<string, Market> = userDebtDetails.markets.reduce(
@@ -94,9 +94,8 @@ function convertAaveDebtPositions(
         LTV: debtPosition.LTV,
         maxLTV: debtPosition.maxLTV,
         trailing30DaysNetAPY: debtPosition.trailing30DaysNetAPY,
-        trailing30DaysLendingAPY: marketMap.get(
-          debtPosition.debts[0].token.address.toLowerCase()
-        )!.trailing30DaysLendingAPY,
+        trailing30DaysLendingAPY:
+          debtPosition.weightedAvgTrailing30DaysLendingAPY,
         trailing30DaysBorrowingAPY: marketMap.get(
           debtPosition.debts[0].token.address.toLowerCase()
         )!.trailing30DaysBorrowingAPY

@@ -173,6 +173,10 @@ export class BaseAaveService {
         (acc, curr) => acc + curr.amountInUSD,
         0
       );
+      const weightedAvgLendingAPY = calculateWeightedAvgLendingAPY(
+        collaterals,
+        marketMap
+      );
       debtPositions.push({
         maxLTV: Number(userAccountData.ltv) / 10000,
         debts: debts,
@@ -182,7 +186,8 @@ export class BaseAaveService {
           collaterals,
           debts,
           marketMap
-        )
+        ),
+        weightedAvgTrailing30DaysLendingAPY: weightedAvgLendingAPY
       });
 
       // Add a debt position per debt token when user has multiple debts
@@ -200,18 +205,21 @@ export class BaseAaveService {
               collaterals,
               [debt],
               marketMap
-            )
+            ),
+            weightedAvgTrailing30DaysLendingAPY: weightedAvgLendingAPY
           });
         });
       }
     }
 
-    return {
+    const userDebtDetails = {
       protocol: this.protocol,
       userAddress,
       markets: Array.from(marketMap.values()),
       debtPositions
     };
+    // console.dir(userDebtDetails, { depth: null });
+    return userDebtDetails;
   }
 
   public async getRecommendedDebtDetail(
@@ -791,18 +799,42 @@ function calculateNetBorrowingAPY(
     const market = marketMap.get(curr.token.address.toLowerCase());
     return acc + curr.amountInUSD * market!.trailing30DaysLendingAPY;
   }, 0);
+  // console.log("Total lending interest: ", totalLendingInterest);
 
   const totalBorrowingInterest = debts.reduce((acc, curr) => {
     const market = marketMap.get(curr.token.address.toLowerCase());
     return acc + curr.amountInUSD * market!.trailing30DaysBorrowingAPY;
   }, 0);
+  // console.log("Total borrowing interest: ", totalBorrowingInterest);
 
   const totalDebtAmountInUSD = debts.reduce(
     (acc, curr) => acc + curr.amountInUSD,
     0
   );
+  // console.log("Total debt amount in USD: ", totalDebtAmountInUSD);
 
   const netBorrowingAPY =
     (totalLendingInterest - totalBorrowingInterest) / totalDebtAmountInUSD;
   return netBorrowingAPY;
+}
+
+function calculateWeightedAvgLendingAPY(
+  collaterals: TokenAmount[],
+  marketMap: Map<string, Market>
+): number {
+  // calculate total interest earned by user's collaterals
+  const totalLendingInterest = collaterals.reduce((acc, curr) => {
+    const market = marketMap.get(curr.token.address.toLowerCase());
+    return acc + curr.amountInUSD * market!.trailing30DaysLendingAPY;
+  }, 0);
+
+  // total collateral amount in USD
+  const totalCollateralAmountInUSD = collaterals.reduce(
+    (acc, curr) => acc + curr.amountInUSD,
+    0
+  );
+
+  const weightedAvgLendingAPY =
+    totalLendingInterest / totalCollateralAmountInUSD;
+  return weightedAvgLendingAPY;
 }

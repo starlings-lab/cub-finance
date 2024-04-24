@@ -81,10 +81,11 @@ class AaveV3APYProvider implements APYProvider {
         trailingDayBorrowRate
       );
       const trailingDayLendingAPY = calculateAPYFromAPR(trailingDayLendRate);
-      return {
+      const trailingDayAPYs = {
         borrowingAPY: trailingDayBorrowingAPY,
         lendingAPY: trailingDayLendingAPY
       };
+      return trailingDayAPYs;
     } catch (error) {
       console.log(error);
       throw error;
