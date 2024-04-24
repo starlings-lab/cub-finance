@@ -51,9 +51,9 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
           className
         )}
       >
-        <div className="hidden sm:flex w-full max-w-xl">
+        <div className="hidden sm:flex flex-col w-full max-w-xl">
           <div
-            className={`space-x-2 py-1 pl-3 pr-1 border ${
+            className={`flex w-full space-x-2 py-1 pl-3 pr-1 border ${
               addressErr ? "border-red-500" : ""
             } rounded-3xl`}
           >
