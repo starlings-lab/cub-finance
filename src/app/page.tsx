@@ -19,6 +19,7 @@ export default async function Home() {
   const aaveUser = "0x00171ab2f44c1c9b21c7696eb1a5c601f05a9167";
   const compoundUser1 = "0xfe99cc4664a939f826dbeb545c1aad4c89ee737a";
   const compoundUser2 = "0x9CF423E929d661a0fB25e4AEf05bEB1037298fFb";
+  const morphoUser = "0xf603265f91f58F1EfA4fAd57694Fb3B77b25fC18";
 
   // const compoundV3UserDebtDetails = await getCompoundV3UserDebtDetails(
   //   compoundUser2
