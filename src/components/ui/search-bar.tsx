@@ -7,6 +7,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { isAddress } from "ethers";
+import { useToast } from "./use-toast";
 
 export interface SearchBarProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -17,6 +18,7 @@ export interface SearchBarProps
 const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
   ({ className, type, defaultUserAddress, isHome, ...props }, ref) => {
     const router = useRouter();
+    const { toast } = useToast();
     const [value, setValue] = React.useState<string>(defaultUserAddress);
     const [addressErr, setAddressErr] = React.useState<boolean>(false);
     const [addressIsFocused, setAddressIsFocused] =
@@ -73,9 +75,21 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               placeholder="Enter your wallet address"
               onChange={handleChange}
               onFocus={() => setAddressIsFocused(true)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  if (!(addressErr || value === "")) {
+                    router.push(`/user/${value}`);
+                  } else {
+                    toast({
+                      title: "Enter a valid address",
+                      variant: "destructive"
+                    });
+                  }
+                }
+              }}
             ></Input>
             <Button
-              disabled={addressErr}
+              disabled={addressErr || value === ""}
               className={`bg-[#F43F5E] text-white rounded-3xl w-36 ${
                 !isHome && !addressIsFocused && "hidden"
               }`}
@@ -99,7 +113,6 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
             } rounded-3xl py-1 px-3`}
           >
             <Input
-              ref={inputRef}
               className="placeholder:text-slate-400 rounded-3xl"
               type="text"
               value={value}
