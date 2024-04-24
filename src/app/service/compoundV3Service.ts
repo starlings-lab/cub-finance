@@ -445,21 +445,24 @@ async function getMaxLtv(
       collaterals.token
     );
     const maxLtvAmountForCollateral: bigint =
-      (collaterals.amount * collateralFactor) /
-      COLLATERAL_FACTOR_SCALE /
-      COLLATERAL_AMOUNT_SCALE;
+      collaterals.amount * collateralFactor;
     const maxLtvAmountForCollateralInUSD: bigint = await getDebtUsdPrice(
       market,
       getPriceFeedFromTokenSymbol(collaterals.token.symbol),
       maxLtvAmountForCollateral
     );
-    maxLtvAmountInUsd += maxLtvAmountForCollateralInUSD / USD_SCALE;
+    maxLtvAmountInUsd +=
+      maxLtvAmountForCollateralInUSD /
+      USD_SCALE /
+      COLLATERAL_FACTOR_SCALE /
+      COLLATERAL_AMOUNT_SCALE;
     const collateralAmountInUSD: bigint = await getDebtUsdPrice(
       market,
       getPriceFeedFromTokenSymbol(collaterals.token.symbol),
-      collaterals.amount / COLLATERAL_AMOUNT_SCALE
+      collaterals.amount
     );
-    totalCollateralAmountInUsd += collateralAmountInUSD / USD_SCALE;
+    totalCollateralAmountInUsd +=
+      collateralAmountInUSD / USD_SCALE / COLLATERAL_AMOUNT_SCALE;
   }
 
   const promises = (collaterals as TokenAmount[]).map(async (collateral) => {
@@ -470,21 +473,24 @@ async function getMaxLtv(
       collateral.token
     );
     const maxLtvAmountForCollateral: bigint =
-      (collateral.amount * collateralFactor) /
-      COLLATERAL_FACTOR_SCALE /
-      COLLATERAL_AMOUNT_SCALE;
+      collateral.amount * collateralFactor;
     const maxLtvAmountForCollateralInUSD: bigint = await getDebtUsdPrice(
       market,
       getPriceFeedFromTokenSymbol(collateral.token.symbol),
       maxLtvAmountForCollateral
     );
-    maxLtvAmountInUsd += maxLtvAmountForCollateralInUSD / USD_SCALE;
+    maxLtvAmountInUsd +=
+      maxLtvAmountForCollateralInUSD /
+      USD_SCALE /
+      COLLATERAL_FACTOR_SCALE /
+      COLLATERAL_AMOUNT_SCALE;
     const collateralAmountInUSD: bigint = await getDebtUsdPrice(
       market,
       getPriceFeedFromTokenSymbol(collateral.token.symbol),
-      collateral.amount / COLLATERAL_AMOUNT_SCALE
+      collateral.amount
     );
-    totalCollateralAmountInUsd += collateralAmountInUSD / USD_SCALE;
+    totalCollateralAmountInUsd +=
+      collateralAmountInUSD / USD_SCALE / COLLATERAL_AMOUNT_SCALE;
   });
 
   await Promise.all(promises);
