@@ -241,11 +241,14 @@ export async function getRecommendedDebtDetail(
           (collateral) =>
             matchedMarket.collateralToken?.address === collateral.token.address
         );
+      } else if (protocol === Protocol.MorphoBlue) {
+        // there is one market with the id of 0xf8c13c80ab8666c21fc5afa13105745cae7c1da13df596eb5054319f36655cc9 where collateralToken is null
+        return (
+          matchedMarket.collateralToken != null &&
+          (debtPosition as MorphoBlueDebtPosition).collateral.token.address ===
+            matchedMarket.collateralToken.address
+        );
       }
-      return (
-        matchedMarket.collateralToken.address ===
-        (debtPosition as MorphoBlueDebtPosition).collateral.token.address
-      );
     });
   } else if (matchedMarkets.length === 0) {
     return null;
