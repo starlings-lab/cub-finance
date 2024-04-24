@@ -55,9 +55,18 @@ export function DataTable<TData, TValue>({
   });
 
   useEffect(() => {
-    if (data?.length > 0 && table.getRow("0")) {
-      table.getRow("0").toggleSelected();
-      state?.setActiveDebtPosition(table.getRow("0").original);
+    if (data?.length > 0) {
+      const rowOne = table.getRow("0");
+      if (rowOne.subRows.length > 0) {
+        const firstSubRow = table.getRow("0.0");
+        if (!firstSubRow.getIsSelected()) {
+          firstSubRow.toggleSelected();
+        }
+        state?.setActiveDebtPosition(firstSubRow.original);
+      } else {
+        rowOne.toggleSelected();
+        state?.setActiveDebtPosition(rowOne.original);
+      }
     }
   }, [data]);
 
@@ -90,23 +99,29 @@ export function DataTable<TData, TValue>({
                   key={row.id}
                   onClick={(e) => {
                     if (row?.depth === 0) {
-                      !row.getIsSelected() && state?.setActiveDebtPosition(null);
+                      !row.getIsSelected() &&
+                        !row.getIsExpanded() &&
+                        state?.setActiveDebtPosition(null);
                       table.resetExpanded();
                       row.toggleExpanded();
-                      if(!row.getCanExpand() && !row.getIsSelected()){
+                      if (!row.getCanExpand() && !row.getIsSelected()) {
                         row.toggleSelected();
                         state?.setActiveDebtPosition(row.original);
                       }
                     }
                     if (row?.depth === 1) {
-                      if(!row.getIsSelected()){
+                      if (!row.getIsSelected()) {
                         row.toggleSelected();
                         state?.setActiveDebtPosition(row.original);
                       }
                     }
                   }}
                   data-state={
-                    ((row?.depth === 1 && row.getIsSelected()) || (row.depth === 0 && !row.getCanExpand() && row.getIsSelected())) && "selected"
+                    ((row?.depth === 1 && row.getIsSelected()) ||
+                      (row.depth === 0 &&
+                        !row.getCanExpand() &&
+                        row.getIsSelected())) &&
+                    "selected"
                   }
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -121,8 +136,11 @@ export function DataTable<TData, TValue>({
               </Fragment>
             ))
           ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-16 text-left sm:text-center">
+            <TableRow className="hover:bg-white">
+              <TableCell
+                colSpan={columns.length}
+                className="h-16 text-left sm:text-center"
+              >
                 No results.
               </TableCell>
             </TableRow>
