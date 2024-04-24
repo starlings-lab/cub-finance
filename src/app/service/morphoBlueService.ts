@@ -91,39 +91,40 @@ function parseMarketPositionsQueryResult(
   // Parse out the debt positions and markets
   const markets: Map<string, MorphoBlueMarket> = new Map();
   const debtPositions: MorphoBlueDebtPosition[] = [];
-  queryResult.userByAddress.marketPositions.forEach((position: any) => {
-    if (position.borrowAssetsUsd === 0 && position.collateralUsd === 0) {
-      return;
-    }
+  queryResult.userByAddress.marketPositions
+    .filter(
+      (position: any) =>
+        position.borrowAssetsUsd > 0 && position.collateralUsd > 0
+    )
+    .forEach((position: any) => {
+      const market: MorphoBlueMarket = {
+        marketId: position.market.uniqueKey,
+        utilizationRatio: position.market.state.utilization,
+        maxLTV: Number(position.market.lltv / 10 ** 18),
+        debtToken: position.market.loanAsset,
+        collateralToken: position.market.collateralAsset,
+        trailing30DaysBorrowingAPY: position.market.monthlyApys.borrowApy
+      };
+      markets.set(market.marketId, market);
 
-    const market: MorphoBlueMarket = {
-      marketId: position.market.uniqueKey,
-      utilizationRatio: position.market.state.utilization,
-      maxLTV: Number(position.market.lltv / 10 ** 18),
-      debtToken: position.market.loanAsset,
-      collateralToken: position.market.collateralAsset,
-      trailing30DaysBorrowingAPY: position.market.monthlyApys.borrowApy
-    };
-    markets.set(market.marketId, market);
-
-    debtPositions.push({
-      maxLTV: position.market.lltv / 10 ** 18,
-      LTV: position.borrowAssetsUsd / position.collateralUsd,
-      marketId: position.market.uniqueKey,
-      debt: {
-        token: position.market.loanAsset,
-        amount: position.borrowAssets,
-        amountInUSD: position.borrowAssetsUsd
-      },
-      collateral: {
-        token: position.market.collateralAsset,
-        amount: position.collateral,
-        amountInUSD: position.collateralUsd
-      },
-      // MorphoBlue does not pay interest on collateral
-      trailing30DaysNetAPY: 0 - position.market.monthlyApys.borrowApy
+      debtPositions.push({
+        maxLTV: position.market.lltv / 10 ** 18,
+        LTV: position.borrowAssetsUsd / position.collateralUsd,
+        marketId: position.market.uniqueKey,
+        debt: {
+          token: position.market.loanAsset,
+          amount: position.borrowAssets,
+          amountInUSD: position.borrowAssetsUsd
+        },
+        collateral: {
+          token: position.market.collateralAsset,
+          amount: position.collateral,
+          amountInUSD: position.collateralUsd
+        },
+        // MorphoBlue does not pay interest on collateral
+        trailing30DaysNetAPY: 0 - position.market.monthlyApys.borrowApy
+      });
     });
-  });
 
   return {
     protocol: Protocol.MorphoBlue,
