@@ -11,7 +11,7 @@ import {
 } from "../type/type";
 import { calculateAPYFromAPR } from "../utils/utils";
 import { request, gql } from "graphql-request";
-import { MESSARI_GRAPHQL_URL } from "../constants";
+import { MESSARI_AAVE_V3_GRAPHQL_URL } from "../constants";
 
 // implement APYProvider interface for Spark protocol
 class AaveV3APYProvider implements APYProvider {
@@ -43,7 +43,10 @@ class AaveV3APYProvider implements APYProvider {
     }
   `;
     try {
-      const queryResult: any = await request(MESSARI_GRAPHQL_URL, query);
+      const queryResult: any = await request(
+        MESSARI_AAVE_V3_GRAPHQL_URL,
+        query
+      );
       // console.log(
       //   "Query result count: ",
       //   queryResult.marketHourlySnapshots.length
