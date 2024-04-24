@@ -17,6 +17,10 @@ import { Protocol } from "./type/type";
 export default async function Home() {
   // TODO: remove test users
   const aaveUser = "0x00171ab2f44c1c9b21c7696eb1a5c601f05a9167";
+  const aaveUser2 = "0xa61D72BD43087d5102EC7AdFBBf9DE7189b1A6b1"
+  const aaveUser3 = "0x4F03745D7963462CDbb0050F02f99025FeD52976"
+  const aaveUser4 = "0xbF47E471eEe2C58782Abd0B66cb7be865c809A95"
+  const aaveUser5 = "0x901bd9EF18da00b43985B608ee831a79c4070C30"
   const compoundUser1 = "0xfe99cc4664a939f826dbeb545c1aad4c89ee737a";
   const compoundUser2 = "0x9CF423E929d661a0fB25e4AEf05bEB1037298fFb";
   const morphoUser = "0xf603265f91f58F1EfA4fAd57694Fb3B77b25fC18";
@@ -50,7 +54,7 @@ export default async function Home() {
           <SearchBar
             className="mt-16"
             isHome={true}
-            defaultUserAddress={compoundUser2}
+            defaultUserAddress={aaveUser4}
           />
         </CardContent>
       </Card>
