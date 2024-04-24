@@ -55,7 +55,7 @@ export function DataTable<TData, TValue>({
   });
 
   useEffect(() => {
-    if (table.getRow("0")) {
+    if (data?.length > 0 && table.getRow("0")) {
       table.getRow("0").toggleSelected();
       state?.setActiveDebtPosition(table.getRow("0").original);
     }
@@ -122,7 +122,7 @@ export function DataTable<TData, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+              <TableCell colSpan={columns.length} className="h-16 text-left sm:text-center">
                 No results.
               </TableCell>
             </TableRow>
