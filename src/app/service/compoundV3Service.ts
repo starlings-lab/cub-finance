@@ -433,73 +433,41 @@ async function getMaxLtv(
   market: Contract,
   collaterals: TokenAmount[] | TokenAmount
 ): Promise<number> {
-  let maxLtvAmountInUsd = BigInt(0);
-  let totalCollateralAmountInUsd = BigInt(0);
+  let maxLtvAmountInUsd: number = 0;
+  let totalCollateralAmountInUsd: number = 0;
 
-  const COLLATERAL_FACTOR_SCALE = BigInt(10 ** 18);
+  const COLLATERAL_FACTOR_SCALE = 10 ** 18;
 
   if (!Array.isArray(collaterals)) {
-    const COLLATERAL_AMOUNT_SCALE = BigInt(10 ** collaterals.token.decimals);
     let collateralFactor: bigint = await getCollateralFactor(
       market,
       collaterals.token
     );
-    const maxLtvAmountForCollateral: bigint =
-      collaterals.amount * collateralFactor;
-    const maxLtvAmountForCollateralInUSD: bigint = await getDebtUsdPrice(
-      market,
-      getPriceFeedFromTokenSymbol(collaterals.token.symbol),
-      maxLtvAmountForCollateral
-    );
+    const maxLtvAmountForCollateralInUSD: number =
+      collaterals.amountInUSD * Number(collateralFactor);
     maxLtvAmountInUsd +=
-      maxLtvAmountForCollateralInUSD /
-      USD_SCALE /
-      COLLATERAL_FACTOR_SCALE /
-      COLLATERAL_AMOUNT_SCALE;
-    const collateralAmountInUSD: bigint = await getDebtUsdPrice(
-      market,
-      getPriceFeedFromTokenSymbol(collaterals.token.symbol),
-      collaterals.amount
-    );
-    totalCollateralAmountInUsd +=
-      collateralAmountInUSD / USD_SCALE / COLLATERAL_AMOUNT_SCALE;
+      maxLtvAmountForCollateralInUSD / COLLATERAL_FACTOR_SCALE;
+    totalCollateralAmountInUsd += collaterals.amountInUSD;
   }
 
   const promises = (collaterals as TokenAmount[]).map(async (collateral) => {
-    const COLLATERAL_AMOUNT_SCALE = BigInt(10 ** collateral.token.decimals);
-
     let collateralFactor: bigint = await getCollateralFactor(
       market,
       collateral.token
     );
-    const maxLtvAmountForCollateral: bigint =
-      collateral.amount * collateralFactor;
-    const maxLtvAmountForCollateralInUSD: bigint = await getDebtUsdPrice(
-      market,
-      getPriceFeedFromTokenSymbol(collateral.token.symbol),
-      maxLtvAmountForCollateral
-    );
+    const maxLtvAmountForCollateralInUSD: number =
+      collateral.amountInUSD * Number(collateralFactor);
     maxLtvAmountInUsd +=
-      maxLtvAmountForCollateralInUSD /
-      USD_SCALE /
-      COLLATERAL_FACTOR_SCALE /
-      COLLATERAL_AMOUNT_SCALE;
-    const collateralAmountInUSD: bigint = await getDebtUsdPrice(
-      market,
-      getPriceFeedFromTokenSymbol(collateral.token.symbol),
-      collateral.amount
-    );
-    totalCollateralAmountInUsd +=
-      collateralAmountInUSD / USD_SCALE / COLLATERAL_AMOUNT_SCALE;
+      maxLtvAmountForCollateralInUSD / COLLATERAL_FACTOR_SCALE;
+    totalCollateralAmountInUsd += collateral.amountInUSD;
   });
 
   await Promise.all(promises);
 
-  if (totalCollateralAmountInUsd === BigInt(0)) return 0;
+  if (totalCollateralAmountInUsd === 0) return 0;
 
-  let maxLtvPercentage: number =
-    Number(maxLtvAmountInUsd) / Number(totalCollateralAmountInUsd);
-  return Number(maxLtvPercentage);
+  let maxLtvPercentage: number = maxLtvAmountInUsd / totalCollateralAmountInUsd;
+  return maxLtvPercentage;
 }
 
 export async function getRecommendedDebtDetail(
