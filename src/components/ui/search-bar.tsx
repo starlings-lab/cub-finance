@@ -19,6 +19,8 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
     const router = useRouter();
     const [value, setValue] = React.useState<string>(defaultUserAddress);
     const [addressErr, setAddressErr] = React.useState<boolean>(false);
+    const [addressIsFocused, setAddressIsFocused] =
+      React.useState<boolean>(false);
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const isValidAddress = isAddress(event.target.value);
       setAddressErr(!isValidAddress);
@@ -54,7 +56,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
         <div className="hidden sm:flex flex-col w-full max-w-xl">
           <div
             className={`flex w-full space-x-2 py-1 pl-3 pr-1 border ${
-              addressErr ? "border-red-500" : ""
+              addressErr && isHome ? "border-red-500" : ""
             } rounded-3xl`}
           >
             <Image
@@ -65,23 +67,26 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
             />
             <Input
               ref={inputRef}
-              className="placeholder:text-slate-400"
+              className="placeholder:text-slate-400 rounded-3xl"
               type="text"
               value={value}
               placeholder="Enter your wallet address"
               onChange={handleChange}
-              onBlur={() => !isHome && value && router.push(`/user/${value}`)}
+              onFocus={() => setAddressIsFocused(true)}
             ></Input>
             <Button
-              disabled={!isHome || addressErr}
+              disabled={addressErr}
               className={`bg-[#F43F5E] text-white rounded-3xl w-36 ${
-                !isHome && "disabled:opacity-0"
+                !isHome && !addressIsFocused && "hidden"
               }`}
+              onClick={(event) => {
+                setAddressIsFocused(false);
+              }}
             >
               <Link href={`/user/${value}`}>Find Now</Link>
             </Button>
           </div>
-          {addressErr && (
+          {addressErr && isHome && (
             <div className="text-red-500 hidden pl-3 pt-1 sm:flex text-sm">
               Enter a valid address
             </div>
