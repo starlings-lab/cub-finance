@@ -290,8 +290,8 @@ export class BaseAaveService {
     const { reservesMap, baseCurrencyData } = await this.getReservesData();
 
     // get debt & collateral token based on type of debt position
-    let existingDebt: null;
-    let existingCollateralTokens: null;
+    let existingDebt: TokenAmount | null;
+    let existingCollateralTokens: Token[] | null;
     let existingCollateralAmountByAddress = new Map<string, TokenAmount>();
     let existingNetBorrowingApy = 0;
 
@@ -392,7 +392,7 @@ export class BaseAaveService {
       return null;
     }
 
-    const debtAndCollateralMarkets = new Map<string, Market>(
+    const debtAndCollateralMarkets = new Map<string, AaveMarket>(
       Array.from(newCollateralMarkets).concat([
         [debtToken.address.toLowerCase(), newDebtMarket]
       ])
@@ -610,23 +610,22 @@ export class BaseAaveService {
   // }
 
   private async getAaveMarket(
-    reservesMap: any,
+    reservesMap: Map<string, any>,
     underlyingAssetToken: Token
   ): Promise<AaveMarket> {
     const tokenReserve = reservesMap.get(
       underlyingAssetToken.address.toLowerCase()
     );
-    return this.calculateTrailingDayBorrowingAndLendingAPYs(
+    const { trailingDayBorrowingAPY, trailingDayLendingAPY } = await this.calculateTrailingDayBorrowingAndLendingAPYs(
       tokenReserve.aTokenAddress
-    ).then(({ trailingDayBorrowingAPY, trailingDayLendingAPY }) => {
-      return {
-        underlyingAsset: underlyingAssetToken,
-        trailing30DaysLendingAPY: trailingDayBorrowingAPY,
-        trailing30DaysBorrowingAPY: trailingDayLendingAPY,
-        priceInMarketReferenceCurrency:
-          tokenReserve.priceInMarketReferenceCurrency
-      };
-    });
+    );
+    
+    return {
+      underlyingAsset: underlyingAssetToken,
+      trailing30DaysLendingAPY: trailingDayBorrowingAPY,
+      trailing30DaysBorrowingAPY: trailingDayLendingAPY,
+      priceInMarketReferenceCurrency: tokenReserve.priceInMarketReferenceCurrency
+    };
   }
 }
 
@@ -833,15 +832,12 @@ function calculateNetBorrowingAPY(
   collaterals: TokenAmount[],
   debts: TokenAmount[],
   marketMap: Map<string, Market>
-) {
-  // Calculate total lending interest
+): number {
   const totalLendingInterest = collaterals.reduce((acc, curr) => {
-    // console.log("Collateral: ", curr);
     const market = marketMap.get(curr.token.address.toLowerCase());
     return acc + curr.amountInUSD * market!.trailing30DaysLendingAPY;
   }, 0);
 
-  // Calculate total borrowing interest
   const totalBorrowingInterest = debts.reduce((acc, curr) => {
     const market = marketMap.get(curr.token.address.toLowerCase());
     return acc + curr.amountInUSD * market!.trailing30DaysBorrowingAPY;

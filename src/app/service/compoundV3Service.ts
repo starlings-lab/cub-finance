@@ -186,6 +186,7 @@ async function getCompoundV3Markets(
 
 async function getAllCompoundV3Markets(): Promise<CompoundV3Market[]> {
   const borrowingAPYs = await getBorrowingAPYsByTokenAddress();
+
   const markets: CompoundV3Market[] = [
     {
       trailing30DaysBorrowingAPY: borrowingAPYs.get(USDC.address) ?? 0,
@@ -200,6 +201,7 @@ async function getAllCompoundV3Markets(): Promise<CompoundV3Market[]> {
       collateralTokens: COMPOUND_V3_CWETH_COLLATERALS
     }
   ];
+
   return markets;
 }
 
@@ -207,23 +209,24 @@ export async function getUtilizationRatio(
   debtTokenAddress: Address
 ): Promise<number> {
   const UTILIZATION_SCALE = 10 ** 18;
-  if (debtTokenAddress === USDC.address) {
-    let cusdcUtilization: bigint =
-      await COMPOUND_V3_CUSDC_CONTRACT.getUtilization();
-    const cusdcUtilizationNumber: number =
-      Number(cusdcUtilization) / UTILIZATION_SCALE;
-    return cusdcUtilizationNumber;
-  } else if (debtTokenAddress === WETH.address) {
-    let cwethUtilization: bigint =
-      await COMPOUND_V3_CWETH_CONTRACT.getUtilization();
-    const cwethUtilizationNumber: number =
-      Number(cwethUtilization) / UTILIZATION_SCALE;
-    return cwethUtilizationNumber;
-  } else {
-    throw new Error("Unsupported debt token address");
-  }
+  const market = getMarketByDebtTokenAddress(debtTokenAddress);
+
+  const utilization: bigint = await market.getUtilization();
+  const utilizationNumber: number = Number(utilization) / UTILIZATION_SCALE;
+
+  return utilizationNumber;
 }
 
+function getMarketByDebtTokenAddress(debtTokenAddress: Address): any {
+  switch (debtTokenAddress) {
+    case USDC.address:
+      return COMPOUND_V3_CUSDC_CONTRACT;
+    case WETH.address:
+      return COMPOUND_V3_CWETH_CONTRACT;
+    default:
+      throw new Error("Unsupported debt token address");
+  }
+}
 // Fetches 30 days trailing borrowing APYs for Compound ETH and USDC pools
 async function getBorrowingAPYsByTokenAddress(): Promise<Map<string, number>> {
   return Promise.all([
@@ -247,18 +250,21 @@ export async function getCollateralsByUserAddress(
 ): Promise<TokenAmount[]> {
   const marketAddress: Address = (await market.getAddress()) as Address;
   const collaterals: Token[] = getSupportedCollateral(marketAddress);
+
   const collateralsPromise = collaterals.map(async (collateral) => {
     const collateralAmount: bigint = await getCollateralBalance(
       market,
       userAddress,
       collateral.address
     );
+
     if (collateralAmount !== BigInt(0)) {
       const amountInUSD: bigint = await getDebtUsdPrice(
         market,
         getPriceFeedFromTokenSymbol(collateral.symbol),
         collateralAmount
       );
+
       return {
         token: getTokenByAddress(collateral.address),
         amount: collateralAmount,
@@ -267,9 +273,12 @@ export async function getCollateralsByUserAddress(
         )
       };
     }
+
     return null;
   });
+
   const collateralsPromiseResolved = await Promise.all(collateralsPromise);
+
   return collateralsPromiseResolved.filter(
     (collateral): collateral is TokenAmount => collateral !== null
   ) as TokenAmount[];
@@ -283,48 +292,31 @@ export async function getBorrowBalance(
     const borrowBalance: bigint = await market.borrowBalanceOf(userAddress);
     return borrowBalance;
   } catch (error) {
+    console.error("Error in getBorrowBalance:", error);
     throw new Error("Failed to fetch borrow balance");
   }
 }
 
 // there seems to be no easy way to fetch supported collaterals for each market. So we store them as constant values. Even compound.js keeps constant values.
 export function getSupportedCollateral(marketAddress: Address): Token[] {
-  try {
-    let supportedCollaterals: Token[];
-    if (marketAddress === COMPOUND_V3_CUSDC_ADDRESS) {
-      supportedCollaterals = COMPOUND_V3_CUSDC_COLLATERALS.map(
-        (collateral) => collateral
-      );
-    } else if (marketAddress === COMPOUND_V3_CWETH_ADDRESS) {
-      supportedCollaterals = COMPOUND_V3_CWETH_COLLATERALS.map(
-        (collateral) => collateral
-      );
-    } else {
-      throw new Error("Unsupported market address");
-    }
-    return supportedCollaterals;
-  } catch (error) {
-    console.log(error);
-    throw error;
+  if (marketAddress === COMPOUND_V3_CUSDC_ADDRESS) {
+    return [...COMPOUND_V3_CUSDC_COLLATERALS];
+  } else if (marketAddress === COMPOUND_V3_CWETH_ADDRESS) {
+    return [...COMPOUND_V3_CWETH_COLLATERALS];
+  } else {
+    throw new Error("Unsupported market address");
   }
 }
 
 export function getSupportedCollateralTokens(
   debtTokenAddress?: Address
 ): Token[] {
-  try {
-    let supportedCollateralTokens: Token[];
-    if (debtTokenAddress === USDC.address) {
-      supportedCollateralTokens = COMPOUND_V3_CUSDC_COLLATERALS;
-    } else if (debtTokenAddress === WETH.address) {
-      supportedCollateralTokens = COMPOUND_V3_CWETH_COLLATERALS;
-    } else {
-      throw new Error("Unsupported market address");
-    }
-    return supportedCollateralTokens;
-  } catch (error) {
-    console.log(error);
-    throw error;
+  if (debtTokenAddress === USDC.address) {
+    return COMPOUND_V3_CUSDC_COLLATERALS;
+  } else if (debtTokenAddress === WETH.address) {
+    return COMPOUND_V3_CWETH_COLLATERALS;
+  } else {
+    throw new Error("Unsupported debt token address");
   }
 }
 
@@ -340,28 +332,25 @@ export async function getCollateralBalance(
     );
     return collateralBalance;
   } catch (error) {
-    console.log(error);
+    console.error("Error in getCollateralBalance:", error);
     throw error;
   }
 }
 
 function getPriceFeedFromTokenSymbol(tokenSymbol: string): Address {
-  if (tokenSymbol === "USDC") {
-    return COMPOUND_V3_PRICEFEEDS.USDC;
-  } else if (tokenSymbol === "WETH") {
-    return COMPOUND_V3_PRICEFEEDS.WETH;
-  } else if (tokenSymbol === "COMP") {
-    return COMPOUND_V3_PRICEFEEDS.COMP;
-  } else if (tokenSymbol === "WBTC") {
-    return COMPOUND_V3_PRICEFEEDS.WBTC;
-  } else if (tokenSymbol === "UNI") {
-    return COMPOUND_V3_PRICEFEEDS.UNI;
-  } else if (tokenSymbol === "LINK") {
-    return COMPOUND_V3_PRICEFEEDS.LINK;
-  } else if (tokenSymbol === "cbETH") {
-    return COMPOUND_V3_PRICEFEEDS.cbETH;
-  } else if (tokenSymbol === "wstETH") {
-    return COMPOUND_V3_PRICEFEEDS.wstETH;
+  const supportedTokens = {
+    USDC: COMPOUND_V3_PRICEFEEDS.USDC,
+    WETH: COMPOUND_V3_PRICEFEEDS.WETH,
+    COMP: COMPOUND_V3_PRICEFEEDS.COMP,
+    WBTC: COMPOUND_V3_PRICEFEEDS.WBTC,
+    UNI: COMPOUND_V3_PRICEFEEDS.UNI,
+    LINK: COMPOUND_V3_PRICEFEEDS.LINK,
+    cbETH: COMPOUND_V3_PRICEFEEDS.cbETH,
+    wstETH: COMPOUND_V3_PRICEFEEDS.wstETH
+  };
+
+  if (tokenSymbol in supportedTokens) {
+    return supportedTokens[tokenSymbol as keyof typeof supportedTokens];
   } else {
     throw new Error("Unsupported token name");
   }
