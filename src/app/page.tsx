@@ -15,15 +15,15 @@ export default async function Home() {
   return (
     <div className="flex min-h-screen pt-20 flex-col items-center">
       <Card className="border-none shadow-none">
-        <CardHeader>
+        <CardHeader className="p-0 sm:p-6">
           <CardTitle>
-            <div className="font-mono text-6xl m-10">
+            <div className="font-mono text-5xl sm:m-2 sm:text-6xl sm:m-10 leading-normal">
               Refinancing, Simplified
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <CardDescription className="home-desc text-lg font-sans text-center -mt-8 tracking-wide">
+        <CardContent className="p-0 sm:p-6">
+          <CardDescription className="home-desc text-lg font-sans sm:text-center sm:-mt-8 tracking-wide">
             ReFi analyzes your existing debt positions and find better terms for
             you.
           </CardDescription>

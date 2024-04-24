@@ -41,11 +41,13 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
     return (
       <div
         className={cn(
-          "flex w-full items-center justify-center space-x-2",
+          `flex w-full items-center justify-center sm:space-x-2 ${
+            !isHome ? "hidden sm:flex" : ""
+          }`,
           className
         )}
       >
-        <div className="flex w-full max-w-xl space-x-2 py-1 pl-3 pr-1 border rounded-3xl">
+        <div className="hidden sm:flex w-full max-w-xl space-x-2 py-1 pl-3 pr-1 border rounded-3xl">
           <Image src={"/search_black.svg"} alt="icon" width="32" height="32" />
           <Input
             ref={inputRef}
@@ -63,6 +65,34 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
             }`}
           >
             <Link href={`/user/${value}`}>Find Now</Link>
+          </Button>
+        </div>
+        <div className="flex flex-col sm:hidden w-full">
+          <div className="flex border rounded-3xl py-1 px-3">
+            <Input
+              ref={inputRef}
+              className="placeholder:text-slate-400 rounded-3xl"
+              type="text"
+              value={value}
+              placeholder="Enter your wallet address"
+              onChange={handleChange}
+              onBlur={() => !isHome && value && router.push(`/user/${value}`)}
+            ></Input>
+          </div>
+          <Button
+            disabled={!isHome}
+            className={`bg-[#F43F5E] text-white rounded-3xl w-full mt-2 ml-0 ${
+              !isHome && "disabled:opacity-0"
+            }`}
+          >
+            <Link href={`/user/${value}`}>Find Now</Link>
+            <Image
+              src={"/search_white.svg"}
+              alt="icon"
+              width="24"
+              height="24"
+              className="ml-2"
+            />
           </Button>
         </div>
       </div>
