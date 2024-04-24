@@ -16,10 +16,7 @@ import {
   POOL_ADDRESS_PROVIDER_ABI,
   UI_POOL_DATA_PROVIDER_V3_ABI
 } from "../contracts/aaveV3";
-import { request, gql } from "graphql-request";
-import { MESSARI_GRAPHQL_URL } from "../constants";
 import { getTokenMetadata } from "./tokenService";
-import { calculateAPYFromAPR } from "../utils/utils";
 
 interface AaveMarket extends Market {
   priceInMarketReferenceCurrency: number;
@@ -29,6 +26,17 @@ interface BaseCurrencyInfo {
   marketReferenceCurrencyUnit: bigint;
 }
 
+export interface APYInfo {
+  borrowingAPY: number;
+  lendingAPY: number;
+}
+
+export interface APYProvider {
+  calculateTrailing30DaysBorrowingAndLendingAPYs(
+    tokenSymbolOrATokenAddress: string | Address
+  ): Promise<APYInfo>;
+}
+
 export class BaseAaveService {
   private protocol: Protocol;
   private poolAddressProvider: Address;
@@ -36,11 +44,13 @@ export class BaseAaveService {
   private provider: AlchemyProvider;
   private poolDataProviderContract: Contract;
   private poolAddressProviderContract: Contract;
+  private apyProvider: APYProvider;
 
   constructor(
     protocol: Protocol,
     poolAddressProvider: Address,
-    uiPoolDataProvider: Address
+    uiPoolDataProvider: Address,
+    apyProvider: APYProvider
   ) {
     this.protocol = protocol;
     this.poolAddressProvider = poolAddressProvider;
@@ -62,6 +72,8 @@ export class BaseAaveService {
       POOL_ADDRESS_PROVIDER_ABI,
       this.provider
     );
+
+    this.apyProvider = apyProvider;
   }
 
   public async getUserDebtDetails(
@@ -202,81 +214,6 @@ export class BaseAaveService {
     };
   }
 
-  /**
-   * Calculates trailing day interest rate for a given market.
-   * Default trailing days count is 30.
-   * @param marketAddress Address of and aave market (aToken address of an asset)
-   * @returns
-   * @remarks Trailing day interest rate is calculated by fetching hourly snapshots of the market
-   * and calculating the average rate for the trailing days.
-   */
-  public async calculateTrailingDayBorrowingAndLendingAPYs(
-    marketAddress: Address,
-    trailingDaysCount = 30
-  ): Promise<{
-    trailingDayBorrowingAPY: number;
-    trailingDayLendingAPY: number;
-  }> {
-    const query = gql`
-    query {
-      marketHourlySnapshots(
-        where: { market: "${marketAddress}" }
-        orderBy: blockNumber
-        orderDirection: desc
-        first: ${24 * trailingDaysCount}
-      ) {
-        rates(where: {type: VARIABLE}) {
-          rate
-          side
-          type
-        }
-        blockNumber
-      }
-    }
-  `;
-    try {
-      const queryResult: any = await request(MESSARI_GRAPHQL_URL, query);
-      // console.log(
-      //   "Query result count: ",
-      //   queryResult.marketHourlySnapshots.length
-      // );
-
-      let cumulativeBorrowRate = 0;
-      let cumulativeLendRate = 0;
-      for (let i = 0; i < queryResult.marketHourlySnapshots.length; i++) {
-        const snapshot = queryResult.marketHourlySnapshots[i];
-        const rateMapBySide = new Map<string, number>();
-        snapshot.rates.forEach((rate: any) => {
-          rateMapBySide.set(rate.side, parseFloat(rate.rate) / 100);
-        });
-        const borrowerRate = rateMapBySide.get("BORROWER") || 0;
-        cumulativeBorrowRate += borrowerRate;
-        const lenderRate = rateMapBySide.get("LENDER") || 0;
-        cumulativeLendRate += lenderRate;
-      }
-
-      const trailingDayBorrowRate =
-        cumulativeBorrowRate / queryResult.marketHourlySnapshots.length;
-      const trailingDayLendRate =
-        cumulativeLendRate / queryResult.marketHourlySnapshots.length;
-
-      // console.log(
-      //   `Cumulative borrow rate: ${cumulativeBorrowRate}, Cumulative lend rate: ${cumulativeLendRate}`
-      // );
-      // console.log(
-      //   `Trailing day borrow rate: ${trailingDayBorrowRate}, Trailing day lend rate: ${trailingDayLendRate}`
-      // );
-      const trailingDayBorrowingAPY = calculateAPYFromAPR(
-        trailingDayBorrowRate
-      );
-      const trailingDayLendingAPY = calculateAPYFromAPR(trailingDayLendRate);
-      return { trailingDayBorrowingAPY, trailingDayLendingAPY };
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  }
-
   public async getRecommendedDebtDetail(
     existingProtocol: Protocol,
     debtPosition:
@@ -286,6 +223,7 @@ export class BaseAaveService {
     maxLTVTolerance = 0.1, // 10%
     borrowingAPYTolerance = 0.03 // 3%
   ): Promise<RecommendedDebtDetail | null> {
+    console.log("Generating recommendation from protocol: ", this.protocol);
     // get market reserve data
     const { reservesMap, baseCurrencyData } = await this.getReservesData();
 
@@ -408,7 +346,10 @@ export class BaseAaveService {
     const borrowingApySpread = newNetBorrowingApy - existingNetBorrowingApy;
 
     if (borrowingApySpread < borrowingAPYTolerance) {
-      console.log("New net borrowing cost is not within tolerance");
+      console.log(
+        "New net borrowing cost is not within tolerance for protocol: ",
+        this.protocol
+      );
       return null;
     }
 
@@ -418,7 +359,7 @@ export class BaseAaveService {
     );
 
     return {
-      protocol: Protocol.AaveV3,
+      protocol: this.protocol,
       market: newDebtMarket,
       debt: createNewDebtPosition(
         newMaxLTV,
@@ -616,15 +557,19 @@ export class BaseAaveService {
     const tokenReserve = reservesMap.get(
       underlyingAssetToken.address.toLowerCase()
     );
-    const { trailingDayBorrowingAPY, trailingDayLendingAPY } = await this.calculateTrailingDayBorrowingAndLendingAPYs(
-      tokenReserve.aTokenAddress
-    );
-    
+    const { borrowingAPY, lendingAPY } =
+      await this.apyProvider.calculateTrailing30DaysBorrowingAndLendingAPYs(
+        this.protocol === Protocol.AaveV3
+          ? tokenReserve.aTokenAddress
+          : underlyingAssetToken.symbol
+      );
+
     return {
       underlyingAsset: underlyingAssetToken,
-      trailing30DaysLendingAPY: trailingDayBorrowingAPY,
-      trailing30DaysBorrowingAPY: trailingDayLendingAPY,
-      priceInMarketReferenceCurrency: tokenReserve.priceInMarketReferenceCurrency
+      trailing30DaysLendingAPY: borrowingAPY,
+      trailing30DaysBorrowingAPY: lendingAPY,
+      priceInMarketReferenceCurrency:
+        tokenReserve.priceInMarketReferenceCurrency
     };
   }
 }
