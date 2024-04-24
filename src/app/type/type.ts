@@ -29,8 +29,8 @@ export interface DebtPositionTableRow {
   LTV: number; // debtAmountInUSD / sum of collateralAmountInUSD array
   maxLTV: number;
   trailing30DaysNetAPY: number; // negative, 0 or positive
-  trailing30DaysLendingAPY: number; // >=0
-  trailing30DaysBorrowingAPY: number; // >=0
+  trailing30DaysLendingAPY: number; // Lending apy of collateral. weighted average for multiple collateral positions.
+  trailing30DaysBorrowingAPY: number; // Borrowing apy of debt token.
   subRows?: DebtPositionTableRow[] | undefined;
   // Original debt position
   debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition;
@@ -141,6 +141,6 @@ export interface RecommendedDebtDetailTableRow {
   LTV: number; // debtAmountInUSD / sum of collateralAmountInUSD array
   maxLTV: number;
   trailing30DaysNetAPY: number; // negative, 0 or positive
-  trailing30DaysLendingAPY: number; // >=0
-  trailing30DaysBorrowingAPY: number; // >=0
+  trailing30DaysLendingAPY: number; // Lending apy of collateral. weighted average for multiple collateral positions.
+  trailing30DaysBorrowingAPY: number; // Borrowing apy of debt token.
 }

@@ -74,15 +74,9 @@ export async function getRecommendations(
       if (result) {
         switch (result.protocol) {
           case Protocol.AaveV3:
-            allRecommendationsConverted.push(
-              ...convertAaveRecommendedDebtDetail(
-                result as RecommendedDebtDetail
-              )
-            );
-            break;
           case Protocol.Spark:
             allRecommendationsConverted.push(
-              ...convertAaveRecommendedDebtDetail(
+              ...convertAaveOrSparkRecommendedDebtDetail(
                 result as RecommendedDebtDetail
               )
             );
@@ -109,7 +103,7 @@ export async function getRecommendations(
   });
 }
 
-function convertAaveRecommendedDebtDetail(
+function convertAaveOrSparkRecommendedDebtDetail(
   userRecommendedDebtDetail: RecommendedDebtDetail
 ): RecommendedDebtDetailTableRow[] {
   return [
@@ -132,7 +126,7 @@ function convertAaveRecommendedDebtDetail(
       maxLTV: userRecommendedDebtDetail.debt.maxLTV,
       trailing30DaysNetAPY: userRecommendedDebtDetail.debt.trailing30DaysNetAPY,
       trailing30DaysLendingAPY:
-        userRecommendedDebtDetail.market.trailing30DaysLendingAPY,
+        userRecommendedDebtDetail.debt.weightedAvgTrailing30DaysLendingAPY,
       trailing30DaysBorrowingAPY:
         userRecommendedDebtDetail.market.trailing30DaysBorrowingAPY
     }

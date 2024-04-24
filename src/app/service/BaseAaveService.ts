@@ -307,7 +307,7 @@ export class BaseAaveService {
     );
 
     if (!newCollateralMarkets || newCollateralMarkets.size === 0) {
-      console.log("Collateral market doesn't exist");
+      console.log("No collateral market exist for protocol: ", this.protocol);
       return null;
     }
 
@@ -610,6 +610,10 @@ function createNewDebtPosition(
     trailing30DaysNetAPY: calculateNetBorrowingAPY(
       newCollaterals,
       [newDebt],
+      marketsMap
+    ),
+    weightedAvgTrailing30DaysLendingAPY: calculateWeightedAvgLendingAPY(
+      newCollaterals,
       marketsMap
     )
   };
