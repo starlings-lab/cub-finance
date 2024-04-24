@@ -68,7 +68,12 @@ export function RefiTableWrapper({
         </TableHeader>
         <TableBody>
           <TableRow className="hover:bg-white">
-            <div className="w-max p-4 font-medium">Selected debt position</div>
+            <TableCell
+              colSpan={recommendedColumns.length}
+              className="h-16 w-max p-4 font-medium"
+            >
+              Selected debt position
+            </TableCell>
           </TableRow>
           {debtSelectedTable.getRowModel().rows.map((row) => (
             <TableRow
@@ -87,11 +92,16 @@ export function RefiTableWrapper({
 
         <TableBody>
           <TableRow className="hover:bg-white">
-            <div className="w-max p-4 font-medium">Refinancing options</div>
+            <TableCell
+              colSpan={recommendedColumns.length}
+              className="h-16 w-max p-4 font-medium"
+            >
+              Refinancing options
+            </TableCell>
           </TableRow>
           {recommendationTable.getRowModel().rows?.length ? (
             recommendationTable.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
+              <TableRow key={row.id} className="hover:bg-white">
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
                     key={cell.id}
@@ -103,10 +113,10 @@ export function RefiTableWrapper({
               </TableRow>
             ))
           ) : (
-            <TableRow>
+            <TableRow className="hover:bg-white">
               <TableCell
                 colSpan={recommendedColumns.length}
-                className="h-24 text-center"
+                className="h-16 text-left sm:text-center"
               >
                 No refinancing options found.
               </TableCell>

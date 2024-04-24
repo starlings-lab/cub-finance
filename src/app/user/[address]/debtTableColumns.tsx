@@ -112,7 +112,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
               />
             }
             content={
-              <div className="text-sm text-slate-800">{debtToken.name}</div>
+              <div className="text-sm text-slate-800">{debtToken.symbol}</div>
             }
           />
         ))}
@@ -144,7 +144,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
             }
             content={
               <div className="text-sm text-slate-800">
-                {collateralToken.name}
+                {collateralToken.symbol}
               </div>
             }
           />
@@ -186,10 +186,10 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
         <PopoverWrapper
           title={
             <div className="flex">
-              <div className="mr-2">{"Net APY"}</div>
+              <div className="mr-2">{"Net Borrowing APY"}</div>
               <Image
                 src={"/info.svg"}
-                alt={"Trailing 30 days Net APY"}
+                alt={"Trailing 30 days Net Borrowing APY"}
                 width={20}
                 height={20}
               />
@@ -197,7 +197,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           }
           content={
             <div className="text-sm text-slate-800">
-              {"Trailing 30 days Net APY"}
+              {"Trailing 30 days Net Borrowing APY"}
             </div>
           }
         />
@@ -313,7 +313,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
                 />
               }
               content={
-                <div className="text-sm text-slate-800">{debtToken.name}</div>
+                <div className="text-sm text-slate-800">{debtToken.symbol}</div>
               }
             />
           ))}
@@ -345,7 +345,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
               }
               content={
                 <div className="text-sm text-slate-800">
-                  {collateralToken.name}
+                  {collateralToken.symbol}
                 </div>
               }
             />
@@ -387,10 +387,10 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
           <PopoverWrapper
             title={
               <div className="flex">
-                <div className="mr-2">{"Net APY"}</div>
+                <div className="mr-2">{"Net Borrowing APY"}</div>
                 <Image
                   src={"/info.svg"}
-                  alt={"Trailing 30 days Net APY"}
+                  alt={"Trailing 30 days Net Borrowing APY"}
                   width={20}
                   height={20}
                 />
@@ -398,7 +398,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
             }
             content={
               <div className="text-sm text-slate-800">
-                {"Trailing 30 days Net APY"}
+                {"Trailing 30 days Net Borrowing APY"}
               </div>
             }
           />
