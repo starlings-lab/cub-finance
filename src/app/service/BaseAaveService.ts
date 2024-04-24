@@ -261,7 +261,7 @@ export class BaseAaveService {
         const morphoBlueDebtPosition = debtPosition as MorphoBlueDebtPosition;
         existingDebt = morphoBlueDebtPosition.debt;
         existingNetBorrowingApy = morphoBlueDebtPosition.trailing30DaysNetAPY;
-        existingCollateralTokens = [morphoBlueDebtPosition.debt.token];
+        existingCollateralTokens = [morphoBlueDebtPosition.collateral.token];
         existingCollateralAmountByAddress.set(
           morphoBlueDebtPosition.collateral.token.address.toLowerCase(),
           morphoBlueDebtPosition.collateral
