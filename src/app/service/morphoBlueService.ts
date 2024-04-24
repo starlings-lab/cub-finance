@@ -129,7 +129,7 @@ function parseMarketPositionsQueryResult(
   };
 }
 
-export function getMarkets(): Promise<MorphoBlueMarket[]> {
+export async function getMarkets(): Promise<MorphoBlueMarket[]> {
   const query = gql`
     query {
       markets {
@@ -159,28 +159,24 @@ export function getMarkets(): Promise<MorphoBlueMarket[]> {
     }
   `;
 
-  return request(MORPHO_GRAPHQL_URL, query)
-    .then((queryResult) => parseMarketsQueryResult(queryResult))
-    .catch((error) => {
-      console.error(error);
-      throw error;
-    });
+  try {
+    const queryResult = await request(MORPHO_GRAPHQL_URL, query);
+    return parseMarketsQueryResult(queryResult);
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 }
 
 function parseMarketsQueryResult(queryResult: any): MorphoBlueMarket[] {
-  const markets: MorphoBlueMarket[] = [];
-  queryResult.markets.items.forEach((market: any) => {
-    markets.push({
-      marketId: market.uniqueKey,
-      debtToken: market.loanAsset,
-      collateralToken: market.collateralAsset,
-      trailing30DaysBorrowingAPY: market.monthlyApys.borrowApy,
-      utilizationRatio: market.state.utilization,
-      maxLTV: Number(market.lltv / 10 ** 18)
-    });
-  });
-
-  return markets;
+  return queryResult.markets.items.map((market: any) => ({
+    marketId: market.uniqueKey,
+    debtToken: market.loanAsset,
+    collateralToken: market.collateralAsset,
+    trailing30DaysBorrowingAPY: market.monthlyApys.borrowApy,
+    utilizationRatio: market.state.utilization,
+    maxLTV: market.lltv / 10 ** 18
+  }));
 }
 
 export async function getRecommendedDebtDetail(
@@ -279,15 +275,23 @@ export async function getRecommendedDebtDetail(
 
   const recommendedDebtDetails: MorphoBlueRecommendedDebtDetail[] = [];
   matchedMarkets.forEach((matchedMarket) => {
-    let matchedDebt: TokenAmount;
-    if (protocol === Protocol.AaveV3 || protocol === Protocol.Spark) {
-      matchedDebt = (debtPosition as DebtPosition).debts.find(
-        (debt) => debt.token.address === matchedMarket.debtToken.address
-      ) as TokenAmount;
-    } else if (protocol === Protocol.CompoundV3) {
-      matchedDebt = (debtPosition as CompoundV3DebtPosition).debt;
-    } else if (protocol === Protocol.MorphoBlue) {
-      matchedDebt = (debtPosition as MorphoBlueDebtPosition).debt;
+    let matchedDebt: TokenAmount | null;
+
+    switch (protocol) {
+      case Protocol.AaveV3:
+      case Protocol.Spark:
+        matchedDebt = (debtPosition as DebtPosition).debts.find(
+          (debt) => debt.token.address === matchedMarket.debtToken.address
+        ) as TokenAmount;
+        break;
+      case Protocol.CompoundV3:
+        matchedDebt = (debtPosition as CompoundV3DebtPosition).debt;
+        break;
+      case Protocol.MorphoBlue:
+        matchedDebt = (debtPosition as MorphoBlueDebtPosition).debt;
+        break;
+      default:
+        matchedDebt = null;
     }
 
     let matchedCollateral: TokenAmount;
