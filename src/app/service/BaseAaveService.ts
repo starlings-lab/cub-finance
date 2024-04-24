@@ -290,8 +290,8 @@ export class BaseAaveService {
     const { reservesMap, baseCurrencyData } = await this.getReservesData();
 
     // get debt & collateral token based on type of debt position
-    let existingDebt: null;
-    let existingCollateralTokens: null;
+    let existingDebt: TokenAmount | null;
+    let existingCollateralTokens: Token[] | null;
     let existingCollateralAmountByAddress = new Map<string, TokenAmount>();
     let existingNetBorrowingApy = 0;
 
@@ -392,7 +392,7 @@ export class BaseAaveService {
       return null;
     }
 
-    const debtAndCollateralMarkets = new Map<string, Market>(
+    const debtAndCollateralMarkets = new Map<string, AaveMarket>(
       Array.from(newCollateralMarkets).concat([
         [debtToken.address.toLowerCase(), newDebtMarket]
       ])
