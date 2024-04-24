@@ -382,7 +382,6 @@ export class BaseAaveService {
     const { isMaxLTVAcceptable, newMaxLTV } = validateMaxLTV(
       debtPosition.maxLTV,
       newCollaterals,
-      Array.from(newCollateralMarkets.keys()),
       reservesMap,
       maxLTVTolerance
     );
@@ -616,15 +615,17 @@ export class BaseAaveService {
     const tokenReserve = reservesMap.get(
       underlyingAssetToken.address.toLowerCase()
     );
-    const { trailingDayBorrowingAPY, trailingDayLendingAPY } = await this.calculateTrailingDayBorrowingAndLendingAPYs(
-      tokenReserve.aTokenAddress
-    );
-    
+    const { trailingDayBorrowingAPY, trailingDayLendingAPY } =
+      await this.calculateTrailingDayBorrowingAndLendingAPYs(
+        tokenReserve.aTokenAddress
+      );
+
     return {
       underlyingAsset: underlyingAssetToken,
       trailing30DaysLendingAPY: trailingDayBorrowingAPY,
       trailing30DaysBorrowingAPY: trailingDayLendingAPY,
-      priceInMarketReferenceCurrency: tokenReserve.priceInMarketReferenceCurrency
+      priceInMarketReferenceCurrency:
+        tokenReserve.priceInMarketReferenceCurrency
     };
   }
 }
@@ -711,7 +712,6 @@ function determineNewLTVAndDebtAmount(
 function validateMaxLTV(
   existingMaxLTV: number,
   newCollaterals: TokenAmount[],
-  collateralMarkets: string[],
   reservesMap: Map<string, any>,
   maxLTVTolerance: number
 ) {
@@ -727,21 +727,7 @@ function validateMaxLTV(
   });
 
   // calculate weighted avg max LTV of collateral markets
-  const newMaxLTV =
-    collateralMarkets.reduce((acc, tokenAddress) => {
-      const collateralReserve = reservesMap.get(tokenAddress);
-      const collateralAmount = collateralAmountByAddress.get(
-        tokenAddress.toLowerCase()
-      )!;
-
-      const maxLTV = Number(collateralReserve.baseLTVasCollateral) / 10000;
-      const weightedMaxLTV =
-        maxLTV * (collateralAmount.amountInUSD / totalCollateralAmountInUSD);
-      // console.log(
-      //   `Max LTV for ${tokenAddress}: ${maxLTV}, Weighted: ${weightedMaxLTV}`
-      // );
-      return acc + weightedMaxLTV;
-    }, 0) / collateralMarkets.length;
+  const newMaxLTV = getMaxLtv(newCollaterals, reservesMap);
 
   // new Max ltv should be >= current LTV - maxLTVTolerance
   const tolerableMaxLTV = existingMaxLTV - maxLTVTolerance;
@@ -758,6 +744,31 @@ function validateMaxLTV(
     );
   }
   return { isMaxLTVAcceptable, newMaxLTV };
+}
+
+function getMaxLtv(
+  newCollaterals: TokenAmount[],
+  reservesMap: Map<string, any>
+): number {
+  let totalMaxLtvAmountInUsd: number = 0;
+  let totalCollateralAmountInUsd: number = 0;
+
+  (newCollaterals as TokenAmount[]).map((collateral) => {
+    const collateralReserve = reservesMap.get(
+      collateral.token.address.toLowerCase()
+    );
+    const collateralFactor: number =
+      Number(collateralReserve.baseLTVasCollateral) / 10000;
+
+    const maxLtvAmountForCollateralInUSD: number =
+      collateral.amountInUSD * collateralFactor;
+    totalMaxLtvAmountInUsd += maxLtvAmountForCollateralInUSD;
+    totalCollateralAmountInUsd += collateral.amountInUSD;
+  });
+
+  let maxLtvPercentage: number =
+    totalMaxLtvAmountInUsd / totalCollateralAmountInUsd;
+  return maxLtvPercentage;
 }
 
 function checkBorrowingAvailability(debtReserve: any, debtAmount: bigint) {
