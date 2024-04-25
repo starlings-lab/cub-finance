@@ -242,7 +242,9 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           }
           content={
             <div className="text-sm text-slate-800">
-              {"Trailing 30 days Lending APY You Earn For Your Collateral"}
+              {
+                "Trailing 30 Days Lending APY For Collateral, Weighted Avg In Case of Multiple Collaterals"
+              }
             </div>
           }
         />
