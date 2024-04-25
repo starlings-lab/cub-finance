@@ -1,4 +1,3 @@
-"use client";
 import React from "react";
 import {
   Card,
@@ -11,7 +10,7 @@ import { SearchBar } from "@/components/ui/search-bar";
 import { TEST_DEBT_POSITION_ADDRESSES } from "@/app/constants";
 
 // eslint-disable-next-line @next/next/no-async-client-component
-export default async function Home() {
+export default function Home() {
   return (
     <div className="flex min-h-screen pt-20 flex-col items-center">
       <Card className="border-none shadow-none">
