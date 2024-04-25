@@ -3,6 +3,7 @@ import {
   DebtPositionTableRow,
   RecommendedDebtDetailTableRow
 } from "@/app/type/type";
+import ImageWrapper from "@/components/ui/image-wrapper";
 import PopoverWrapper from "@/components/ui/popover";
 import { ColumnDef } from "@tanstack/react-table";
 import Image from "next/image";
@@ -102,10 +103,10 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           <PopoverWrapper
             key={debtToken.name}
             title={
-              <Image
+              <ImageWrapper
                 key={debtToken.name}
                 src={`/${debtToken.symbol}.png`}
-                alt={debtToken.name}
+                alt={debtToken.symbol}
                 width={"20"}
                 height={"20"}
                 className="mr-1 rounded-full"
@@ -133,10 +134,10 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           <PopoverWrapper
             key={collateralToken.name}
             title={
-              <Image
+              <ImageWrapper
                 key={collateralToken.name}
                 src={`/${collateralToken.symbol}.png`}
-                alt={collateralToken.name}
+                alt={collateralToken.symbol}
                 width={"20"}
                 height={"20"}
                 className="mr-1 rounded-full"
@@ -303,10 +304,10 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
             <PopoverWrapper
               key={debtToken.name}
               title={
-                <Image
+                <ImageWrapper
                   key={debtToken.name}
                   src={`/${debtToken.symbol}.png`}
-                  alt={debtToken.name}
+                  alt={debtToken.symbol}
                   width={"20"}
                   height={"20"}
                   className="mr-1 rounded-full"
@@ -334,10 +335,10 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
             <PopoverWrapper
               key={collateralToken.name}
               title={
-                <Image
+                <ImageWrapper
                   key={collateralToken.name}
                   src={`/${collateralToken.symbol}.png`}
-                  alt={collateralToken.name}
+                  alt={collateralToken.symbol}
                   width={"20"}
                   height={"20"}
                   className="mr-1 rounded-full"
