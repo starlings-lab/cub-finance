@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactNode, useMemo } from "react";
+import React, { ReactNode, useEffect, useMemo } from "react";
 import * as Popover from "@radix-ui/react-popover";
 import * as Tooltip from "@radix-ui/react-tooltip";
 
@@ -11,10 +11,12 @@ const PopoverWrapper = ({
   title: ReactNode;
   content: ReactNode;
 }) => {
-  const isMobile = useMemo(
-    () => navigator && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
-    []
-  );
+  // isMobile state
+  const [isMobile, setIsMobile] = React.useState<boolean>(false);
+
+  useEffect(() => {
+    setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+  }, []);
 
   if (isMobile) {
     return (
