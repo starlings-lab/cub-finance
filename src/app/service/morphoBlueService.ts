@@ -212,12 +212,15 @@ export async function getRecommendedDebtDetail(
         )
       );
     } else if (protocol === Protocol.MorphoBlue) {
-      const debtTokenAddress = (debtPosition as MorphoBlueDebtPosition).debt
-        .token.address;
+      const debtTokenAddress = (
+        debtPosition as MorphoBlueDebtPosition
+      ).debt.token.address.toLowerCase();
       return (
         market.debtToken.address === debtTokenAddress ||
         MORPHO_BLUE_DEBT_STABLECOINS.some(
-          (debtStablecoin) => debtStablecoin.address === debtTokenAddress
+          (debtStablecoin) =>
+            debtStablecoin.address.toLowerCase() ===
+            market.debtToken.address.toLowerCase()
         )
       );
     }
@@ -246,14 +249,28 @@ export async function getRecommendedDebtDetail(
         // there is one market with the id of 0xf8c13c80ab8666c21fc5afa13105745cae7c1da13df596eb5054319f36655cc9 where collateralToken is null
         return (
           matchedMarket.collateralToken != null &&
-          (debtPosition as MorphoBlueDebtPosition).collateral.token.address ===
-            matchedMarket.collateralToken.address
+          (
+            debtPosition as MorphoBlueDebtPosition
+          ).collateral.token.address.toLowerCase() ===
+            matchedMarket.collateralToken.address.toLowerCase()
         );
       }
     });
   } else if (matchedMarkets.length === 0) {
     return null;
   }
+
+  // console.log(
+  //   "Matched markets after collateral matching:",
+  //   matchedMarkets.map(
+  //     (market) =>
+  //       market.debtToken.symbol +
+  //       " " +
+  //       market.collateralToken.symbol +
+  //       " " +
+  //       market.marketId
+  //   )
+  // );
 
   // check if the utilization ratio is small enough
   matchedMarkets = matchedMarkets.filter((matchedMarket) => {
@@ -263,20 +280,23 @@ export async function getRecommendedDebtDetail(
 
   // check if the new max LTV >= (the old max LTV - 5%)
   matchedMarkets = matchedMarkets.filter((matchedMarket) => {
-    return matchedMarket.maxLTV >= debtPosition.maxLTV - 0.05;
+    return matchedMarket.maxLTV >= debtPosition.maxLTV - maxLTVTolerance;
   });
 
   // check if the old borrowing cost - the new borrowing cost > 3%
   matchedMarkets = matchedMarkets.filter((matchedMarket) => {
     if (isZeroOrNegative(debtPosition.trailing30DaysNetAPY)) {
-      const spread: number =
-        matchedMarket.trailing30DaysBorrowingAPY -
-        Math.abs(debtPosition.trailing30DaysNetAPY);
-      return spread > borrowingAPYTolerance;
+      const newNetBorrowingAPY = matchedMarket.trailing30DaysBorrowingAPY;
+      const oldNetBorrowingAPY = Math.abs(debtPosition.trailing30DaysNetAPY);
+
+      // New borrowing cost is lower than the old borrowing cost within tolerance
+      return newNetBorrowingAPY - borrowingAPYTolerance <= oldNetBorrowingAPY;
     } else if (isZeroOrPositive(debtPosition.trailing30DaysNetAPY)) {
       return false;
     }
   });
+
+  // console.log("Matched markets after cost check:", matchedMarkets);
 
   const recommendedDebtDetails: MorphoBlueRecommendedDebtDetail[] = [];
   matchedMarkets.forEach((matchedMarket) => {
@@ -293,7 +313,10 @@ export async function getRecommendedDebtDetail(
         matchedDebt = (debtPosition as CompoundV3DebtPosition).debt;
         break;
       case Protocol.MorphoBlue:
-        matchedDebt = (debtPosition as MorphoBlueDebtPosition).debt;
+        matchedDebt = {
+          ...(debtPosition as MorphoBlueDebtPosition).debt,
+          token: matchedMarket.debtToken
+        };
         break;
       default:
         matchedDebt = null;

@@ -295,7 +295,7 @@ export class BaseAaveService {
       !debtReserve.borrowingEnabled ||
       !debtReserve.isActive
     ) {
-      console.log("There is no debt token market for position", debtPosition);
+      // console.log("There is no debt token market for position", debtPosition);
       return null;
     }
 
