@@ -290,7 +290,7 @@ export async function getRecommendedDebtDetail(
       const oldNetBorrowingAPY = Math.abs(debtPosition.trailing30DaysNetAPY);
 
       // New borrowing cost is lower than the old borrowing cost within tolerance
-      return newNetBorrowingAPY - borrowingAPYTolerance <= oldNetBorrowingAPY;
+      return newNetBorrowingAPY <= oldNetBorrowingAPY - borrowingAPYTolerance;
     } else if (isZeroOrPositive(debtPosition.trailing30DaysNetAPY)) {
       return false;
     }

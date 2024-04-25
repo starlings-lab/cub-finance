@@ -56,5 +56,6 @@ export const TEST_DEBT_POSITION_ADDRESSES = {
 
   // Spark users
   sparkUser1: "0x000005151cc6f5e8df4b44b955f440c05df7912f",
-  sparkUser2: "0x00081cbc7cb307852b22d541f004dc6c6922277a"
+  sparkUser2: "0x00081cbc7cb307852b22d541f004dc6c6922277a",
+  sparkUser3: "0x035dd15ca9621a448c7e47ce49e2525aa0bf14d0" // has morpho position too
 };
