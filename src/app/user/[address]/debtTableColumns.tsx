@@ -170,7 +170,9 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           }
           content={
             <div className="text-sm text-slate-800">
-              {"Trailing 30 days Net Borrowing APY"}
+              {
+                "Trailing 30 days Net Borrowing APY = (Lending Interest - Borrowing Interest) / Debt Amount"
+              }
             </div>
           }
         />
@@ -205,7 +207,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           }
           content={
             <div className="text-sm text-slate-800">
-              {"Trailing 30 days Borrowing APY"}
+              {"Trailing 30 days Borrowing APY You Pay For Your Debt"}
             </div>
           }
         />
@@ -240,7 +242,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           }
           content={
             <div className="text-sm text-slate-800">
-              {"Trailing 30 days Lending APY"}
+              {"Trailing 30 days Lending APY You Earn For Your Collateral"}
             </div>
           }
         />
