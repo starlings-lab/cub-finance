@@ -448,21 +448,20 @@ async function getMaxLtv(
     maxLtvAmountInUsd +=
       maxLtvAmountForCollateralInUSD / COLLATERAL_FACTOR_SCALE;
     totalCollateralAmountInUsd += collaterals.amountInUSD;
+  } else {
+    const promises = (collaterals as TokenAmount[]).map(async (collateral) => {
+      let collateralFactor: bigint = await getCollateralFactor(
+        market,
+        collateral.token
+      );
+      const maxLtvAmountForCollateralInUSD: number =
+        collateral.amountInUSD * Number(collateralFactor);
+      maxLtvAmountInUsd +=
+        maxLtvAmountForCollateralInUSD / COLLATERAL_FACTOR_SCALE;
+      totalCollateralAmountInUsd += collateral.amountInUSD;
+    });
+    await Promise.all(promises);
   }
-
-  const promises = (collaterals as TokenAmount[]).map(async (collateral) => {
-    let collateralFactor: bigint = await getCollateralFactor(
-      market,
-      collateral.token
-    );
-    const maxLtvAmountForCollateralInUSD: number =
-      collateral.amountInUSD * Number(collateralFactor);
-    maxLtvAmountInUsd +=
-      maxLtvAmountForCollateralInUSD / COLLATERAL_FACTOR_SCALE;
-    totalCollateralAmountInUsd += collateral.amountInUSD;
-  });
-
-  await Promise.all(promises);
 
   if (totalCollateralAmountInUsd === 0) return 0;
 
