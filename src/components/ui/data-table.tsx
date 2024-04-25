@@ -47,7 +47,7 @@ export function DataTable<TData, TValue>({
     enableMultiRowSelection: false,
     onExpandedChange: setExpanded,
     onRowSelectionChange: setRowSelected,
-    getSubRows: ({ subRows }) => subRows,
+    getSubRows: ({ subRows }: any) => subRows,
     state: {
       expanded,
       rowSelection
