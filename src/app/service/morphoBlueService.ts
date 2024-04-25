@@ -137,7 +137,7 @@ function parseMarketPositionsQueryResult(
 export async function getMarkets(): Promise<MorphoBlueMarket[]> {
   const query = gql`
     query {
-      markets {
+      markets(where: { chainId_in: [1] }) {
         items {
           uniqueKey
           lltv
@@ -272,9 +272,11 @@ export async function getRecommendedDebtDetail(
   //   )
   // );
 
-  // check if the utilization ratio is small enough
+  // check if the utilization ratio is small enough and non-zero
   matchedMarkets = matchedMarkets.filter((matchedMarket) => {
-    const isUtilizationRatioSmallEnough = matchedMarket.utilizationRatio < 0.98;
+    const isUtilizationRatioSmallEnough =
+      matchedMarket.utilizationRatio < 0.98 &&
+      matchedMarket.utilizationRatio > 0;
     return isUtilizationRatioSmallEnough;
   });
 
