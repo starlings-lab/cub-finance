@@ -626,6 +626,7 @@ function determineNewLTVAndDebtAmount(
   marketsMap: Map<string, AaveMarket>,
   baseCurrencyData: BaseCurrencyInfo
 ) {
+  const ltvBuffer = 0.05; // 5% buffer
   let newLTV = existingDebt.amountInUSD / newCollateralAmountInUsd;
   let newDebt = existingDebt;
 
@@ -634,7 +635,9 @@ function determineNewLTVAndDebtAmount(
     // on the new max LTV and collateral value
     // console.log(`New LTV: ${newLTV} is higher than new max LTV: ${newMaxLTV}`);
 
-    const newDebtAmountInUSD = newMaxLTV * newCollateralAmountInUsd;
+    // cap the new LTV to new max LTV - buffer
+    newLTV = newMaxLTV - ltvBuffer;
+    const newDebtAmountInUSD = newLTV * newCollateralAmountInUsd;
 
     // console.dir(marketsMap.get(existingDebt.token.address.toLowerCase()), {
     //   depth: null
@@ -657,9 +660,6 @@ function determineNewLTVAndDebtAmount(
       amountInUSD: newDebtAmountInUSD,
       amount: newDebtTokenAmount
     };
-
-    // cap the new LTV to new max LTV
-    newLTV = newMaxLTV;
   }
   return { newLTV, newDebt };
 }
