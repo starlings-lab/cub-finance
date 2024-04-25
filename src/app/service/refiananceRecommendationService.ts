@@ -47,60 +47,65 @@ export async function getRecommendations(
       maxLTVTolerance,
       borrowingAPYTolerance
     )
-  ]).then((recommendationResults) => {
-    const allRecommendations: (
-      | RecommendedDebtDetail
-      | MorphoBlueRecommendedDebtDetail
-      | CompoundV3RecommendedDebtDetail
-    )[] = [];
+  ])
+    .then((recommendationResults) => {
+      const allRecommendations: (
+        | RecommendedDebtDetail
+        | MorphoBlueRecommendedDebtDetail
+        | CompoundV3RecommendedDebtDetail
+      )[] = [];
 
-    const allRecommendationsConverted: RecommendedDebtDetailTableRow[] = [];
+      const allRecommendationsConverted: RecommendedDebtDetailTableRow[] = [];
 
-    // Filter out null recommendations
-    recommendationResults
-      .filter((recommendationResult) => recommendationResult !== null)
-      .forEach((recommendationResult) => {
-        // if recommendation is an array, add all elements to allRecommendations
-        if (Array.isArray(recommendationResult)) {
-          recommendationResult.forEach((r) => allRecommendations.push(r));
-        } else {
-          allRecommendations.push(
-            recommendationResult as RecommendedDebtDetail
-          );
+      // Filter out null recommendations
+      recommendationResults
+        .filter((recommendationResult) => recommendationResult !== null)
+        .forEach((recommendationResult) => {
+          // if recommendation is an array, add all elements to allRecommendations
+          if (Array.isArray(recommendationResult)) {
+            recommendationResult.forEach((r) => allRecommendations.push(r));
+          } else {
+            allRecommendations.push(
+              recommendationResult as RecommendedDebtDetail
+            );
+          }
+        });
+
+      allRecommendations.forEach((result) => {
+        if (result) {
+          switch (result.protocol) {
+            case Protocol.AaveV3:
+            case Protocol.Spark:
+              allRecommendationsConverted.push(
+                ...convertAaveOrSparkRecommendedDebtDetail(
+                  result as RecommendedDebtDetail
+                )
+              );
+              break;
+            case Protocol.CompoundV3:
+              allRecommendationsConverted.push(
+                ...convertCompoundRecommendedDebtDetail(
+                  result as CompoundV3RecommendedDebtDetail
+                )
+              );
+              break;
+            case Protocol.MorphoBlue:
+              allRecommendationsConverted.push(
+                ...convertMorphoRecommendedDebtDetail(
+                  result as MorphoBlueRecommendedDebtDetail
+                )
+              );
+              break;
+          }
         }
       });
 
-    allRecommendations.forEach((result) => {
-      if (result) {
-        switch (result.protocol) {
-          case Protocol.AaveV3:
-          case Protocol.Spark:
-            allRecommendationsConverted.push(
-              ...convertAaveOrSparkRecommendedDebtDetail(
-                result as RecommendedDebtDetail
-              )
-            );
-            break;
-          case Protocol.CompoundV3:
-            allRecommendationsConverted.push(
-              ...convertCompoundRecommendedDebtDetail(
-                result as CompoundV3RecommendedDebtDetail
-              )
-            );
-            break;
-          case Protocol.MorphoBlue:
-            allRecommendationsConverted.push(
-              ...convertMorphoRecommendedDebtDetail(
-                result as MorphoBlueRecommendedDebtDetail
-              )
-            );
-            break;
-        }
-      }
+      return allRecommendationsConverted;
+    })
+    .catch((error) => {
+      console.error("Error fetching recommendations: ", error);
+      return [];
     });
-
-    return allRecommendationsConverted;
-  });
 }
 
 function convertAaveOrSparkRecommendedDebtDetail(

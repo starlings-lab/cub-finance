@@ -23,7 +23,7 @@ const RecommendationsWrapper = () => {
         state!.activeDebtPosition?.debtPosition!
       );
       console.log("Recommendations: ", data);
-      setRecommendations(data);
+      setRecommendations(data ?? []);
       setIsLoading(false);
     };
     if (state?.activeDebtPosition) {
