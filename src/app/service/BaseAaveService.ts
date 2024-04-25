@@ -192,9 +192,9 @@ export class BaseAaveService {
 
       // Add a debt position per debt token when user has multiple debts
       if (debtTokens.length > 1) {
-        console.log(
-          `User has multiple debts (${debtTokens.length}), need to create debt position for each token`
-        );
+        // console.log(
+        //   `User has multiple debts (${debtTokens.length}), need to create debt position for each token`
+        // );
         debts.forEach((debt) => {
           debtPositions.push({
             maxLTV: Number(userAccountData.ltv) / 10000,
@@ -231,7 +231,7 @@ export class BaseAaveService {
     maxLTVTolerance = 0.1, // 10%
     borrowingAPYTolerance = 0.03 // 3%
   ): Promise<RecommendedDebtDetail | null> {
-    console.log("Generating recommendation from protocol: ", this.protocol);
+    // console.log("Generating recommendation from protocol: ", this.protocol);
     // get market reserve data
     const { reservesMap, baseCurrencyData } = await this.getReservesData();
 
@@ -307,12 +307,12 @@ export class BaseAaveService {
     );
 
     if (!newCollateralMarkets || newCollateralMarkets.size === 0) {
-      console.log("No collateral market exist for protocol: ", this.protocol);
+      // console.log("No collateral market exist for protocol: ", this.protocol);
       return null;
     }
 
     if (!checkBorrowingAvailability(debtReserve, existingDebt.amount)) {
-      console.log("Debt market doesn't have enough liquidity to borrow");
+      // console.log("Debt market doesn't have enough liquidity to borrow");
       return null;
     }
 
@@ -333,7 +333,7 @@ export class BaseAaveService {
     );
 
     if (!isMaxLTVAcceptable) {
-      console.log("New max LTV is not within tolerance");
+      // console.log("New max LTV is not within tolerance");
       return null;
     }
 
@@ -348,22 +348,22 @@ export class BaseAaveService {
       [existingDebt],
       debtAndCollateralMarkets
     );
-    console.log("New net borrowing APY: ", newNetBorrowingApy);
+    // console.log("New net borrowing APY: ", newNetBorrowingApy);
 
     const borrowingApySpread = newNetBorrowingApy - existingNetBorrowingApy;
 
     if (borrowingApySpread < borrowingAPYTolerance) {
-      console.log(
-        "New net borrowing cost is not within tolerance for protocol: ",
-        this.protocol
-      );
+      // console.log(
+      //   "New net borrowing cost is not within tolerance for protocol: ",
+      //   this.protocol
+      // );
       return null;
     }
 
     const betterBorrowingCostPercentage = borrowingAPYTolerance * 100;
-    console.log(
-      `New borrowing cost is at least ${betterBorrowingCostPercentage}% better than existing borrowing cost`
-    );
+    // console.log(
+    //   `New borrowing cost is at least ${betterBorrowingCostPercentage}% better than existing borrowing cost`
+    // );
 
     return {
       protocol: this.protocol,
@@ -632,7 +632,7 @@ function determineNewLTVAndDebtAmount(
   if (newLTV > newMaxLTV) {
     // We need to make a recommendation with reduced debt based
     // on the new max LTV and collateral value
-    console.log(`New LTV: ${newLTV} is higher than new max LTV: ${newMaxLTV}`);
+    // console.log(`New LTV: ${newLTV} is higher than new max LTV: ${newMaxLTV}`);
 
     const newDebtAmountInUSD = newMaxLTV * newCollateralAmountInUsd;
 
@@ -689,14 +689,14 @@ function validateMaxLTV(
   const isMaxLTVAcceptable = newMaxLTV >= tolerableMaxLTV;
 
   if (isMaxLTVAcceptable) {
-    console.log(
-      `New max LTV: ${newMaxLTV} is >= current max LTV: ${existingMaxLTV} - maxLTVTolerance: ${maxLTVTolerance}`
-    );
+    // console.log(
+    //   `New max LTV: ${newMaxLTV} is >= current max LTV: ${existingMaxLTV} - maxLTVTolerance: ${maxLTVTolerance}`
+    // );
     // calculate borrowing cost
   } else {
-    console.log(
-      `New max LTV: ${newMaxLTV} is not >= current max LTV: ${existingMaxLTV} - maxLTVTolerance: ${maxLTVTolerance}`
-    );
+    // console.log(
+    //   `New max LTV: ${newMaxLTV} is not >= current max LTV: ${existingMaxLTV} - maxLTVTolerance: ${maxLTVTolerance}`
+    // );
   }
   return { isMaxLTVAcceptable, newMaxLTV };
 }
@@ -733,9 +733,9 @@ function checkBorrowingAvailability(debtReserve: any, debtAmount: bigint) {
     borrowCap === BigInt(0) ? debtReserve.availableLiquidity : borrowCap;
 
   const isAvailableForBorrowing = availableBorrowingAmount > debtAmount;
-  console.log(
-    `Available borrowing amount: ${availableBorrowingAmount}, debt amount: ${debtAmount}`
-  );
+  // console.log(
+  //   `Available borrowing amount: ${availableBorrowingAmount}, debt amount: ${debtAmount}`
+  // );
   return isAvailableForBorrowing;
 }
 
