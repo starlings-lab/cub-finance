@@ -88,17 +88,19 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
                 }
               }}
             ></Input>
-            <Button
-              disabled={addressErr || value === ""}
-              className={`bg-[#F43F5E] text-white rounded-3xl w-36 ${
-                !isHome && !addressIsFocused && "hidden"
-              }`}
-              onClick={(event) => {
-                setAddressIsFocused(false);
-              }}
-            >
-              <Link href={`/user/${value}`}>Find Now</Link>
-            </Button>
+            <Link href={`/user/${value}`}>
+              <Button
+                disabled={addressErr || value === ""}
+                className={`bg-[#F43F5E] text-white rounded-3xl w-36 ${
+                  !isHome && !addressIsFocused && "hidden"
+                }`}
+                onClick={(event) => {
+                  setAddressIsFocused(false);
+                }}
+              >
+                Find Now
+              </Button>
+            </Link>
           </div>
           {addressErr && isHome && (
             <div className="text-red-500 hidden pl-3 pt-1 sm:flex text-sm">
@@ -126,21 +128,23 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               Enter a valid address
             </div>
           )}
-          <Button
-            disabled={!isHome || addressErr}
-            className={`bg-[#F43F5E] text-white rounded-3xl w-full mt-2 ml-0 ${
-              !isHome && "disabled:opacity-0"
-            }`}
-          >
-            <Link href={`/user/${value}`}>Find Now</Link>
-            <Image
-              src={"/search_white.svg"}
-              alt="icon"
-              width="24"
-              height="24"
-              className="ml-2"
-            />
-          </Button>
+          <Link href={`/user/${value}`}>
+            <Button
+              disabled={!isHome || addressErr}
+              className={`bg-[#F43F5E] text-white rounded-3xl w-full mt-2 ml-0 ${
+                !isHome && "disabled:opacity-0"
+              }`}
+            >
+              Find Now
+              <Image
+                src={"/search_white.svg"}
+                alt="icon"
+                width="24"
+                height="24"
+                className="ml-2"
+              />
+            </Button>
+          </Link>
         </div>
       </div>
     );
