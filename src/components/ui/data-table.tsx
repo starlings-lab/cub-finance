@@ -4,9 +4,7 @@ import {
   ColumnDef,
   ColumnSort,
   ExpandedState,
-  Row,
   RowSelectionState,
-  SortingState,
   flexRender,
   getCoreRowModel,
   getExpandedRowModel,
@@ -65,9 +63,10 @@ export function DataTable<TData, TValue>({
 
   useEffect(() => {
     if (data?.length > 0) {
-      const rowOne = table.getRow("0");
+      const allRows = table.getRowModel().rows;
+      const rowOne = allRows[0];
       if (rowOne.subRows.length > 0) {
-        const firstSubRow = table.getRow("0.0");
+        const firstSubRow = allRows[0].subRows[0];
         if (!firstSubRow.getIsSelected()) {
           firstSubRow.toggleSelected();
         }

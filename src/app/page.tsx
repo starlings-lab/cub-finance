@@ -29,7 +29,7 @@ export default function Home() {
           <SearchBar
             className="mt-16"
             isHome={true}
-            defaultUserAddress={TEST_DEBT_POSITION_ADDRESSES.morphoUser1}
+            defaultUserAddress={TEST_DEBT_POSITION_ADDRESSES.compoundUser1}
           />
         </CardContent>
       </Card>
