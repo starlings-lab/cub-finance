@@ -40,17 +40,17 @@ export function RefiTableWrapper({
   const debtSelectedTable = useReactTable({
     data: activeDebtPositionData,
     columns: debtColumns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(), //provide a sorting row model
-    initialState: {
-      sorting: initialSortedColumns
-    }
+    getCoreRowModel: getCoreRowModel()
   });
 
   const recommendationTable = useReactTable({
     data: recommendationsData,
     columns: recommendedColumns,
-    getCoreRowModel: getCoreRowModel()
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(), //provide a sorting row model
+    initialState: {
+      sorting: initialSortedColumns
+    }
   });
 
   return (

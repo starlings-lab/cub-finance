@@ -2,8 +2,28 @@ import React from "react";
 import { getUserDebtPositions } from "./getUserDebtPositions";
 import { Address } from "abitype";
 import { DataTable } from "@/components/ui/data-table";
-import { debtTableColumns, initialSortedColumns } from "./debtTableColumns";
+import {
+  debtTableColumns,
+  totalDebtAmountInUSDColumnId,
+  trailing30DaysNetAPYColumnId
+} from "./debtTableColumns";
 import { DebtPositionTableRow } from "@/app/type/type";
+import { ColumnSort } from "@tanstack/react-table";
+
+// Sort debts by ascending order of trailing30DaysNetAPY and descending order of totalDebtAmountInUSD
+const initialSortedColumns: ColumnSort[] = [
+  {
+    id: trailing30DaysNetAPYColumnId,
+    // We want to display the lowest APY first,
+    // because negative APY means the user is paying interest.
+    desc: false
+  },
+  {
+    id: totalDebtAmountInUSDColumnId,
+    // We want to display the highest debt amount first.
+    desc: true
+  }
+];
 
 const DebtTableWrapper = async ({ userAddress }: { userAddress: string }) => {
   const allDebtPositions: DebtPositionTableRow[] = await getUserDebtPositions(

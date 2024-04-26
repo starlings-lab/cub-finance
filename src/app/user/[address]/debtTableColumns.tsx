@@ -17,6 +17,16 @@ let USDollar = new Intl.NumberFormat("en-US", {
 export const trailing30DaysNetAPYColumnId = "trailing30DaysNetAPY";
 export const totalDebtAmountInUSDColumnId = "totalDebtAmountInUSD";
 
+const sortByTrailing30DaysNetBorrowingAPY = (
+  rowA: any,
+  rowB: any,
+  columnId: any
+) => {
+  return (
+    rowA.original.trailing30DaysNetAPY - rowB.original.trailing30DaysNetAPY
+  );
+};
+
 // Define columns for the table to render DebtPositionTableRow
 export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
   {
@@ -185,7 +195,8 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
     accessorKey: "trailing30DaysNetAPY",
     accessorFn: (originalRow) => {
       return `${(originalRow.trailing30DaysNetAPY * 100).toFixed(2)}%`;
-    }
+    },
+    sortingFn: sortByTrailing30DaysNetBorrowingAPY
   },
   {
     id: totalDebtAmountInUSDColumnId, // id is required for sorting
@@ -390,7 +401,8 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       accessorKey: "trailing30DaysNetAPY",
       accessorFn: (originalRow) => {
         return `${(originalRow.trailing30DaysNetAPY * 100).toFixed(2)}%`;
-      }
+      },
+      sortingFn: sortByTrailing30DaysNetBorrowingAPY
     },
     {
       id: totalDebtAmountInUSDColumnId, // id is required for sorting
@@ -478,18 +490,3 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       }
     }
   ];
-
-// Sort debts by descending order of trailing30DaysNetAPY and descending order of totalDebtAmountInUSD
-export const initialSortedColumns: ColumnSort[] = [
-  {
-    id: trailing30DaysNetAPYColumnId,
-    // We want to display the lowest APY first,
-    // because negative APY means the user is paying interest.
-    desc: true
-  },
-  {
-    id: totalDebtAmountInUSDColumnId,
-    // We want to display the highest debt amount first.
-    desc: true
-  }
-];
