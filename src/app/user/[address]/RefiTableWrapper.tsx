@@ -118,7 +118,7 @@ export function RefiTableWrapper({
                 colSpan={recommendedColumns.length}
                 className="h-16 text-left sm:text-center"
               >
-                No refinancing options found.
+                Your existing positions look good!
               </TableCell>
             </TableRow>
           )}

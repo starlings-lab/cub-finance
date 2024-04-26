@@ -141,7 +141,7 @@ export function DataTable<TData, TValue>({
                 colSpan={columns.length}
                 className="h-16 text-left sm:text-center"
               >
-                No results.
+                You have no debt positions.
               </TableCell>
             </TableRow>
           )}
