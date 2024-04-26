@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { SearchBar } from "@/components/ui/search-bar";
 import Link from "next/link";
@@ -12,11 +13,11 @@ export default function Navbar() {
         <div className="flex h-16 justify-between">
           <div className="flex flex-row py-5 items-center">
             <Link href="/" passHref>
-              <p className="nav-home text-2xl text-[#F43F5E] font-bold">ReFi</p>
+              <Image src="/refi.png" width={64} height={64} alt="" />
             </Link>
           </div>
           {pathname.includes("user") && (
-            <SearchBar isHome={false} defaultUserAddress=""/>
+            <SearchBar isHome={false} defaultUserAddress="" />
           )}
           <div className="mt-auto mb-auto">
             <Button className="bg-[#F43F5E3a] hover:bg-[#F43F5E] text-black hover:text-white rounded-3xl w-36">
