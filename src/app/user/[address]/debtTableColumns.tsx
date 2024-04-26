@@ -364,35 +364,6 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       )
     },
     {
-      id: totalDebtAmountInUSDColumnId, // id is required for sorting
-      header: "Total Debt Amount",
-      // accessorKey: "totalDebtAmountInUSD"
-      accessorFn: (originalRow) => {
-        return USDollar.format(originalRow.totalDebtAmountInUSD);
-      }
-    },
-    {
-      header: "Total Collateral Amount",
-      // accessorKey: "totalCollateralAmountInUSD",
-      accessorFn: (originalRow) => {
-        return USDollar.format(originalRow.totalCollateralAmountInUSD);
-      }
-    },
-    {
-      header: "LTV",
-      accessorKey: "LTV",
-      accessorFn: (originalRow) => {
-        return `${(originalRow.LTV * 100).toFixed(2)}%`;
-      }
-    },
-    {
-      header: "Max LTV",
-      // accessorKey: "maxLTV",
-      accessorFn: (originalRow) => {
-        return `${(originalRow.maxLTV * 100).toFixed(2)}%`;
-      }
-    },
-    {
       id: trailing30DaysNetAPYColumnId, // id is required for sorting
       header: () => (
         <Fragment>
@@ -419,6 +390,49 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       accessorKey: "trailing30DaysNetAPY",
       accessorFn: (originalRow) => {
         return `${(originalRow.trailing30DaysNetAPY * 100).toFixed(2)}%`;
+      }
+    },
+    {
+      id: totalDebtAmountInUSDColumnId, // id is required for sorting
+      header: "Debt Amount",
+      // accessorKey: "totalDebtAmountInUSD"
+      accessorFn: (originalRow) => {
+        return USDollar.format(originalRow.totalDebtAmountInUSD);
+      }
+    },
+    {
+      header: () => (
+        <Fragment>
+          <PopoverWrapper
+            title={
+              <div className="flex">
+                <div className="mr-2">{"Borrowing APY"}</div>
+                <Image
+                  src={"/info.svg"}
+                  alt={"Trailing 30 days Borrowing APY"}
+                  width={20}
+                  height={20}
+                />
+              </div>
+            }
+            content={
+              <div className="text-sm text-slate-800">
+                {"Trailing 30 days Borrowing APY"}
+              </div>
+            }
+          />
+        </Fragment>
+      ),
+      accessorKey: "trailing30DaysBorrowingAPY",
+      accessorFn: (originalRow) => {
+        return `${(originalRow.trailing30DaysBorrowingAPY * 100).toFixed(2)}%`;
+      }
+    },
+    {
+      header: "Collateral Amount",
+      // accessorKey: "totalCollateralAmountInUSD",
+      accessorFn: (originalRow) => {
+        return USDollar.format(originalRow.totalCollateralAmountInUSD);
       }
     },
     {
@@ -450,31 +464,17 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       }
     },
     {
-      header: () => (
-        <Fragment>
-          <PopoverWrapper
-            title={
-              <div className="flex">
-                <div className="mr-2">{"Borrowing APY"}</div>
-                <Image
-                  src={"/info.svg"}
-                  alt={"Trailing 30 days Borrowing APY"}
-                  width={20}
-                  height={20}
-                />
-              </div>
-            }
-            content={
-              <div className="text-sm text-slate-800">
-                {"Trailing 30 days Borrowing APY"}
-              </div>
-            }
-          />
-        </Fragment>
-      ),
-      accessorKey: "trailing30DaysBorrowingAPY",
+      header: "LTV",
+      accessorKey: "LTV",
       accessorFn: (originalRow) => {
-        return `${(originalRow.trailing30DaysBorrowingAPY * 100).toFixed(2)}%`;
+        return `${(originalRow.LTV * 100).toFixed(2)}%`;
+      }
+    },
+    {
+      header: "Max LTV",
+      // accessorKey: "maxLTV",
+      accessorFn: (originalRow) => {
+        return `${(originalRow.maxLTV * 100).toFixed(2)}%`;
       }
     }
   ];
