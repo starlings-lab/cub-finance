@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 
 import "./globals.css";
 import Navbar from "./navbar";
+import { Analytics } from "@vercel/analytics/react";
+
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -30,6 +32,7 @@ export default function RootLayout({
           {children}
         </main>
         <Toaster />
+        <Analytics />
       </body>
     </html>
   );
