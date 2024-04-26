@@ -17,7 +17,7 @@ export default function Home() {
         <CardHeader className="p-0 sm:p-6">
           <CardTitle>
             <div className="font-mono text-5xl sm:m-2 sm:text-6xl sm:m-10 leading-normal">
-              Refinancing, Simplified
+              Refinancing Simplified
             </div>
           </CardTitle>
         </CardHeader>
