@@ -5,7 +5,7 @@ import {
 } from "@/app/type/type";
 import ImageWrapper from "@/components/ui/image-wrapper";
 import PopoverWrapper from "@/components/ui/popover";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, ColumnSort } from "@tanstack/react-table";
 import Image from "next/image";
 import { Fragment } from "react";
 
@@ -13,6 +13,9 @@ let USDollar = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD"
 });
+
+export const trailing30DaysNetAPYColumnId = "trailing30DaysNetAPY";
+export const totalDebtAmountInUSDColumnId = "totalDebtAmountInUSD";
 
 // Define columns for the table to render DebtPositionTableRow
 export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
@@ -154,6 +157,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
     )
   },
   {
+    id: trailing30DaysNetAPYColumnId, // id is required for sorting
     header: () => (
       <Fragment>
         <PopoverWrapper
@@ -184,6 +188,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
     }
   },
   {
+    id: totalDebtAmountInUSDColumnId, // id is required for sorting
     header: "Debt Amount",
     // accessorKey: "totalDebtAmountInUSD"
     accessorFn: (originalRow) => {
@@ -359,6 +364,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       )
     },
     {
+      id: totalDebtAmountInUSDColumnId, // id is required for sorting
       header: "Total Debt Amount",
       // accessorKey: "totalDebtAmountInUSD"
       accessorFn: (originalRow) => {
@@ -387,6 +393,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       }
     },
     {
+      id: trailing30DaysNetAPYColumnId, // id is required for sorting
       header: () => (
         <Fragment>
           <PopoverWrapper
@@ -471,3 +478,18 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       }
     }
   ];
+
+// Sort debts by descending order of trailing30DaysNetAPY and descending order of totalDebtAmountInUSD
+export const initialSortedColumns: ColumnSort[] = [
+  {
+    id: trailing30DaysNetAPYColumnId,
+    // We want to display the lowest APY first,
+    // because negative APY means the user is paying interest.
+    desc: true
+  },
+  {
+    id: totalDebtAmountInUSDColumnId,
+    // We want to display the highest debt amount first.
+    desc: true
+  }
+];

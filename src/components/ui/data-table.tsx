@@ -2,12 +2,15 @@
 
 import {
   ColumnDef,
+  ColumnSort,
   ExpandedState,
   Row,
   RowSelectionState,
+  SortingState,
   flexRender,
   getCoreRowModel,
   getExpandedRowModel,
+  getSortedRowModel,
   useReactTable
 } from "@tanstack/react-table";
 
@@ -25,11 +28,13 @@ import { StoreContext } from "@/app/user/[address]/context";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  initialSortedColumns: ColumnSort[];
 }
 
 export function DataTable<TData, TValue>({
   columns,
-  data
+  data,
+  initialSortedColumns
 }: DataTableProps<TData, TValue>) {
   const state = useContext(StoreContext);
   const [expanded, setExpanded] = useState<ExpandedState>({
@@ -43,6 +48,7 @@ export function DataTable<TData, TValue>({
     columns,
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
+    getSortedRowModel: getSortedRowModel(), //provide a sorting row model
     enableSubRowSelection: true,
     enableMultiRowSelection: false,
     onExpandedChange: setExpanded,
@@ -51,6 +57,9 @@ export function DataTable<TData, TValue>({
     state: {
       expanded,
       rowSelection
+    },
+    initialState: {
+      sorting: initialSortedColumns
     }
   });
 

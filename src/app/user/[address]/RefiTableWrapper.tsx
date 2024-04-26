@@ -14,8 +14,10 @@ import {
 } from "@/components/ui/table";
 import {
   ColumnDef,
+  ColumnSort,
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable
 } from "@tanstack/react-table";
 import React from "react";
@@ -25,18 +27,24 @@ interface RefiTableWrapperProps {
   activeDebtPositionData: DebtPositionTableRow[];
   recommendedColumns: ColumnDef<RecommendedDebtDetailTableRow>[];
   recommendationsData: RecommendedDebtDetailTableRow[];
+  initialSortedColumns: ColumnSort[];
 }
 
 export function RefiTableWrapper({
   debtColumns,
   activeDebtPositionData,
   recommendedColumns,
-  recommendationsData
+  recommendationsData,
+  initialSortedColumns
 }: RefiTableWrapperProps) {
   const debtSelectedTable = useReactTable({
     data: activeDebtPositionData,
     columns: debtColumns,
-    getCoreRowModel: getCoreRowModel()
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(), //provide a sorting row model
+    initialState: {
+      sorting: initialSortedColumns
+    }
   });
 
   const recommendationTable = useReactTable({

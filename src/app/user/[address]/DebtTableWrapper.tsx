@@ -2,7 +2,7 @@ import React from "react";
 import { getUserDebtPositions } from "./getUserDebtPositions";
 import { Address } from "abitype";
 import { DataTable } from "@/components/ui/data-table";
-import { debtTableColumns } from "./debtTableColumns";
+import { debtTableColumns, initialSortedColumns } from "./debtTableColumns";
 import { DebtPositionTableRow } from "@/app/type/type";
 
 const DebtTableWrapper = async ({ userAddress }: { userAddress: string }) => {
@@ -12,7 +12,11 @@ const DebtTableWrapper = async ({ userAddress }: { userAddress: string }) => {
 
   return (
     <div className="max-w-screen-xl mx-auto py-8">
-      <DataTable columns={debtTableColumns} data={allDebtPositions} />
+      <DataTable
+        columns={debtTableColumns}
+        data={allDebtPositions}
+        initialSortedColumns={initialSortedColumns}
+      />
     </div>
   );
 };
