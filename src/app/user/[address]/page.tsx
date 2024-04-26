@@ -33,8 +33,8 @@ export default async function DebtPage({
   return (
     <StoreProvider>
       <div>
-        <div className="w-full p-3 py-4 flex flex-col sm:flex-row justify-between border rounded-md text-slate-500 font-medium tracking-wide text-xs sm:text-base">
-          Wallet Address{" "}
+        <div className="mt-16 w-full p-3 py-4 flex flex-col sm:flex-row justify-between border rounded-md text-slate-500 font-medium tracking-wide text-xs sm:text-base">
+          Wallet Address
           <div className="right font-bold text-black mt-2 sm:mt-0">
             {params.address}
           </div>
