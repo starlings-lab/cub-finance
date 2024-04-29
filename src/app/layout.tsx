@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
+import favicon from "/public/favicon.ico";
+import Head from "next/head";
 
 import "./globals.css";
 import Navbar from "./navbar";
@@ -24,6 +26,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <Head>
+        <link rel="icon" href={favicon.src} />
+      </Head>
       <body className={inter.className}>
         <Suspense fallback={<div>Loading...</div>}>
           <Navbar />
