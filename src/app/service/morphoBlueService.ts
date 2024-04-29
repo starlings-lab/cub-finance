@@ -49,6 +49,9 @@ export async function getMorphoBlueUserDebtDetails(
             }
             state {
               utilization
+              rewards {
+                borrowApy
+              }
             }          
           }
         }
@@ -97,13 +100,21 @@ function parseMarketPositionsQueryResult(
         position.borrowAssetsUsd > 0 && position.collateralUsd > 0
     )
     .forEach((position: any) => {
+      const rewards = position.market.state.rewards.filter(
+        (reward: any) => reward.borrowApy !== null && reward.borrowApy !== 0
+      );
       const market: MorphoBlueMarket = {
         marketId: position.market.uniqueKey,
         utilizationRatio: position.market.state.utilization,
         maxLTV: Number(position.market.lltv / 10 ** 18),
         debtToken: position.market.loanAsset,
         collateralToken: position.market.collateralAsset,
-        trailing30DaysBorrowingAPY: position.market.monthlyApys.borrowApy
+        trailing30DaysBorrowingAPY: position.market.monthlyApys.borrowApy,
+        trailing30DaysLendingRewardAPY: 0, // MorphoBlue doesn't pay interest on collateral
+        trailing30DaysBorrowingRewardAPY: rewards.reduce(
+          (acc: number, reward: number) => acc + reward,
+          0
+        )
       };
       markets.set(market.marketId, market);
 
@@ -122,7 +133,10 @@ function parseMarketPositionsQueryResult(
           amountInUSD: position.collateralUsd
         },
         // MorphoBlue does not pay interest on collateral
-        trailing30DaysNetBorrowingAPY: 0 - position.market.monthlyApys.borrowApy
+        trailing30DaysNetBorrowingAPY:
+          0 -
+          position.market.monthlyApys.borrowApy +
+          rewards.reduce((acc: number, reward: number) => acc + reward, 0)
       });
     });
 
@@ -155,6 +169,9 @@ export async function getMarkets(): Promise<MorphoBlueMarket[]> {
           }
           state {
             utilization
+            rewards {
+              borrowApy
+            }
           }
           monthlyApys {
             borrowApy
@@ -180,10 +197,15 @@ function parseMarketsQueryResult(queryResult: any): MorphoBlueMarket[] {
     collateralToken: market.collateralAsset,
     trailing30DaysBorrowingAPY: market.monthlyApys.borrowApy,
     utilizationRatio: market.state.utilization,
-    maxLTV: market.lltv / 10 ** 18
+    maxLTV: market.lltv / 10 ** 18,
+    trailing30DaysLendingRewardAPY: 0, // MorphoBlue doesn't pay interest on collateral
+    trailing30DaysBorrowingRewardAPY: market.state.rewards
+      .filter(
+        (reward: any) => reward.borrowApy !== null && reward.borrowApy !== 0 // we pass the borrowApy directly under the assumption that reward APY doesn't fluctuate
+      )
+      .reduce((acc: number, reward: number) => acc + reward, 0)
   }));
 }
-
 export async function getRecommendedDebtDetail(
   protocol: Protocol,
   debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
@@ -376,12 +398,16 @@ export async function getRecommendedDebtDetail(
       debt: newDebtAmount,
       collateral: matchedCollateral,
       trailing30DaysNetBorrowingAPY:
-        0 - matchedMarket.trailing30DaysBorrowingAPY
+        0 -
+        matchedMarket.trailing30DaysBorrowingAPY +
+        matchedMarket.trailing30DaysBorrowingRewardAPY
     };
     recommendedDebtDetails.push({
       protocol: Protocol.MorphoBlue,
       trailing30DaysNetBorrowingAPY:
-        0 - matchedMarket.trailing30DaysBorrowingAPY,
+        0 -
+        matchedMarket.trailing30DaysBorrowingAPY +
+        matchedMarket.trailing30DaysBorrowingRewardAPY,
       debt: newDebt,
       market: matchedMarket
     });
