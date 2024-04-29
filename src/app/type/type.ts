@@ -31,6 +31,7 @@ export interface DebtPositionTableRow {
   trailing30DaysNetBorrowingAPY: number; // negative, 0 or positive
   trailing30DaysLendingAPY: number; // Lending apy of collateral. weighted average for multiple collateral positions.
   trailing30DaysBorrowingAPY: number; // Borrowing apy of debt token.
+  trailing30DaysRewardAPY: number;
   subRows?: DebtPositionTableRow[] | undefined;
   // Original debt position
   debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition;
@@ -145,4 +146,5 @@ export interface RecommendedDebtDetailTableRow {
   trailing30DaysNetBorrowingAPY: number; // negative, 0 or positive
   trailing30DaysLendingAPY: number; // Lending apy of collateral. weighted average for multiple collateral positions.
   trailing30DaysBorrowingAPY: number; // Borrowing apy of debt token.
+  trailing30DaysRewardAPY: number;
 }
