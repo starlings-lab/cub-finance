@@ -122,7 +122,7 @@ function parseMarketPositionsQueryResult(
           amountInUSD: position.collateralUsd
         },
         // MorphoBlue does not pay interest on collateral
-        trailing30DaysNetAPY: 0 - position.market.monthlyApys.borrowApy
+        trailing30DaysNetBorrowingAPY: 0 - position.market.monthlyApys.borrowApy
       });
     });
 
@@ -287,13 +287,15 @@ export async function getRecommendedDebtDetail(
 
   // check if the old borrowing cost - the new borrowing cost > 3%
   matchedMarkets = matchedMarkets.filter((matchedMarket) => {
-    if (isZeroOrNegative(debtPosition.trailing30DaysNetAPY)) {
+    if (isZeroOrNegative(debtPosition.trailing30DaysNetBorrowingAPY)) {
       const newNetBorrowingAPY = matchedMarket.trailing30DaysBorrowingAPY;
-      const oldNetBorrowingAPY = Math.abs(debtPosition.trailing30DaysNetAPY);
+      const oldNetBorrowingAPY = Math.abs(
+        debtPosition.trailing30DaysNetBorrowingAPY
+      );
 
       // New borrowing cost is lower than the old borrowing cost within tolerance
       return newNetBorrowingAPY <= oldNetBorrowingAPY - borrowingAPYTolerance;
-    } else if (isZeroOrPositive(debtPosition.trailing30DaysNetAPY)) {
+    } else if (isZeroOrPositive(debtPosition.trailing30DaysNetBorrowingAPY)) {
       return false;
     }
   });
@@ -377,7 +379,8 @@ export async function getRecommendedDebtDetail(
     };
     recommendedDebtDetails.push({
       protocol: Protocol.MorphoBlue,
-      trailing30DaysNetAPY: 0 - matchedMarket.trailing30DaysBorrowingAPY,
+      trailing30DaysNetBorrowingAPY:
+        0 - matchedMarket.trailing30DaysBorrowingAPY,
       debt: newDebt,
       market: matchedMarket
     });

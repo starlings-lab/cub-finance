@@ -28,7 +28,7 @@ export interface DebtPositionTableRow {
   totalCollateralAmountInUSD: number;
   LTV: number; // debtAmountInUSD / sum of collateralAmountInUSD array
   maxLTV: number;
-  trailing30DaysNetAPY: number; // negative, 0 or positive
+  trailing30DaysNetBorrowingAPY: number; // negative, 0 or positive
   trailing30DaysLendingAPY: number; // Lending apy of collateral. weighted average for multiple collateral positions.
   trailing30DaysBorrowingAPY: number; // Borrowing apy of debt token.
   subRows?: DebtPositionTableRow[] | undefined;
@@ -59,7 +59,7 @@ export interface CompoundV3UserDebtDetails extends UserDebtDetailsBase {
 export interface DebtPositionBase {
   maxLTV: number;
   LTV: number; // debtAmountInUSD / sum of collateralAmountInUSD array
-  trailing30DaysNetAPY: number; // negative, 0 or positive
+  trailing30DaysNetBorrowingAPY: number; // negative, 0 or positive
 }
 
 export interface DebtPosition extends DebtPositionBase {
@@ -111,7 +111,7 @@ export interface RecommendedDebtDetailBase {
   // ((lendingAPY * lendingAmount) - (borrowingAPY * (debtAmount)))/debAmount
   // Positive value means user will earn interest and
   // negative value means user will pay interest.
-  trailing30DaysNetAPY: number; // negative, 0 or positive
+  trailing30DaysNetBorrowingAPY: number; // negative, 0 or positive
 }
 
 // Interface for Aave & Spark
@@ -140,7 +140,7 @@ export interface RecommendedDebtDetailTableRow {
   totalCollateralAmountInUSD: number;
   LTV: number; // debtAmountInUSD / sum of collateralAmountInUSD array
   maxLTV: number;
-  trailing30DaysNetAPY: number; // negative, 0 or positive
+  trailing30DaysNetBorrowingAPY: number; // negative, 0 or positive
   trailing30DaysLendingAPY: number; // Lending apy of collateral. weighted average for multiple collateral positions.
   trailing30DaysBorrowingAPY: number; // Borrowing apy of debt token.
 }

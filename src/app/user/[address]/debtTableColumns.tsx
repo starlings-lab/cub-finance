@@ -183,10 +183,17 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
             </div>
           }
           content={
-            <div className="text-sm text-slate-800">
-              {
-                "Trailing 30 days Net Borrowing APY = (Lending Interest - Borrowing Interest) / Debt Amount"
-              }
+            <div>
+              <div className="text-sm text-slate-800">
+                {
+                  "Trailing 30 days Net Borrowing APY = (Lending Interest - Borrowing Interest) / Debt Amount"
+                }
+              </div>
+              <div className="text-sm text-slate-800">
+                {
+                  "Positive value means user will earn interest and negative value means user will pay interest."
+                }
+              </div>
             </div>
           }
         />
@@ -194,7 +201,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
     ),
     accessorKey: "trailing30DaysNetAPY",
     accessorFn: (originalRow) => {
-      return `${(originalRow.trailing30DaysNetAPY * 100).toFixed(2)}%`;
+      return `${(originalRow.trailing30DaysNetBorrowingAPY * 100).toFixed(2)}%`;
     },
     sortingFn: sortByTrailing30DaysNetBorrowingAPY
   },
@@ -400,7 +407,9 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       ),
       accessorKey: "trailing30DaysNetAPY",
       accessorFn: (originalRow) => {
-        return `${(originalRow.trailing30DaysNetAPY * 100).toFixed(2)}%`;
+        return `${(originalRow.trailing30DaysNetBorrowingAPY * 100).toFixed(
+          2
+        )}%`;
       },
       sortingFn: sortByTrailing30DaysNetBorrowingAPY
     },

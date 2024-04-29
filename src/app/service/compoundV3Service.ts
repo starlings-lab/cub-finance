@@ -92,7 +92,7 @@ async function getDebtPositions(
         amountInUSD: amountInUSD
       },
       collaterals: cUSDCcollaterals,
-      trailing30DaysNetAPY: 0 // assign the value in the addMarketsToDebtPositions function
+      trailing30DaysNetBorrowingAPY: 0 // assign the value in the addMarketsToDebtPositions function
     };
     debtPositions.push(debtPosition);
   }
@@ -127,7 +127,7 @@ async function getDebtPositions(
         amountInUSD: amountInUSD
       },
       collaterals: cWETHcollaterals,
-      trailing30DaysNetAPY: 0 // assign the value in the addMarketsToDebtPositions function
+      trailing30DaysNetBorrowingAPY: 0 // assign the value in the addMarketsToDebtPositions function
     };
     debtPositions.push(cWETHdebtPosition);
   }
@@ -149,7 +149,8 @@ async function addMarketsToDebtPositions(
       debtPosition.debt.token.address.toLowerCase()
     ) as CompoundV3Market;
     // Compound V3 does not pay interest on collateral
-    debtPosition.trailing30DaysNetAPY = 0 - market.trailing30DaysBorrowingAPY;
+    debtPosition.trailing30DaysNetBorrowingAPY =
+      0 - market.trailing30DaysBorrowingAPY;
   });
 
   const compoundV3UserDebtDetails: CompoundV3UserDebtDetails = {
@@ -589,12 +590,12 @@ export async function getRecommendedDebtDetail(
 
   // check if the old borrowing cost - the new borrowing cost > 3%
   matchedMarkets = matchedMarkets.filter((matchedMarket) => {
-    if (isZeroOrNegative(debtPosition.trailing30DaysNetAPY)) {
+    if (isZeroOrNegative(debtPosition.trailing30DaysNetBorrowingAPY)) {
       const spread: number =
         matchedMarket.trailing30DaysBorrowingAPY -
-        Math.abs(debtPosition.trailing30DaysNetAPY);
+        Math.abs(debtPosition.trailing30DaysNetBorrowingAPY);
       return spread > borrowingAPYTolerance;
-    } else if (isZeroOrPositive(debtPosition.trailing30DaysNetAPY)) {
+    } else if (isZeroOrPositive(debtPosition.trailing30DaysNetBorrowingAPY)) {
       return false;
     }
   });
@@ -671,7 +672,8 @@ export async function getRecommendedDebtDetail(
 
     recommendedDebtDetails.push({
       protocol: Protocol.MorphoBlue,
-      trailing30DaysNetAPY: 0 - matchedMarket.trailing30DaysBorrowingAPY,
+      trailing30DaysNetBorrowingAPY:
+        0 - matchedMarket.trailing30DaysBorrowingAPY,
       debt: newDebt,
       market: matchedMarket
     });

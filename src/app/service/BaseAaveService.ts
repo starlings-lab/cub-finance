@@ -182,7 +182,7 @@ export class BaseAaveService {
         debts: debts,
         collaterals: collaterals,
         LTV: totalDebtAmountInUSD / totalCollateralAmountInUSD,
-        trailing30DaysNetAPY: calculateNetBorrowingAPY(
+        trailing30DaysNetBorrowingAPY: calculateNetBorrowingAPY(
           collaterals,
           debts,
           marketMap
@@ -201,7 +201,7 @@ export class BaseAaveService {
             debts: [debt],
             collaterals: collaterals,
             LTV: debt.amountInUSD / totalCollateralAmountInUSD,
-            trailing30DaysNetAPY: calculateNetBorrowingAPY(
+            trailing30DaysNetBorrowingAPY: calculateNetBorrowingAPY(
               collaterals,
               [debt],
               marketMap
@@ -249,7 +249,8 @@ export class BaseAaveService {
         existingCollateralTokens = convertedDebtPosition.collaterals.map(
           (collateral) => collateral.token
         );
-        existingNetBorrowingApy = convertedDebtPosition.trailing30DaysNetAPY;
+        existingNetBorrowingApy =
+          convertedDebtPosition.trailing30DaysNetBorrowingAPY;
         convertedDebtPosition.collaterals.forEach((collateral) => {
           existingCollateralAmountByAddress.set(
             collateral.token.address.toLowerCase(),
@@ -260,7 +261,8 @@ export class BaseAaveService {
       case Protocol.MorphoBlue:
         const morphoBlueDebtPosition = debtPosition as MorphoBlueDebtPosition;
         existingDebt = morphoBlueDebtPosition.debt;
-        existingNetBorrowingApy = morphoBlueDebtPosition.trailing30DaysNetAPY;
+        existingNetBorrowingApy =
+          morphoBlueDebtPosition.trailing30DaysNetBorrowingAPY;
         existingCollateralTokens = [morphoBlueDebtPosition.collateral.token];
         existingCollateralAmountByAddress.set(
           morphoBlueDebtPosition.collateral.token.address.toLowerCase(),
@@ -279,7 +281,8 @@ export class BaseAaveService {
             collateral
           );
         });
-        existingNetBorrowingApy = compoundV3DebtPosition.trailing30DaysNetAPY;
+        existingNetBorrowingApy =
+          compoundV3DebtPosition.trailing30DaysNetBorrowingAPY;
         break;
       default:
         throw new Error("Unsupported protocol");
@@ -375,7 +378,7 @@ export class BaseAaveService {
         debtAndCollateralMarkets,
         baseCurrencyData
       ),
-      trailing30DaysNetAPY: newNetBorrowingApy
+      trailing30DaysNetBorrowingAPY: newNetBorrowingApy
     };
   }
 
@@ -607,7 +610,7 @@ function createNewDebtPosition(
     LTV: newLTV,
     debts: [newDebt],
     collaterals: newCollaterals,
-    trailing30DaysNetAPY: calculateNetBorrowingAPY(
+    trailing30DaysNetBorrowingAPY: calculateNetBorrowingAPY(
       newCollaterals,
       [newDebt],
       marketsMap

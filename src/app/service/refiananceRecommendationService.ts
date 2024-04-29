@@ -129,7 +129,8 @@ function convertAaveOrSparkRecommendedDebtDetail(
         ),
       LTV: userRecommendedDebtDetail.debt.LTV,
       maxLTV: userRecommendedDebtDetail.debt.maxLTV,
-      trailing30DaysNetAPY: userRecommendedDebtDetail.debt.trailing30DaysNetAPY,
+      trailing30DaysNetBorrowingAPY:
+        userRecommendedDebtDetail.debt.trailing30DaysNetBorrowingAPY,
       trailing30DaysLendingAPY:
         userRecommendedDebtDetail.debt.weightedAvgTrailing30DaysLendingAPY,
       trailing30DaysBorrowingAPY:
@@ -156,7 +157,8 @@ function convertCompoundRecommendedDebtDetail(
         ),
       LTV: userRecommendedDebtDetail.debt.LTV,
       maxLTV: userRecommendedDebtDetail.debt.maxLTV,
-      trailing30DaysNetAPY: userRecommendedDebtDetail.debt.trailing30DaysNetAPY,
+      trailing30DaysNetBorrowingAPY:
+        userRecommendedDebtDetail.debt.trailing30DaysNetBorrowingAPY,
       trailing30DaysLendingAPY: 0,
       trailing30DaysBorrowingAPY:
         userRecommendedDebtDetail.market.trailing30DaysBorrowingAPY
@@ -177,7 +179,8 @@ function convertMorphoRecommendedDebtDetail(
         userRecommendedDebtDetail.debt.collateral.amountInUSD,
       LTV: userRecommendedDebtDetail.debt.LTV,
       maxLTV: userRecommendedDebtDetail.debt.maxLTV,
-      trailing30DaysNetAPY: userRecommendedDebtDetail.debt.trailing30DaysNetAPY,
+      trailing30DaysNetBorrowingAPY:
+        userRecommendedDebtDetail.debt.trailing30DaysNetBorrowingAPY,
       trailing30DaysLendingAPY: 0,
       trailing30DaysBorrowingAPY:
         userRecommendedDebtDetail.market.trailing30DaysBorrowingAPY

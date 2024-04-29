@@ -93,7 +93,8 @@ function convertAaveOrSparkDebtPositions(
         ),
         LTV: debtPosition.LTV,
         maxLTV: debtPosition.maxLTV,
-        trailing30DaysNetAPY: debtPosition.trailing30DaysNetAPY,
+        trailing30DaysNetBorrowingAPY:
+          debtPosition.trailing30DaysNetBorrowingAPY,
         trailing30DaysLendingAPY:
           debtPosition.weightedAvgTrailing30DaysLendingAPY,
         trailing30DaysBorrowingAPY: marketMap.get(
@@ -136,7 +137,7 @@ function convertCompoundDebtPositions(
       ),
       LTV: debtPosition.LTV,
       maxLTV: debtPosition.maxLTV,
-      trailing30DaysNetAPY: debtPosition.trailing30DaysNetAPY,
+      trailing30DaysNetBorrowingAPY: debtPosition.trailing30DaysNetBorrowingAPY,
       trailing30DaysLendingAPY: 0,
       trailing30DaysBorrowingAPY: debtMarketsMap.get(
         debtPosition.debt.token.address.toLowerCase()
@@ -168,7 +169,7 @@ function convertMorphoDebtPositions(
       totalCollateralAmountInUSD: debtPosition.collateral.amountInUSD,
       LTV: debtPosition.LTV,
       maxLTV: debtPosition.maxLTV,
-      trailing30DaysNetAPY: debtPosition.trailing30DaysNetAPY,
+      trailing30DaysNetBorrowingAPY: debtPosition.trailing30DaysNetBorrowingAPY,
       trailing30DaysLendingAPY: 0,
       trailing30DaysBorrowingAPY: debtMarketsMap.get(debtPosition.marketId)!
         .trailing30DaysBorrowingAPY
