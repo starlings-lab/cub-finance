@@ -79,14 +79,10 @@ export interface CompoundV3DebtPosition extends DebtPositionBase {
   collaterals: TokenAmount[];
 }
 
-export interface Reward {
-  token: Token;
-  trailing30DaysRewardAPY: number;
-}
-
 export interface MarketBase {
   trailing30DaysBorrowingAPY: number; // >=0
-  rewards: Reward[];
+  trailing30DaysLendingRewardAPY: number;
+  trailing30DaysBorrowingRewardAPY: number;
 }
 
 export interface Market extends MarketBase {
