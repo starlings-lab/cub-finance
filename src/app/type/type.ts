@@ -81,6 +81,7 @@ export interface CompoundV3DebtPosition extends DebtPositionBase {
 
 export interface MarketBase {
   trailing30DaysBorrowingAPY: number; // >=0
+  trailing30DaysRewardAPY: number; // Based on lending or borrowing rewards
 }
 
 export interface Market extends MarketBase {
