@@ -665,7 +665,8 @@ export async function getRecommendedDebtDetail(
     const newDebt = {
       maxLTV: newMaxLTV!,
       LTV: modifiedNewLTV,
-      trailing30DaysNetAPY: 0 - matchedMarket.trailing30DaysBorrowingAPY,
+      trailing30DaysNetBorrowingAPY:
+        0 - matchedMarket.trailing30DaysBorrowingAPY,
       debt: newDebtAmount,
       collaterals: matchedCollaterals as TokenAmount[]
     };

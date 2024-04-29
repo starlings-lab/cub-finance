@@ -14,7 +14,8 @@ let USDollar = new Intl.NumberFormat("en-US", {
   currency: "USD"
 });
 
-export const trailing30DaysNetAPYColumnId = "trailing30DaysNetAPY";
+export const trailing30DaysNetBorrowingAPYColumnId =
+  "trailing30DaysNetBorrowingAPY";
 export const totalDebtAmountInUSDColumnId = "totalDebtAmountInUSD";
 
 const sortByTrailing30DaysNetBorrowingAPY = (
@@ -23,7 +24,8 @@ const sortByTrailing30DaysNetBorrowingAPY = (
   columnId: any
 ) => {
   return (
-    rowA.original.trailing30DaysNetAPY - rowB.original.trailing30DaysNetAPY
+    rowA.original.trailing30DaysNetBorrowingAPY -
+    rowB.original.trailing30DaysNetBorrowingAPY
   );
 };
 
@@ -167,7 +169,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
     )
   },
   {
-    id: trailing30DaysNetAPYColumnId, // id is required for sorting
+    id: trailing30DaysNetBorrowingAPYColumnId, // id is required for sorting
     header: () => (
       <Fragment>
         <PopoverWrapper
@@ -382,7 +384,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       )
     },
     {
-      id: trailing30DaysNetAPYColumnId, // id is required for sorting
+      id: trailing30DaysNetBorrowingAPYColumnId, // id is required for sorting
       header: () => (
         <Fragment>
           <PopoverWrapper

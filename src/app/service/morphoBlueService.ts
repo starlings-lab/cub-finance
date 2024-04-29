@@ -375,7 +375,8 @@ export async function getRecommendedDebtDetail(
       marketId: matchedMarket.marketId,
       debt: newDebtAmount,
       collateral: matchedCollateral,
-      trailing30DaysNetAPY: 0 - matchedMarket.trailing30DaysBorrowingAPY
+      trailing30DaysNetBorrowingAPY:
+        0 - matchedMarket.trailing30DaysBorrowingAPY
     };
     recommendedDebtDetails.push({
       protocol: Protocol.MorphoBlue,

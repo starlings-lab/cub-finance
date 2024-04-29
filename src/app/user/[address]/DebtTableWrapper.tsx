@@ -5,15 +5,15 @@ import { DataTable } from "@/components/ui/data-table";
 import {
   debtTableColumns,
   totalDebtAmountInUSDColumnId,
-  trailing30DaysNetAPYColumnId
+  trailing30DaysNetBorrowingAPYColumnId
 } from "./debtTableColumns";
 import { DebtPositionTableRow } from "@/app/type/type";
 import { ColumnSort } from "@tanstack/react-table";
 
-// Sort debts by ascending order of trailing30DaysNetAPY and descending order of totalDebtAmountInUSD
+// Sort debts by ascending order of trailing30DaysNetBorrowingAPY and descending order of totalDebtAmountInUSD
 const initialSortedColumns: ColumnSort[] = [
   {
-    id: trailing30DaysNetAPYColumnId,
+    id: trailing30DaysNetBorrowingAPYColumnId,
     // We want to display the lowest APY first,
     // because negative APY means the user is paying interest.
     desc: false

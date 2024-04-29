@@ -8,15 +8,15 @@ import {
   debtTableColumns,
   recommendedTableColumns,
   totalDebtAmountInUSDColumnId,
-  trailing30DaysNetAPYColumnId
+  trailing30DaysNetBorrowingAPYColumnId
 } from "./debtTableColumns";
 import { RefiTableWrapper } from "./RefiTableWrapper";
 import { ColumnSort } from "@tanstack/react-table";
 
-// Sort debts by descending order of trailing30DaysNetAPY and descending order of totalDebtAmountInUSD
+// Sort debts by descending order of trailing30DaysNetBorrowingAPY and descending order of totalDebtAmountInUSD
 const initialSortedColumns: ColumnSort[] = [
   {
-    id: trailing30DaysNetAPYColumnId,
+    id: trailing30DaysNetBorrowingAPYColumnId,
     // We want to display the highest APY first,
     // because positive APY means the user is earning interest for borrowing.
     // And negative APY means the user is paying interest.
