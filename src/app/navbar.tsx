@@ -21,7 +21,7 @@ export default function Navbar() {
             <Button className="bg-[#F43F5E3a] hover:bg-[#F43F5E] text-black hover:text-white rounded-3xl w-36">
               <Link
                 target="_blank"
-                href="https://t.me/+WN0vHN-RU2g1ZTkx"
+                href="https://t.me/+pL8nGAh5P5k4MWZh"
                 passHref
               >
                 <p className="text-md font-normal">Talk to us</p>
