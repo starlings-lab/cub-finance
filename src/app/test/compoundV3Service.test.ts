@@ -167,7 +167,7 @@ describe("CompoundV3 Service Tests", () => {
           Protocol.CompoundV3
         );
         expect(recommendedDebtDetail).toHaveProperty(
-          "trailing30DaysNetAPY",
+          "trailing30DaysNetBorrowingAPY",
           expect.any(Number)
         );
         expect(recommendedDebtDetail).toHaveProperty("debt");

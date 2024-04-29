@@ -201,7 +201,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
         />
       </Fragment>
     ),
-    accessorKey: "trailing30DaysNetAPY",
+    accessorKey: "trailing30DaysNetBorrowingAPY",
     accessorFn: (originalRow) => {
       return `${(originalRow.trailing30DaysNetBorrowingAPY * 100).toFixed(2)}%`;
     },
@@ -407,7 +407,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
           />
         </Fragment>
       ),
-      accessorKey: "trailing30DaysNetAPY",
+      accessorKey: "trailing30DaysNetBorrowingAPY",
       accessorFn: (originalRow) => {
         return `${(originalRow.trailing30DaysNetBorrowingAPY * 100).toFixed(
           2
