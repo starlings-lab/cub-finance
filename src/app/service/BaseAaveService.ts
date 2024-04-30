@@ -1,5 +1,7 @@
 import { AlchemyProvider, Contract } from "ethers";
 import {
+  APYInfo,
+  APYProvider,
   CompoundV3DebtPosition,
   DebtPosition,
   Market,
@@ -24,17 +26,6 @@ interface AaveMarket extends Market {
 
 interface BaseCurrencyInfo {
   marketReferenceCurrencyUnit: bigint;
-}
-
-export interface APYInfo {
-  borrowingAPY: number;
-  lendingAPY: number;
-}
-
-export interface APYProvider {
-  calculateTrailing30DaysBorrowingAndLendingAPYs(
-    tokenSymbolOrATokenAddress: string | Address
-  ): Promise<APYInfo>;
 }
 
 export class BaseAaveService {
@@ -567,17 +558,18 @@ export class BaseAaveService {
     const tokenReserve = reservesMap.get(
       underlyingAssetToken.address.toLowerCase()
     );
-    const { borrowingAPY, lendingAPY } =
+    const apyInfo =
       await this.apyProvider.calculateTrailing30DaysBorrowingAndLendingAPYs(
-        this.protocol === Protocol.AaveV3
-          ? tokenReserve.aTokenAddress
-          : underlyingAssetToken.symbol
+        underlyingAssetToken.symbol,
+        tokenReserve.aTokenAddress
       );
 
     return {
       underlyingAsset: underlyingAssetToken,
-      trailing30DaysLendingAPY: borrowingAPY,
-      trailing30DaysBorrowingAPY: lendingAPY,
+      trailing30DaysLendingAPY: apyInfo.borrowingAPY,
+      trailing30DaysBorrowingAPY: apyInfo.lendingAPY,
+      trailing30DaysLendingRewardAPY: apyInfo.lendingRewardAPY,
+      trailing30DaysBorrowingRewardAPY: apyInfo.borrowingRewardAPY,
       priceInMarketReferenceCurrency:
         tokenReserve.priceInMarketReferenceCurrency
     };

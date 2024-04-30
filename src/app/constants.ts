@@ -8,6 +8,9 @@ export const MESSARI_AAVE_V3_GRAPHQL_URL =
 export const MORPHO_GRAPHQL_URL = "https://blue-api.morpho.org/graphql";
 
 export const DEFILLAMA_YIELDS_API_URL = "https://yields.llama.fi";
+export const DEFILLAMA_YIELDS_POOLS_API_URL = `${DEFILLAMA_YIELDS_API_URL}/pools`;
+
+export const DEFILLAMA_AAVE_V3_PROJECT_SLUG = "aave-v3";
 
 // App: https://defillama.com/yields/pool/85c57261-b75b-4447-a115-d79b1a7de8ed
 // API: https://yields.llama.fi/chartLendBorrow/85c57261-b75b-4447-a115-d79b1a7de8ed
@@ -39,6 +42,8 @@ export const DEFILLAMA_SPARK_POOL_IDS = {
   // https://defillama.com/yields/pool/8fbe28b8-140d-4e37-8804-5d2aba4daded
   USDT: "8fbe28b8-140d-4e37-8804-5d2aba4daded"
 };
+
+export const DEFILLAMA_AAVE_V3_POOL_IDS = {};
 
 export const TEST_DEBT_POSITION_ADDRESSES = {
   aaveUser1: "0x00171ab2f44c1c9b21c7696eb1a5c601f05a9167",

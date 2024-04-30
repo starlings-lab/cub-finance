@@ -1,6 +1,8 @@
-import { BaseAaveService, APYProvider, APYInfo } from "./BaseAaveService";
+import { BaseAaveService } from "./BaseAaveService";
 import { Address } from "abitype";
 import {
+  APYInfo,
+  APYProvider,
   CompoundV3DebtPosition,
   DebtPosition,
   MorphoBlueDebtPosition,
@@ -13,10 +15,9 @@ import { DEFILLAMA_SPARK_POOL_IDS } from "../constants";
 // implement APYProvider interface for Spark protocol
 class SparkAPYProvider implements APYProvider {
   public async calculateTrailing30DaysBorrowingAndLendingAPYs(
-    tokenSymbolOrATokenAddress: string | Address
+    tokenSymbol: string,
+    aTokenAddress: Address
   ): Promise<APYInfo> {
-    const tokenSymbol = (tokenSymbolOrATokenAddress as string).toUpperCase();
-
     const tokenPoolId = DEFILLAMA_SPARK_POOL_IDS[
       tokenSymbol as keyof typeof DEFILLAMA_SPARK_POOL_IDS
     ] as string;
@@ -25,18 +26,13 @@ class SparkAPYProvider implements APYProvider {
       console.log(`DefiLlama pool id not found for token: ${tokenSymbol}`);
       return Promise.resolve({
         borrowingAPY: 0,
-        lendingAPY: 0
+        lendingAPY: 0,
+        borrowingRewardAPY: 0,
+        lendingRewardAPY: 0
       });
     }
-    // Implement logic to calculate APYs
-    return calculate30DayTrailingBorrowingAndLendingAPYs(tokenPoolId).then(
-      (apyInfo) => {
-        return {
-          borrowingAPY: apyInfo.trailingDayBorrowingAPY,
-          lendingAPY: apyInfo.trailingDayLendingAPY
-        };
-      }
-    );
+
+    return calculate30DayTrailingBorrowingAndLendingAPYs(tokenPoolId);
   }
 }
 

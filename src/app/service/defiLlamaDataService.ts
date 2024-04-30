@@ -1,4 +1,8 @@
-import { getDefiLlamaLendBorrowDataApi } from "../constants";
+import {
+  DEFILLAMA_YIELDS_POOLS_API_URL,
+  getDefiLlamaLendBorrowDataApi
+} from "../constants";
+import { APYInfo } from "../type/type";
 
 /**
  * Calculate the 30 day trailing borrowing and lending APYs for given lending pool.
@@ -9,24 +13,25 @@ import { getDefiLlamaLendBorrowDataApi } from "../constants";
  */
 export async function calculate30DayTrailingBorrowingAndLendingAPYs(
   poolId: string
-): Promise<{
-  trailingDayBorrowingAPY: number;
-  trailingDayLendingAPY: number;
-}> {
-  return getHistoricalLendBorrowAPY(poolId, 30)
+): Promise<APYInfo> {
+  return getHistoricalLendBorrowRewardAPY(poolId, 30)
     .then((data) => {
-      let cumulativeBorrowRate = 0;
-      let cumulativeLendRate = 0;
+      let cumulativeBorrowAPY = 0;
+      let cumulativeLendAPY = 0;
+      let cumulativeLendingRewardAPY = 0;
+      let cumulativeBorrowingRewardAPY = 0;
       for (let i = 0; i < data.length; i++) {
         // expected shape of data:
         // { apyBase: number, apyReward: number, apyBaseBorrow: number, apyRewardBorrow: number }
         const datum: any = data[i];
-        cumulativeBorrowRate += datum.apyBaseBorrow;
-        cumulativeLendRate += datum.apyBase;
+        cumulativeBorrowAPY += datum.apyBaseBorrow;
+        cumulativeLendAPY += datum.apyBase;
+        cumulativeLendingRewardAPY += datum.apyReward;
+        cumulativeBorrowingRewardAPY += datum.apyRewardBorrow;
       }
 
-      const trailingDayBorrowingAPY = cumulativeBorrowRate / data.length / 100;
-      const trailingDayLendingAPY = cumulativeLendRate / data.length / 100;
+      const trailingDayBorrowingAPY = cumulativeBorrowAPY / data.length / 100;
+      const trailingDayLendingAPY = cumulativeLendAPY / data.length / 100;
 
       // console.log(
       //   `Cumulative borrow rate: ${cumulativeBorrowRate}, Cumulative lend rate: ${cumulativeLendRate}`
@@ -35,7 +40,12 @@ export async function calculate30DayTrailingBorrowingAndLendingAPYs(
       //   `Trailing day borrow rate: ${trailingDayBorrowingAPY}, Trailing day lend rate: ${trailingDayLendingAPY}`
       // );
 
-      return { trailingDayBorrowingAPY, trailingDayLendingAPY };
+      return {
+        lendingAPY: trailingDayLendingAPY,
+        lendingRewardAPY: cumulativeLendingRewardAPY / data.length / 100,
+        borrowingAPY: trailingDayBorrowingAPY,
+        borrowingRewardAPY: cumulativeBorrowingRewardAPY / data.length / 100
+      };
     })
     .catch((error) => {
       console.error(error);
@@ -43,8 +53,8 @@ export async function calculate30DayTrailingBorrowingAndLendingAPYs(
     });
 }
 
-// function to fetch historical lend & borrow apy for lending pool
-export async function getHistoricalLendBorrowAPY(
+// function to fetch historical lend, borrow & reward apy for lending pool
+export async function getHistoricalLendBorrowRewardAPY(
   poolId: string,
   days: number = 30
 ): Promise<any[]> {
@@ -54,9 +64,58 @@ export async function getHistoricalLendBorrowAPY(
 
     // return last 30 items from the array
     // console.log("Data length: ", response.data.length);
+    /**
+     * Shape of the data returned by DefiLlama API:
+     * {
+          "timestamp": "2022-10-06T23:01:12.545Z",
+          "totalSupplyUsd": 65413418,
+          "totalBorrowUsd": 39402128,
+          "debtCeilingUsd": null,
+          "apyBase": 1.95765,
+          "apyReward": 0,
+          "apyBaseBorrow": 3.60824,
+          "apyRewardBorrow": 8.77746
+        } 
+    */
     const data = response.data.slice(-days);
     // console.dir(data, { depth: null });
     return data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+/**
+ * Provides a map of pool token symbol to pool id for a given project/protocol for mainnet
+ * @param projectSlug project slug defined by DefiLlama API
+ * @returns
+ */
+export function getProtocolPoolsMap(
+  projectSlug: string
+): Promise<Map<string, string>> {
+  try {
+    return fetch(DEFILLAMA_YIELDS_POOLS_API_URL)
+      .then((responseRaw) => responseRaw.json())
+      .then((response) => {
+        // console.dir(response, { depth: null });
+
+        // filter pools by protocol and create a map of pool token symbol to pool id
+        const pools = new Map<string, string>();
+        response.data
+          .filter(
+            (pool: any) =>
+              pool.chain === "Ethereum" &&
+              pool.project.toLowerCase() === projectSlug.toLowerCase()
+          )
+          .forEach((poolData: any) => {
+            pools.set(poolData.symbol.toUpperCase(), poolData.pool);
+          });
+
+        // console.dir(pools, { depth: null });
+
+        return pools;
+      });
   } catch (error) {
     console.log(error);
     throw error;

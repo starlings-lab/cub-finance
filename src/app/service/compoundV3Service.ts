@@ -27,7 +27,8 @@ import {
   MorphoBlueDebtPosition,
   CompoundV3DebtPosition,
   Protocol,
-  CompoundV3RecommendedDebtDetail
+  CompoundV3RecommendedDebtDetail,
+  APYInfo
 } from "../type/type";
 import {
   getTokenByAddress,
@@ -167,14 +168,17 @@ async function getCompoundV3Markets(
   debtPositions: CompoundV3DebtPosition[]
 ): Promise<CompoundV3Market[]> {
   // Fetch borrowing APYs for Compound ETH and USDC pools
-  return getBorrowingAPYsByTokenAddress().then(async (borrowingAPYs) => {
+  return getBorrowingAPYsByTokenAddress().then(async (apyInfoMap) => {
     const markets: CompoundV3Market[] = [];
 
     for (let i = 0; i < debtPositions.length; i++) {
       const debtPosition = debtPositions[i];
       const debtTokenAddress: Address = debtPosition.debt.token.address;
+      const apyInfo = apyInfoMap.get(debtTokenAddress);
       const market: CompoundV3Market = {
-        trailing30DaysBorrowingAPY: borrowingAPYs.get(debtTokenAddress) || 0,
+        trailing30DaysBorrowingAPY: apyInfo?.borrowingAPY || 0,
+        trailing30DaysBorrowingRewardAPY: apyInfo?.borrowingRewardAPY || 0,
+        trailing30DaysLendingRewardAPY: apyInfo?.lendingRewardAPY || 0,
         utilizationRatio: await getUtilizationRatio(debtTokenAddress),
         debtToken: getTokenByAddress(debtTokenAddress),
         collateralTokens: getSupportedCollateralTokens(debtTokenAddress)
@@ -186,24 +190,36 @@ async function getCompoundV3Markets(
 }
 
 async function getAllCompoundV3Markets(): Promise<CompoundV3Market[]> {
-  const borrowingAPYs = await getBorrowingAPYsByTokenAddress();
+  return Promise.all([
+    getBorrowingAPYsByTokenAddress(),
+    getUtilizationRatio(USDC.address),
+    getUtilizationRatio(WETH.address)
+  ]).then((data) => {
+    const apyInfoMap = data[0];
+    const usdcAPYInfo = apyInfoMap.get(USDC.address)!;
+    const wethAPYInfo = apyInfoMap.get(WETH.address)!;
 
-  const markets: CompoundV3Market[] = [
-    {
-      trailing30DaysBorrowingAPY: borrowingAPYs.get(USDC.address) ?? 0,
-      utilizationRatio: await getUtilizationRatio(USDC.address),
-      debtToken: USDC,
-      collateralTokens: COMPOUND_V3_CUSDC_COLLATERALS
-    },
-    {
-      trailing30DaysBorrowingAPY: borrowingAPYs.get(WETH.address) ?? 0,
-      utilizationRatio: await getUtilizationRatio(WETH.address),
-      debtToken: WETH,
-      collateralTokens: COMPOUND_V3_CWETH_COLLATERALS
-    }
-  ];
+    const markets: CompoundV3Market[] = [
+      {
+        trailing30DaysBorrowingAPY: usdcAPYInfo.borrowingAPY ?? 0,
+        trailing30DaysBorrowingRewardAPY: usdcAPYInfo.borrowingRewardAPY ?? 0,
+        trailing30DaysLendingRewardAPY: usdcAPYInfo.lendingRewardAPY ?? 0,
+        utilizationRatio: data[1],
+        debtToken: USDC,
+        collateralTokens: COMPOUND_V3_CUSDC_COLLATERALS
+      },
+      {
+        trailing30DaysBorrowingAPY: wethAPYInfo.borrowingAPY ?? 0,
+        trailing30DaysBorrowingRewardAPY: wethAPYInfo.borrowingRewardAPY ?? 0,
+        trailing30DaysLendingRewardAPY: wethAPYInfo.lendingRewardAPY ?? 0,
+        utilizationRatio: data[2],
+        debtToken: WETH,
+        collateralTokens: COMPOUND_V3_CWETH_COLLATERALS
+      }
+    ];
 
-  return markets;
+    return markets;
+  });
 }
 
 export async function getUtilizationRatio(
@@ -228,8 +244,9 @@ function getMarketByDebtTokenAddress(debtTokenAddress: Address): any {
       throw new Error("Unsupported debt token address");
   }
 }
+
 // Fetches 30 days trailing borrowing APYs for Compound ETH and USDC pools
-async function getBorrowingAPYsByTokenAddress(): Promise<Map<string, number>> {
+async function getBorrowingAPYsByTokenAddress(): Promise<Map<string, APYInfo>> {
   return Promise.all([
     calculate30DayTrailingBorrowingAndLendingAPYs(
       DEFILLAMA_COMPOUND_ETH_POOL_ID
@@ -238,9 +255,9 @@ async function getBorrowingAPYsByTokenAddress(): Promise<Map<string, number>> {
       DEFILLAMA_COMPOUND_USDC_POOL_ID
     )
   ]).then((apyData) => {
-    const borrowingAPYs = new Map<string, number>();
-    borrowingAPYs.set(WETH.address, apyData[0].trailingDayBorrowingAPY);
-    borrowingAPYs.set(USDC.address, apyData[1].trailingDayBorrowingAPY);
+    const borrowingAPYs = new Map<string, APYInfo>();
+    borrowingAPYs.set(WETH.address, apyData[0]);
+    borrowingAPYs.set(USDC.address, apyData[1]);
     return borrowingAPYs;
   });
 }

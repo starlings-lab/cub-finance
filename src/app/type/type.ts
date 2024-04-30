@@ -148,3 +148,17 @@ export interface RecommendedDebtDetailTableRow {
   trailing30DaysBorrowingAPY: number; // Borrowing apy of debt token.
   trailing30DaysRewardAPY: number;
 }
+
+export interface APYInfo {
+  lendingAPY: number;
+  lendingRewardAPY: number;
+  borrowingAPY: number;
+  borrowingRewardAPY: number;
+}
+
+export interface APYProvider {
+  calculateTrailing30DaysBorrowingAndLendingAPYs(
+    tokenSymbol: string,
+    aTokenAddress: Address
+  ): Promise<APYInfo>;
+}
