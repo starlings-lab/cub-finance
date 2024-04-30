@@ -683,15 +683,16 @@ export async function getRecommendedDebtDetail(
       maxLTV: newMaxLTV!,
       LTV: modifiedNewLTV,
       trailing30DaysNetBorrowingAPY:
-        0 - matchedMarket.trailing30DaysBorrowingAPY,
+        0 -
+        matchedMarket.trailing30DaysBorrowingAPY +
+        matchedMarket.trailing30DaysLendingRewardAPY +
+        matchedMarket.trailing30DaysBorrowingRewardAPY,
       debt: newDebtAmount,
       collaterals: matchedCollaterals as TokenAmount[]
     };
 
     recommendedDebtDetails.push({
       protocol: Protocol.MorphoBlue,
-      trailing30DaysNetBorrowingAPY:
-        0 - matchedMarket.trailing30DaysBorrowingAPY,
       debt: newDebt,
       market: matchedMarket
     });

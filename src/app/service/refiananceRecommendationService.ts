@@ -134,7 +134,10 @@ function convertAaveOrSparkRecommendedDebtDetail(
       trailing30DaysLendingAPY:
         userRecommendedDebtDetail.debt.weightedAvgTrailing30DaysLendingAPY,
       trailing30DaysBorrowingAPY:
-        userRecommendedDebtDetail.market.trailing30DaysBorrowingAPY
+        userRecommendedDebtDetail.market.trailing30DaysBorrowingAPY,
+      trailing30DaysRewardAPY:
+        userRecommendedDebtDetail.market.trailing30DaysBorrowingRewardAPY +
+        userRecommendedDebtDetail.debt.weightedAvgTrailing30DaysLendingRewardAPY
     }
   ];
 }
@@ -161,7 +164,9 @@ function convertCompoundRecommendedDebtDetail(
         userRecommendedDebtDetail.debt.trailing30DaysNetBorrowingAPY,
       trailing30DaysLendingAPY: 0,
       trailing30DaysBorrowingAPY:
-        userRecommendedDebtDetail.market.trailing30DaysBorrowingAPY
+        userRecommendedDebtDetail.market.trailing30DaysBorrowingAPY,
+      trailing30DaysRewardAPY:
+        userRecommendedDebtDetail.market.trailing30DaysBorrowingRewardAPY
     }
   ];
 }
@@ -183,7 +188,9 @@ function convertMorphoRecommendedDebtDetail(
         userRecommendedDebtDetail.debt.trailing30DaysNetBorrowingAPY,
       trailing30DaysLendingAPY: 0,
       trailing30DaysBorrowingAPY:
-        userRecommendedDebtDetail.market.trailing30DaysBorrowingAPY
+        userRecommendedDebtDetail.market.trailing30DaysBorrowingAPY,
+      trailing30DaysRewardAPY:
+        userRecommendedDebtDetail.market.trailing30DaysBorrowingRewardAPY
     }
   ];
 }

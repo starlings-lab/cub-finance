@@ -76,6 +76,9 @@ function convertAaveOrSparkDebtPositions(
 
   const debtPositionTableRows: DebtPositionTableRow[] =
     userDebtDetails.debtPositions.map((debtPosition, index) => {
+      const debtMarket = marketMap.get(
+        debtPosition.debts[0].token.address.toLowerCase()
+      )!;
       return {
         protocol: userDebtDetails.protocol,
         debtPosition: debtPosition,
@@ -97,9 +100,10 @@ function convertAaveOrSparkDebtPositions(
           debtPosition.trailing30DaysNetBorrowingAPY,
         trailing30DaysLendingAPY:
           debtPosition.weightedAvgTrailing30DaysLendingAPY,
-        trailing30DaysBorrowingAPY: marketMap.get(
-          debtPosition.debts[0].token.address.toLowerCase()
-        )!.trailing30DaysBorrowingAPY
+        trailing30DaysBorrowingAPY: debtMarket.trailing30DaysBorrowingAPY,
+        trailing30DaysRewardAPY:
+          debtMarket.trailing30DaysBorrowingRewardAPY +
+          debtPosition.weightedAvgTrailing30DaysLendingRewardAPY
       };
     });
 
@@ -123,6 +127,9 @@ function convertCompoundDebtPositions(
     }, new Map<string, CompoundV3Market>());
 
   return userDebtDetails.debtPositions.map((debtPosition) => {
+    const debtMarket = debtMarketsMap.get(
+      debtPosition.debt.token.address.toLowerCase()
+    )!;
     const data = {
       protocol: userDebtDetails.protocol,
       debtPosition: debtPosition,
@@ -139,9 +146,8 @@ function convertCompoundDebtPositions(
       maxLTV: debtPosition.maxLTV,
       trailing30DaysNetBorrowingAPY: debtPosition.trailing30DaysNetBorrowingAPY,
       trailing30DaysLendingAPY: 0,
-      trailing30DaysBorrowingAPY: debtMarketsMap.get(
-        debtPosition.debt.token.address.toLowerCase()
-      )!.trailing30DaysBorrowingAPY
+      trailing30DaysBorrowingAPY: debtMarket.trailing30DaysBorrowingAPY,
+      trailing30DaysRewardAPY: debtMarket.trailing30DaysBorrowingRewardAPY
     };
     return {
       ...data,
@@ -160,6 +166,7 @@ function convertMorphoDebtPositions(
     }, new Map<string, MorphoBlueMarket>());
 
   return userDebtDetails.debtPositions.map((debtPosition) => {
+    const debtMarket = debtMarketsMap.get(debtPosition.marketId)!;
     const data = {
       protocol: userDebtDetails.protocol,
       debtPosition: debtPosition,
@@ -171,8 +178,8 @@ function convertMorphoDebtPositions(
       maxLTV: debtPosition.maxLTV,
       trailing30DaysNetBorrowingAPY: debtPosition.trailing30DaysNetBorrowingAPY,
       trailing30DaysLendingAPY: 0,
-      trailing30DaysBorrowingAPY: debtMarketsMap.get(debtPosition.marketId)!
-        .trailing30DaysBorrowingAPY
+      trailing30DaysBorrowingAPY: debtMarket.trailing30DaysBorrowingAPY,
+      trailing30DaysRewardAPY: debtMarket.trailing30DaysBorrowingRewardAPY
     };
 
     return {

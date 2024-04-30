@@ -400,14 +400,11 @@ export async function getRecommendedDebtDetail(
       trailing30DaysNetBorrowingAPY:
         0 -
         matchedMarket.trailing30DaysBorrowingAPY +
+        matchedMarket.trailing30DaysLendingRewardAPY +
         matchedMarket.trailing30DaysBorrowingRewardAPY
     };
     recommendedDebtDetails.push({
       protocol: Protocol.MorphoBlue,
-      trailing30DaysNetBorrowingAPY:
-        0 -
-        matchedMarket.trailing30DaysBorrowingAPY +
-        matchedMarket.trailing30DaysBorrowingRewardAPY,
       debt: newDebt,
       market: matchedMarket
     });

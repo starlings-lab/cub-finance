@@ -60,6 +60,9 @@ export interface CompoundV3UserDebtDetails extends UserDebtDetailsBase {
 export interface DebtPositionBase {
   maxLTV: number;
   LTV: number; // debtAmountInUSD / sum of collateralAmountInUSD array
+  // ((lendingAPY * lendingAmount) - (borrowingAPY * (debtAmount)))/debAmount
+  // Positive value means user will earn interest and
+  // negative value means user will pay interest.
   trailing30DaysNetBorrowingAPY: number; // negative, 0 or positive
 }
 
@@ -67,6 +70,8 @@ export interface DebtPosition extends DebtPositionBase {
   debts: TokenAmount[]; // if debt count > 0, the debt position is an aggregate of multiple debt positions.
   collaterals: TokenAmount[];
   weightedAvgTrailing30DaysLendingAPY: number; // For multiple collateral positions, this is the weighted average = total interest/ total collateral.
+  // For multiple collateral positions, this is the weighted average reward APY = total lending reward / total collateral.
+  weightedAvgTrailing30DaysLendingRewardAPY: number;
 }
 
 export interface MorphoBlueDebtPosition extends DebtPositionBase {
@@ -111,10 +116,6 @@ export interface CompoundV3Market extends MarketBase {
 
 export interface RecommendedDebtDetailBase {
   protocol: Protocol;
-  // ((lendingAPY * lendingAmount) - (borrowingAPY * (debtAmount)))/debAmount
-  // Positive value means user will earn interest and
-  // negative value means user will pay interest.
-  trailing30DaysNetBorrowingAPY: number; // negative, 0 or positive
 }
 
 // Interface for Aave & Spark
