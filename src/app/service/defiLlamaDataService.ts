@@ -1,4 +1,6 @@
+import { get } from "http";
 import {
+  DEFILLAMA_AAVE_V3_PROJECT_SLUG,
   DEFILLAMA_YIELDS_POOLS_API_URL,
   getDefiLlamaLendBorrowDataApi
 } from "../constants";
@@ -95,7 +97,7 @@ export function getProtocolPoolsMap(
   projectSlug: string
 ): Promise<Map<string, string>> {
   try {
-    return fetch(DEFILLAMA_YIELDS_POOLS_API_URL)
+    return fetch(DEFILLAMA_YIELDS_POOLS_API_URL, { cache: "no-store" })
       .then((responseRaw) => responseRaw.json())
       .then((response) => {
         // console.dir(response, { depth: null });
