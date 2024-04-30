@@ -49,13 +49,13 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
     return (
       <div
         className={cn(
-          `flex w-full items-center justify-center sm:space-x-2 ${
+          `flex w-9/12 items-center justify-center sm:space-x-2 ${
             !isHome ? "hidden sm:flex" : ""
           }`,
           className
         )}
       >
-        <div className="hidden sm:flex flex-col w-full max-w-xl">
+        <div className="hidden sm:flex flex-col w-9/12 max-w-xl">
           <div
             className={`flex w-full space-x-2 py-1 pl-3 pr-1 border ${
               addressErr && isHome ? "border-red-500" : ""
