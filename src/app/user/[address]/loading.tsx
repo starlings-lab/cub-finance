@@ -62,13 +62,13 @@ export default function Loading() {
               <TableHead>Protocol</TableHead>
               <TableHead>Debt Tokens</TableHead>
               <TableHead>Collateral Tokens</TableHead>
-              <TableHead>Total Debt Amount</TableHead>
-              <TableHead>Total Collateral Amount</TableHead>
+              <TableHead>Net Borrowing APY</TableHead>
+              <TableHead>Debt Amount</TableHead>
+              <TableHead>Borrowing APY</TableHead>
+              <TableHead>Collateral Amount</TableHead>
+              <TableHead>Lending APY</TableHead>
               <TableHead>LTV</TableHead>
               <TableHead>Max LTV</TableHead>
-              <TableHead>Net APY</TableHead>
-              <TableHead>Lending APY</TableHead>
-              <TableHead>Borrowing APY</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
