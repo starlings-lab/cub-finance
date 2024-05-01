@@ -6,6 +6,7 @@ import RecommendationsWrapper from "./RecommendationsWrapper";
 import StoreProvider from "./provider";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { getTokensOwnedByAddress } from "@/app/service/tokenService";
 
 export default async function DebtPage({
   params
@@ -29,6 +30,8 @@ export default async function DebtPage({
   const userAddress = ethers.getAddress(params.address);
   // const [activeRow, setActiveRow] = useState<string>('');
   // console.log(activeRow);
+
+  getTokensOwnedByAddress(params.address).then((data: any) => {});
 
   return (
     <StoreProvider>

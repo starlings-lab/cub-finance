@@ -163,3 +163,21 @@ export interface APYProvider {
     aTokenAddress: Address
   ): Promise<APYInfo>;
 }
+
+export interface ProtocolService {
+  // Get all tokens owned by an address
+  getTokenHoldings(address: Address): Promise<TokenAmount[]>;
+
+  // Get all debt tokens supported by protocol
+  getDebtTokens(): Promise<Token[]>;
+
+  // get all collateral tokens supported by protocol
+  getCollateralTokens(): Promise<Token[]>;
+
+  // Get all borrow recommendations for a token held by an address
+  getBorrowRecommendations(
+    address: Address,
+    debts: TokenAmount[],
+    collaterals: TokenAmount[]
+  ): Promise<RecommendedDebtDetail[]>;
+}

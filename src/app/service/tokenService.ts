@@ -1,14 +1,15 @@
 import { Address } from "abitype";
 import { ALCHEMY_API_URL } from "../constants";
-import { Token } from "../type/type";
-import { ethers } from "ethers";
+import { Token, TokenAmount } from "../type/type";
 
 /**
  * Provides a list of tokens with non-zero balance owned by an address
  * @param address an address of account
  * @returns
  */
-export async function getTokensOwnedByAddress(address: string): Promise<any> {
+export async function getTokensOwnedByAddress(
+  address: string
+): Promise<TokenAmount[]> {
   const options = {
     method: "POST",
     headers: { accept: "application/json", "content-type": "application/json" },
@@ -16,8 +17,8 @@ export async function getTokensOwnedByAddress(address: string): Promise<any> {
       id: 1,
       jsonrpc: "2.0",
       method: "alchemy_getTokenBalances",
-      params: [address],
-    }),
+      params: [address]
+    })
   };
 
   const responseJson = await fetch(ALCHEMY_API_URL, options);
@@ -30,34 +31,31 @@ export async function getTokensOwnedByAddress(address: string): Promise<any> {
     return token.tokenBalance !== "0";
   });
 
-  const tokens = [];
+  const tokenAmounts = [];
   // Counter
   let i = 1;
 
   // Loop through all tokens with non-zero balance
-  for (let token of nonZeroBalances) {
+  for (let tokenData of nonZeroBalances) {
     // Get balance of token
-    let balance = parseInt(token.tokenBalance!);
-
+    let balance = tokenData.tokenBalance!;
     // Get metadata of token
-    const metadata = await getTokenMetadata(token.contractAddress);
+    const token = await getTokenMetadata(tokenData.contractAddress);
     // console.log(metadata);
 
-    balance = balance / Math.pow(10, metadata.decimals!);
+    // balance = balance / Math.pow(10, token.decimals!);
 
     // Print name, balance, and symbol of token
-    console.log(
-      `${i++}. ${metadata.name}: ${balance.toFixed(2)} ${metadata.symbol}`
-    );
+    console.log(`${i++}. ${token.name}: ${balance} ${token.symbol}`);
 
-    tokens.push({
-      name: metadata.name,
-      balance: balance.toFixed(2),
-      symbol: metadata.symbol,
+    tokenAmounts.push({
+      token: token,
+      amount: balance,
+      amountInUSD: 0
     });
   }
 
-  return tokens;
+  return tokenAmounts;
 }
 
 export async function getTokenMetadata(
@@ -70,8 +68,8 @@ export async function getTokenMetadata(
       id: 1,
       jsonrpc: "2.0",
       method: "alchemy_getTokenMetadata",
-      params: [contractAddress],
-    }),
+      params: [contractAddress]
+    })
   };
 
   return fetch(ALCHEMY_API_URL, options)
@@ -81,7 +79,7 @@ export async function getTokenMetadata(
         address: contractAddress,
         name: response.result.name,
         symbol: response.result.symbol,
-        decimals: response.result.decimals,
+        decimals: response.result.decimals
       };
     });
 }
