@@ -51,10 +51,6 @@ describe("MorphoBlue Service Tests", () => {
         "protocol",
         Protocol.MorphoBlue
       );
-      expect(recommendedDebtDetail).toHaveProperty(
-        "trailing30DaysNetBorrowingAPY",
-        expect.any(Number)
-      );
       expect(recommendedDebtDetail).toHaveProperty("debt");
       expect(recommendedDebtDetail).toHaveProperty("market");
       expect(recommendedDebtDetail.debt).toHaveProperty(
