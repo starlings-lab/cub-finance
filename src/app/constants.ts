@@ -1,3 +1,4 @@
+import { Address } from "abitype";
 export const ALCHEMY_API_URL = `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY_ETH_MAINNET}`;
 export const ALCHEMY_RPC_URL = `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_ETH_MAINNET}`;
 
@@ -46,21 +47,19 @@ export const DEFILLAMA_SPARK_POOL_IDS = {
 export const DEFILLAMA_AAVE_V3_POOL_IDS = {};
 
 export const TEST_DEBT_POSITION_ADDRESSES = {
-  aaveUser1: "0x00171ab2f44c1c9b21c7696eb1a5c601f05a9167",
-  aaveUser2: "0xa61D72BD43087d5102EC7AdFBBf9DE7189b1A6b1",
-  aaveUser3: "0x4F03745D7963462CDbb0050F02f99025FeD52976",
-  aaveUser4: "0xbF47E471eEe2C58782Abd0B66cb7be865c809A95",
-  aaveUser5: "0x901bd9EF18da00b43985B608ee831a79c4070C30",
-  compoundUser1: "0xfe99cc4664a939f826dbeb545c1aad4c89ee737a",
-  compoundUser2: "0x9CF423E929d661a0fB25e4AEf05bEB1037298fFb",
-  compoundUser3: "0xE4Fd8213711F18Fad8A97A1DB45436Abd8a2902c",
-  compoundUser4: "0xb7B7eb7E9611975Bc9715F22ce7e6Ee288296fd4",
-  morphoUser1: "0xf603265f91f58F1EfA4fAd57694Fb3B77b25fC18",
-  morphoUser2: "0xA9DdD91249DFdd450E81E1c56Ab60E1A62651701",
-  morphoUser3: "0x21c079c580560494De9cCB67FF5D46762c81E525",
-
-  // Spark users
-  sparkUser1: "0x000005151cc6f5e8df4b44b955f440c05df7912f",
-  sparkUser2: "0x00081cbc7cb307852b22d541f004dc6c6922277a",
-  sparkUser3: "0x035dd15ca9621a448c7e47ce49e2525aa0bf14d0" // has morpho position too
+  aaveUser1: `0x${"00171ab2f44c1c9b21c7696eb1a5c601f05a9167"}` as Address,
+  aaveUser2: `0x${"a61D72BD43087d5102EC7AdFBBf9DE7189b1A6b1"}` as Address,
+  aaveUser3: `0x${"4F03745D7963462CDbb0050F02f99025FeD52976"}` as Address,
+  aaveUser4: `0x${"bF47E471eEe2C58782Abd0B66cb7be865c809A95"}` as Address,
+  aaveUser5: `0x${"901bd9EF18da00b43985B608ee831a79c4070C30"}` as Address,
+  compoundUser1: `0x${"fe99cc4664a939f826dbeb545c1aad4c89ee737a"}` as Address,
+  compoundUser2: `0x${"9CF423E929d661a0fB25e4AEf05bEB1037298fFb"}` as Address,
+  compoundUser3: `0x${"E4Fd8213711F18Fad8A97A1DB45436Abd8a2902c"}` as Address,
+  compoundUser4: `0x${"b7B7eb7E9611975Bc9715F22ce7e6Ee288296fd4"}` as Address,
+  morphoUser1: `0x${"f603265f91f58F1EfA4fAd57694Fb3B77b25fC18"}` as Address,
+  morphoUser2: `0x${"A9DdD91249DFdd450E81E1c56Ab60E1A62651701"}` as Address,
+  morphoUser3: `0x${"21c079c580560494De9cCB67FF5D46762c81E525"}` as Address,
+  sparkUser1: `0x${"000005151cc6f5e8df4b44b955f440c05df7912f"}` as Address,
+  sparkUser2: `0x${"00081cbc7cb307852b22d541f004dc6c6922277a"}` as Address,
+  sparkUser3: `0x${"035dd15ca9621a448c7e47ce49e2525aa0bf14d0"}` as Address // has morpho position too
 };

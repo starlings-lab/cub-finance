@@ -9,7 +9,8 @@ import {
   MorphoBlueUserDebtDetails,
   Protocol,
   MorphoBlueRecommendedDebtDetail,
-  TokenAmount
+  TokenAmount,
+  Token
 } from "../type/type";
 import { isZeroOrNegative, isZeroOrPositive } from "../utils/utils";
 import { MORPHO_GRAPHQL_URL } from "../constants";
@@ -410,4 +411,78 @@ export async function getRecommendedDebtDetail(
     });
   });
   return recommendedDebtDetails;
+}
+
+export async function getSupportedDebtTokens(): Promise<Token[]> {
+  const query = gql`
+    query {
+      markets(where: { chainId_in: [1] }) {
+        items {
+          loanAsset {
+            address
+            name
+            decimals
+            symbol
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const queryResult: any = await request(MORPHO_GRAPHQL_URL, query);
+    const convertedTokenArray: Token[] = queryResult.markets.items.map(
+      (token: any) => {
+        return Object.values(token)[0];
+      }
+    );
+    return removeDuplicateTokens(convertedTokenArray);
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+export async function getSupportedCollateralTokens(): Promise<Token[]> {
+  const query = gql`
+    query {
+      markets(where: { chainId_in: [1] }) {
+        items {
+          collateralAsset {
+            address
+            name
+            decimals
+            symbol
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const queryResult: any = await request(MORPHO_GRAPHQL_URL, query);
+    const convertedTokenArray: Token[] = queryResult.markets.items.map(
+      (token: any) => {
+        return Object.values(token)[0];
+      }
+    );
+    return removeDuplicateTokens(convertedTokenArray);
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+function removeDuplicateTokens(tokens: Token[]): Token[] {
+  const uniqueTokensMap = new Map();
+
+  tokens.forEach((token: Token) => {
+    const tokenAddress = token ? token.address : null;
+    if (tokenAddress && !uniqueTokensMap.has(tokenAddress)) {
+      uniqueTokensMap.set(tokenAddress, token);
+    }
+  });
+
+  const uniqueTokens: Token[] = Array.from(uniqueTokensMap.values());
+  return uniqueTokens;
 }

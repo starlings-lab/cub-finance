@@ -7,6 +7,8 @@ import {
 import {
   COMPOUND_V3_CUSDC_ADDRESS,
   COMPOUND_V3_CWETH_ADDRESS,
+  COMPOUND_V3_DEBTS,
+  COMPOUND_V3_COLLATERALS,
   COMPOUND_V3_CUSDC_COLLATERALS,
   COMPOUND_V3_CWETH_COLLATERALS,
   COMPOUND_V3_PRICEFEEDS,
@@ -181,7 +183,8 @@ async function getCompoundV3Markets(
         trailing30DaysLendingRewardAPY: apyInfo?.lendingRewardAPY || 0,
         utilizationRatio: await getUtilizationRatio(debtTokenAddress),
         debtToken: getTokenByAddress(debtTokenAddress),
-        collateralTokens: getSupportedCollateralTokens(debtTokenAddress)
+        collateralTokens:
+          getSupportedCollateralTokensByDebtToken(debtTokenAddress)
       };
       markets.push(market);
     }
@@ -267,7 +270,7 @@ export async function getCollateralsByUserAddress(
   userAddress: Address
 ): Promise<TokenAmount[]> {
   const marketAddress: Address = (await market.getAddress()) as Address;
-  const collaterals: Token[] = getSupportedCollateral(marketAddress);
+  const collaterals: Token[] = getSupportedCollateralByMarket(marketAddress);
 
   const collateralsPromise = collaterals.map(async (collateral) => {
     const collateralAmount: bigint = await getCollateralBalance(
@@ -316,7 +319,9 @@ export async function getBorrowBalance(
 }
 
 // there seems to be no easy way to fetch supported collaterals for each market. So we store them as constant values. Even compound.js keeps constant values.
-export function getSupportedCollateral(marketAddress: Address): Token[] {
+export function getSupportedCollateralByMarket(
+  marketAddress: Address
+): Token[] {
   if (marketAddress === COMPOUND_V3_CUSDC_ADDRESS) {
     return [...COMPOUND_V3_CUSDC_COLLATERALS];
   } else if (marketAddress === COMPOUND_V3_CWETH_ADDRESS) {
@@ -326,7 +331,7 @@ export function getSupportedCollateral(marketAddress: Address): Token[] {
   }
 }
 
-export function getSupportedCollateralTokens(
+export function getSupportedCollateralTokensByDebtToken(
   debtTokenAddress?: Address
 ): Token[] {
   if (debtTokenAddress === USDC.address) {
@@ -336,6 +341,14 @@ export function getSupportedCollateralTokens(
   } else {
     throw new Error("Unsupported debt token address");
   }
+}
+
+export function getSupportedCollateralTokens(): Promise<Token[]> {
+  return Promise.resolve(COMPOUND_V3_COLLATERALS);
+}
+
+export function getSupportedDebtTokens(): Promise<Token[]> {
+  return Promise.resolve(COMPOUND_V3_DEBTS);
 }
 
 export async function getCollateralBalance(
