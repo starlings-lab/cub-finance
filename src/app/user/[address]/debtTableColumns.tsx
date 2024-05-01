@@ -17,12 +17,9 @@ let USDollar = new Intl.NumberFormat("en-US", {
 export const trailing30DaysNetBorrowingAPYColumnId =
   "trailing30DaysNetBorrowingAPY";
 export const totalDebtAmountInUSDColumnId = "totalDebtAmountInUSD";
-export const trailing30DaysBorrowingAPYColumnId =
-  "trailing30DaysBorrowingAPY";
-  export const trailing30DaysLendingAPYColumnId =
-  "trailing30DaysLendingAPY";
-  export const maxLTVColumnId =
-  "maxLTV";
+export const trailing30DaysBorrowingAPYColumnId = "trailing30DaysBorrowingAPY";
+export const trailing30DaysLendingAPYColumnId = "trailing30DaysLendingAPY";
+export const maxLTVColumnId = "maxLTV";
 
 const sortByTrailing30DaysNetBorrowingAPY = (
   rowA: any,
@@ -84,7 +81,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
             )}
           </div>
         ) : row.depth === 1 ? (
-          <div className="mr-5"/>
+          <div className="mr-5" />
         ) : (
           ""
         )}{" "}
@@ -98,7 +95,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
         {getValue<boolean>()}
       </div>
     ),
-    enableSorting:false,
+    enableSorting: false
   },
   {
     header: "Debt Tokens",
@@ -130,7 +127,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
         ))}
       </div>
     ),
-    enableSorting:false,
+    enableSorting: false
   },
   {
     header: "Collateral Tokens",
@@ -164,22 +161,18 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
         ))}
       </div>
     ),
-    enableSorting:false,
+    enableSorting: false
   },
   {
     id: trailing30DaysNetBorrowingAPYColumnId, // id is required for sorting
-    header: () => (
-      <Fragment>
+    header: (row) => (
+      <div className="flex items-center">
         <PopoverWrapper
           title={
             <div className="flex">
-              <div className="mr-2">{"Net Borrowing APY"}</div>
-              <Image
-                src={"/info.svg"}
-                alt={"Trailing 30 days Net Borrowing APY"}
-                width={20}
-                height={20}
-              />
+              <div className="mr-2">
+                Net Borrowing APY<span className="ml-2 text-sm">ⓘ</span>
+              </div>
             </div>
           }
           content={
@@ -197,13 +190,30 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
             </div>
           }
         />
-      </Fragment>
+        <div
+          onClick={() => {
+            if (row.column.getNextSortingOrder()) {
+              row.column.toggleSorting();
+            } else {
+              const initialSortOrder = row.column.getFirstSortDir();
+              row.column.toggleSorting(initialSortOrder === "desc");
+            }
+          }}
+        >
+          <Image
+            src={"/sort.svg"}
+            alt={"Sort Trailing 30 days Net Borrowing APY"}
+            width={15}
+            height={20}
+          />
+        </div>
+      </div>
     ),
     accessorKey: "trailing30DaysNetBorrowingAPY",
     accessorFn: (originalRow) => {
       return `${(originalRow.trailing30DaysNetBorrowingAPY * 100).toFixed(2)}%`;
     },
-    enableSorting:true,
+    enableSorting: true,
     sortingFn: sortByTrailing30DaysNetBorrowingAPY
   },
   {
@@ -213,22 +223,18 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
     accessorFn: (originalRow) => {
       return USDollar.format(originalRow.totalDebtAmountInUSD);
     },
-    enableSorting:false,
+    enableSorting: false
   },
   {
     id: trailing30DaysBorrowingAPYColumnId,
-    header: () => (
-      <Fragment>
+    header: (row) => (
+      <div className="flex items-center">
         <PopoverWrapper
           title={
             <div className="flex">
-              <div className="mr-2">{"Borrowing APY"}</div>
-              <Image
-                src={"/info.svg"}
-                alt={"Trailing 30 days Borrowing APY"}
-                width={20}
-                height={20}
-              />
+              <div className="mr-2">
+                {"Borrowing APY"} <span className="ml-2 text-sm">ⓘ</span>
+              </div>
             </div>
           }
           content={
@@ -237,13 +243,30 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
             </div>
           }
         />
-      </Fragment>
+        <div
+          onClick={() => {
+            if (row.column.getNextSortingOrder()) {
+              row.column.toggleSorting();
+            } else {
+              const initialSortOrder = row.column.getFirstSortDir();
+              row.column.toggleSorting(initialSortOrder === "desc");
+            }
+          }}
+        >
+          <Image
+            src={"/sort.svg"}
+            alt={"Sort Trailing 30 days Borrowing APY"}
+            width={15}
+            height={20}
+          />
+        </div>
+      </div>
     ),
     accessorKey: "trailing30DaysBorrowingAPY",
     accessorFn: (originalRow) => {
       return `${(originalRow.trailing30DaysBorrowingAPY * 100).toFixed(2)}%`;
     },
-    enableSorting:true,
+    enableSorting: true
   },
   {
     header: "Collateral Amount",
@@ -251,22 +274,19 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
     accessorFn: (originalRow) => {
       return USDollar.format(originalRow.totalCollateralAmountInUSD);
     },
-    enableSorting: false,
+    enableSorting: false
   },
   {
     id: trailing30DaysLendingAPYColumnId,
-    header: () => (
-      <Fragment>
+    header: (row) => (
+      <div className="flex items-center">
         <PopoverWrapper
           title={
             <div className="flex">
-              <div className="mr-2">{"Lending APY"}</div>
-              <Image
-                src={"/info.svg"}
-                alt={"Trailing 30 days Lending APY"}
-                width={20}
-                height={20}
-              />
+              <div className="mr-2">
+                {"Lending APY"}
+                <span className="ml-2 text-sm">ⓘ</span>
+              </div>
             </div>
           }
           content={
@@ -277,13 +297,30 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
             </div>
           }
         />
-      </Fragment>
+        <div
+          onClick={() => {
+            if (row.column.getNextSortingOrder()) {
+              row.column.toggleSorting();
+            } else {
+              const initialSortOrder = row.column.getFirstSortDir();
+              row.column.toggleSorting(initialSortOrder === "desc");
+            }
+          }}
+        >
+          <Image
+            src={"/sort.svg"}
+            alt={"Sort Trailing 30 days Lending APY"}
+            width={15}
+            height={20}
+          />
+        </div>
+      </div>
     ),
     accessorKey: "trailing30DaysLendingAPY",
     accessorFn: (originalRow) => {
       return `${(originalRow.trailing30DaysLendingAPY * 100).toFixed(2)}%`;
     },
-    enableSorting: true,
+    enableSorting: true
   },
   {
     header: "LTV",
@@ -295,7 +332,28 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
   },
   {
     id: maxLTVColumnId,
-    header: "Max LTV",
+    header: (row) => (
+      <div className="flex items-center">
+        <div className="mr-2">Max LTV</div>
+        <div
+          onClick={() => {
+            if (row.column.getNextSortingOrder()) {
+              row.column.toggleSorting();
+            } else {
+              const initialSortOrder = row.column.getFirstSortDir();
+              row.column.toggleSorting(initialSortOrder === "desc");
+            }
+          }}
+        >
+          <Image
+            src={"/sort.svg"}
+            alt={"Sort Max LTV"}
+            width={15}
+            height={20}
+          />
+        </div>
+      </div>
+    ),
     // accessorKey: "maxLTV",
     accessorFn: (originalRow) => {
       return `${(originalRow.maxLTV * 100).toFixed(2)}%`;
@@ -396,18 +454,14 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
     },
     {
       id: trailing30DaysNetBorrowingAPYColumnId, // id is required for sorting
-      header: () => (
-        <Fragment>
+      header: (row) => (
+        <div className="flex items-center">
           <PopoverWrapper
             title={
               <div className="flex">
-                <div className="mr-2">{"Net Borrowing APY"}</div>
-                <Image
-                  src={"/info.svg"}
-                  alt={"Trailing 30 days Net Borrowing APY"}
-                  width={20}
-                  height={20}
-                />
+                <div className="mr-2">
+                  Net Borrowing APY<span className="ml-2 text-sm">ⓘ</span>
+                </div>
               </div>
             }
             content={
@@ -416,7 +470,24 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
               </div>
             }
           />
-        </Fragment>
+          <div
+            onClick={() => {
+              if (row.column.getNextSortingOrder()) {
+                row.column.toggleSorting();
+              } else {
+                const initialSortOrder = row.column.getFirstSortDir();
+                row.column.toggleSorting(initialSortOrder === "desc");
+              }
+            }}
+          >
+            <Image
+              src={"/sort.svg"}
+              alt={"Sort Trailing 30 days Net Borrowing APY"}
+              width={15}
+              height={20}
+            />
+          </div>
+        </div>
       ),
       accessorKey: "trailing30DaysNetBorrowingAPY",
       accessorFn: (originalRow) => {
@@ -434,22 +505,18 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       accessorFn: (originalRow) => {
         return USDollar.format(originalRow.totalDebtAmountInUSD);
       },
-      enableSorting: true,
+      enableSorting: true
     },
     {
       id: trailing30DaysBorrowingAPYColumnId,
-      header: () => (
-        <Fragment>
+      header: (row) => (
+        <div className="flex items-center">
           <PopoverWrapper
             title={
               <div className="flex">
-                <div className="mr-2">{"Borrowing APY"}</div>
-                <Image
-                  src={"/info.svg"}
-                  alt={"Trailing 30 days Borrowing APY"}
-                  width={20}
-                  height={20}
-                />
+                <div className="mr-2">
+                  {"Borrowing APY"} <span className="ml-2 text-sm">ⓘ</span>
+                </div>
               </div>
             }
             content={
@@ -458,7 +525,24 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
               </div>
             }
           />
-        </Fragment>
+          <div
+            onClick={() => {
+              if (row.column.getNextSortingOrder()) {
+                row.column.toggleSorting();
+              } else {
+                const initialSortOrder = row.column.getFirstSortDir();
+                row.column.toggleSorting(initialSortOrder === "desc");
+              }
+            }}
+          >
+            <Image
+              src={"/sort.svg"}
+              alt={"Sort Trailing 30 days Borrowing APY"}
+              width={15}
+              height={20}
+            />
+          </div>
+        </div>
       ),
       accessorKey: "trailing30DaysBorrowingAPY",
       accessorFn: (originalRow) => {
@@ -476,18 +560,15 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
     },
     {
       id: trailing30DaysLendingAPYColumnId,
-      header: () => (
-        <Fragment>
+      header: (row) => (
+        <div className="flex items-center">
           <PopoverWrapper
             title={
               <div className="flex">
-                <div className="mr-2">{"Lending APY"}</div>
-                <Image
-                  src={"/info.svg"}
-                  alt={"Trailing 30 days Lending APY"}
-                  width={20}
-                  height={20}
-                />
+                <div className="mr-2">
+                  {"Lending APY"}
+                  <span className="ml-2 text-sm">ⓘ</span>
+                </div>
               </div>
             }
             content={
@@ -496,7 +577,24 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
               </div>
             }
           />
-        </Fragment>
+          <div
+            onClick={() => {
+              if (row.column.getNextSortingOrder()) {
+                row.column.toggleSorting();
+              } else {
+                const initialSortOrder = row.column.getFirstSortDir();
+                row.column.toggleSorting(initialSortOrder === "desc");
+              }
+            }}
+          >
+            <Image
+              src={"/sort.svg"}
+              alt={"Sort Trailing 30 days Lending APY"}
+              width={15}
+              height={20}
+            />
+          </div>
+        </div>
       ),
       accessorKey: "trailing30DaysLendingAPY",
       accessorFn: (originalRow) => {
@@ -514,8 +612,28 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
     },
     {
       id: maxLTVColumnId,
-      header: "Max LTV",
-      // accessorKey: "maxLTV",
+      header: (row) => (
+        <div className="flex items-center">
+          <div className="mr-2">Max LTV</div>
+          <div
+            onClick={() => {
+              if (row.column.getNextSortingOrder()) {
+                row.column.toggleSorting();
+              } else {
+                const initialSortOrder = row.column.getFirstSortDir();
+                row.column.toggleSorting(initialSortOrder === "desc");
+              }
+            }}
+          >
+            <Image
+              src={"/sort.svg"}
+              alt={"Sort Max LTV"}
+              width={15}
+              height={20}
+            />
+          </div>
+        </div>
+      ),
       accessorFn: (originalRow) => {
         return `${(originalRow.maxLTV * 100).toFixed(2)}%`;
       },

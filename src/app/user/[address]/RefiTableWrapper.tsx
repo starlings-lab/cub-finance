@@ -57,7 +57,7 @@ export function RefiTableWrapper({
     <div className="rounded-md border">
       <Table>
         <TableHeader>
-          {debtSelectedTable.getHeaderGroups().map((headerGroup) => (
+          {recommendationTable.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id} className="hover:bg-white">
               {headerGroup.headers.map((header) => {
                 const isSortable = header.column.getCanSort();
