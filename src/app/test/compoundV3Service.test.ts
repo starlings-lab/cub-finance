@@ -33,7 +33,7 @@ describe("CompoundV3 Service Tests", () => {
     expect(Array.isArray(userDebtDetails.markets)).toBe(true);
     expect(userDebtDetails).toHaveProperty("debtPositions");
     expect(Array.isArray(userDebtDetails.debtPositions)).toBe(true);
-    console.log("userDebtDetails", userDebtDetails);
+    // console.log("userDebtDetails", userDebtDetails);
   });
 
   test("getUtilizationRatio function should return the utilization ratio for a given debt token address", async () => {
@@ -174,6 +174,6 @@ describe("CompoundV3 Service Tests", () => {
         expect(recommendedDebtDetail).toHaveProperty("market");
       });
     });
-    console.log("recommendedDebtDetails", recommendedDebtDetails);
+    // console.log("recommendedDebtDetails", recommendedDebtDetails);
   });
 });

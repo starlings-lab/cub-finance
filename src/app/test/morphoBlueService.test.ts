@@ -3,7 +3,9 @@ import { getCompoundV3UserDebtDetails } from "../service/compoundV3Service";
 import {
   getMorphoBlueUserDebtDetails,
   getMarkets,
-  getRecommendedDebtDetail
+  getRecommendedDebtDetail,
+  getSupportedDebtTokens,
+  getSupportedCollateralTokens
 } from "../service/morphoBlueService";
 import { Protocol } from "../type/type";
 
@@ -21,7 +23,7 @@ describe("MorphoBlue Service Tests", () => {
     expect(userDebtDetails).toHaveProperty("debtPositions");
     expect(Array.isArray(userDebtDetails.debtPositions)).toBe(true);
 
-    console.log("userDebtDetails", userDebtDetails);
+    // console.log("userDebtDetails", userDebtDetails);
   });
 
   test("getMarkets function should return an array of MorphoBlueMarket", async () => {
@@ -89,6 +91,28 @@ describe("MorphoBlue Service Tests", () => {
         "maxLTV",
         expect.any(Number)
       );
+    });
+  });
+
+  describe("getSupportedDebtTokens", () => {
+    it("should ensure all returned tokens are unique", async () => {
+      const tokens = await getSupportedDebtTokens();
+      // console.log("tokens in test", tokens);
+      const uniqueAddresses = tokens.map((token) => token.address);
+      const setOfAddresses = new Set(uniqueAddresses);
+
+      expect(setOfAddresses.size).toBe(uniqueAddresses.length);
+    });
+  });
+
+  describe("getSupportedCollateralTokens", () => {
+    it("should ensure all returned tokens are unique", async () => {
+      const tokens = await getSupportedCollateralTokens();
+      console.log("tokens in test", tokens);
+      const uniqueAddresses = tokens.map((token) => token.address);
+      const setOfAddresses = new Set(uniqueAddresses);
+
+      expect(setOfAddresses.size).toBe(uniqueAddresses.length);
     });
   });
 });
