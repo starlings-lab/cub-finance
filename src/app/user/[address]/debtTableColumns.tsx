@@ -17,6 +17,12 @@ let USDollar = new Intl.NumberFormat("en-US", {
 export const trailing30DaysNetBorrowingAPYColumnId =
   "trailing30DaysNetBorrowingAPY";
 export const totalDebtAmountInUSDColumnId = "totalDebtAmountInUSD";
+export const trailing30DaysBorrowingAPYColumnId =
+  "trailing30DaysBorrowingAPY";
+  export const trailing30DaysLendingAPYColumnId =
+  "trailing30DaysLendingAPY";
+  export const maxLTVColumnId =
+  "maxLTV";
 
 const sortByTrailing30DaysNetBorrowingAPY = (
   rowA: any,
@@ -91,7 +97,8 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
         />
         {getValue<boolean>()}
       </div>
-    )
+    ),
+    enableSorting:false,
   },
   {
     header: "Debt Tokens",
@@ -122,7 +129,8 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           />
         ))}
       </div>
-    )
+    ),
+    enableSorting:false,
   },
   {
     header: "Collateral Tokens",
@@ -155,7 +163,8 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           />
         ))}
       </div>
-    )
+    ),
+    enableSorting:false,
   },
   {
     id: trailing30DaysNetBorrowingAPYColumnId, // id is required for sorting
@@ -194,6 +203,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
     accessorFn: (originalRow) => {
       return `${(originalRow.trailing30DaysNetBorrowingAPY * 100).toFixed(2)}%`;
     },
+    enableSorting:true,
     sortingFn: sortByTrailing30DaysNetBorrowingAPY
   },
   {
@@ -202,9 +212,11 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
     // accessorKey: "totalDebtAmountInUSD"
     accessorFn: (originalRow) => {
       return USDollar.format(originalRow.totalDebtAmountInUSD);
-    }
+    },
+    enableSorting:false,
   },
   {
+    id: trailing30DaysBorrowingAPYColumnId,
     header: () => (
       <Fragment>
         <PopoverWrapper
@@ -230,16 +242,19 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
     accessorKey: "trailing30DaysBorrowingAPY",
     accessorFn: (originalRow) => {
       return `${(originalRow.trailing30DaysBorrowingAPY * 100).toFixed(2)}%`;
-    }
+    },
+    enableSorting:true,
   },
   {
     header: "Collateral Amount",
     // accessorKey: "totalCollateralAmountInUSD",
     accessorFn: (originalRow) => {
       return USDollar.format(originalRow.totalCollateralAmountInUSD);
-    }
+    },
+    enableSorting: false,
   },
   {
+    id: trailing30DaysLendingAPYColumnId,
     header: () => (
       <Fragment>
         <PopoverWrapper
@@ -267,21 +282,25 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
     accessorKey: "trailing30DaysLendingAPY",
     accessorFn: (originalRow) => {
       return `${(originalRow.trailing30DaysLendingAPY * 100).toFixed(2)}%`;
-    }
+    },
+    enableSorting: true,
   },
   {
     header: "LTV",
     accessorKey: "LTV",
     accessorFn: (originalRow) => {
       return `${(originalRow.LTV * 100).toFixed(2)}%`;
-    }
+    },
+    enableSorting: false
   },
   {
+    id: maxLTVColumnId,
     header: "Max LTV",
     // accessorKey: "maxLTV",
     accessorFn: (originalRow) => {
       return `${(originalRow.maxLTV * 100).toFixed(2)}%`;
-    }
+    },
+    enableSorting: true
   }
 ];
 
@@ -306,7 +325,8 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
           />
           {getValue<boolean>()}
         </div>
-      )
+      ),
+      enableSorting: false
     },
     {
       header: "Debt Tokens",
@@ -337,7 +357,8 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
             />
           ))}
         </div>
-      )
+      ),
+      enableSorting: false
     },
     {
       header: "Collateral Tokens",
@@ -370,7 +391,8 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
             />
           ))}
         </div>
-      )
+      ),
+      enableSorting: false
     },
     {
       id: trailing30DaysNetBorrowingAPYColumnId, // id is required for sorting
@@ -402,6 +424,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
           2
         )}%`;
       },
+      enableSorting: true,
       sortingFn: sortByTrailing30DaysNetBorrowingAPY
     },
     {
@@ -410,9 +433,11 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       // accessorKey: "totalDebtAmountInUSD"
       accessorFn: (originalRow) => {
         return USDollar.format(originalRow.totalDebtAmountInUSD);
-      }
+      },
+      enableSorting: true,
     },
     {
+      id: trailing30DaysBorrowingAPYColumnId,
       header: () => (
         <Fragment>
           <PopoverWrapper
@@ -438,16 +463,19 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       accessorKey: "trailing30DaysBorrowingAPY",
       accessorFn: (originalRow) => {
         return `${(originalRow.trailing30DaysBorrowingAPY * 100).toFixed(2)}%`;
-      }
+      },
+      enableSorting: true
     },
     {
       header: "Collateral Amount",
       // accessorKey: "totalCollateralAmountInUSD",
       accessorFn: (originalRow) => {
         return USDollar.format(originalRow.totalCollateralAmountInUSD);
-      }
+      },
+      enableSorting: false
     },
     {
+      id: trailing30DaysLendingAPYColumnId,
       header: () => (
         <Fragment>
           <PopoverWrapper
@@ -473,20 +501,24 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       accessorKey: "trailing30DaysLendingAPY",
       accessorFn: (originalRow) => {
         return `${(originalRow.trailing30DaysLendingAPY * 100).toFixed(2)}%`;
-      }
+      },
+      enableSorting: true
     },
     {
       header: "LTV",
       accessorKey: "LTV",
       accessorFn: (originalRow) => {
         return `${(originalRow.LTV * 100).toFixed(2)}%`;
-      }
+      },
+      enableSorting: false
     },
     {
+      id: maxLTVColumnId,
       header: "Max LTV",
       // accessorKey: "maxLTV",
       accessorFn: (originalRow) => {
         return `${(originalRow.maxLTV * 100).toFixed(2)}%`;
-      }
+      },
+      enableSorting: true
     }
   ];

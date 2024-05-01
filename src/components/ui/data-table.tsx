@@ -88,8 +88,10 @@ export function DataTable<TData, TValue>({
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id} className="hover:bg-white">
               {headerGroup.headers.map((header) => {
+                const isSortable = header.column.getCanSort();
+                const classNameForSort = isSortable ? "hover:bg-muted/50 cursor-pointer" : ''
                 return (
-                  <TableHead key={header.id} className="hover:bg-muted/50">
+                  <TableHead key={header.id} className={classNameForSort}>
                     {header.isPlaceholder
                       ? null
                       : flexRender(
