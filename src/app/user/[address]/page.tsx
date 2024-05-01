@@ -28,10 +28,6 @@ export default async function DebtPage({
     );
 
   const userAddress = ethers.getAddress(params.address);
-  // const [activeRow, setActiveRow] = useState<string>('');
-  // console.log(activeRow);
-
-  getTokensOwnedByAddress(params.address).then((data: any) => {});
 
   return (
     <StoreProvider>
