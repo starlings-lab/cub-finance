@@ -169,10 +169,10 @@ export interface ProtocolService {
   getTokenHoldings(address: Address): Promise<TokenAmount[]>;
 
   // Get all debt tokens supported by protocol
-  getDebtTokens(): Promise<Token[]>;
+  getSupportedDebtTokens(): Promise<Token[]>;
 
   // get all collateral tokens supported by protocol
-  getCollateralTokens(): Promise<Token[]>;
+  getSupportedCollateralTokens(): Promise<Token[]>;
 
   // Get all borrow recommendations for a token held by an address
   getBorrowRecommendations(

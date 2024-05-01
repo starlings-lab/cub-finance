@@ -13,7 +13,7 @@ import {
   getUtilizationRatio,
   getCollateralsByUserAddress,
   getBorrowBalance,
-  getSupportedCollateral,
+  getSupportedCollateralByMarket,
   getCollateralBalance,
   getRecommendedDebtDetail
 } from "../service/compoundV3Service";
@@ -87,8 +87,8 @@ describe("CompoundV3 Service Tests", () => {
     expect(typeof borrowBalanceCWETH).toBe("bigint");
   });
 
-  test("getSupportedCollateral function should return an array of Token for CUSDC and CWETH", () => {
-    const supportedCollateralsCUSDC = getSupportedCollateral(
+  test("getSupportedCollateralByMarket function should return an array of Token for CUSDC and CWETH", () => {
+    const supportedCollateralsCUSDC = getSupportedCollateralByMarket(
       COMPOUND_V3_CUSDC_ADDRESS
     );
     expect(Array.isArray(supportedCollateralsCUSDC)).toBe(true);
@@ -99,7 +99,7 @@ describe("CompoundV3 Service Tests", () => {
       expect(collateral).toHaveProperty("name");
     });
 
-    const supportedCollateralsCWETH = getSupportedCollateral(
+    const supportedCollateralsCWETH = getSupportedCollateralByMarket(
       COMPOUND_V3_CWETH_ADDRESS
     );
     expect(Array.isArray(supportedCollateralsCWETH)).toBe(true);
