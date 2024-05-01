@@ -1,5 +1,5 @@
+import { TEST_DEBT_POSITION_ADDRESSES } from "../constants";
 import {
-  COMPOUND_V3_DEBT_POSITION_ADDRESS,
   COMPOUND_V3_CUSDC_ADDRESS,
   COMPOUND_V3_CWETH_ADDRESS,
   COMPOUND_V3_CUSDC_CONTRACT,
@@ -26,7 +26,7 @@ const MORPHO_DEBT_POSITION_ADDRESS =
 describe("CompoundV3 Service Tests", () => {
   test("getCompoundV3UserDebtDetails function should return CompoundV3UserDebtDetails object for a user address", async () => {
     const userDebtDetails = await getCompoundV3UserDebtDetails(
-      COMPOUND_V3_DEBT_POSITION_ADDRESS
+      TEST_DEBT_POSITION_ADDRESSES.compoundUser2
     );
 
     expect(userDebtDetails).toHaveProperty("markets");
@@ -47,7 +47,7 @@ describe("CompoundV3 Service Tests", () => {
   test("getCollateralsByUserAddress function should return an array of TokenAmount for for CUSDC contract", async () => {
     const collaterals = await getCollateralsByUserAddress(
       COMPOUND_V3_CUSDC_CONTRACT,
-      COMPOUND_V3_DEBT_POSITION_ADDRESS
+      TEST_DEBT_POSITION_ADDRESSES.compoundUser2
     );
 
     expect(Array.isArray(collaterals)).toBe(true);
@@ -61,7 +61,7 @@ describe("CompoundV3 Service Tests", () => {
   test("getCollateralsByUserAddress function should return an array of TokenAmount for CWETH contract", async () => {
     const collaterals = await getCollateralsByUserAddress(
       COMPOUND_V3_CWETH_CONTRACT,
-      COMPOUND_V3_DEBT_POSITION_ADDRESS
+      TEST_DEBT_POSITION_ADDRESSES.compoundUser2
     );
     expect(Array.isArray(collaterals)).toBe(true);
     collaterals.forEach((collateral) => {
@@ -74,7 +74,7 @@ describe("CompoundV3 Service Tests", () => {
   test("getBorrowBalance function should return a bigint value for CUSDC contract", async () => {
     const borrowBalanceCUSDC = await getBorrowBalance(
       COMPOUND_V3_CUSDC_CONTRACT,
-      COMPOUND_V3_DEBT_POSITION_ADDRESS
+      TEST_DEBT_POSITION_ADDRESSES.compoundUser2
     );
     expect(typeof borrowBalanceCUSDC).toBe("bigint");
   });
@@ -82,7 +82,7 @@ describe("CompoundV3 Service Tests", () => {
   test("getBorrowBalance function should return a bigint value for CWETH contract", async () => {
     const borrowBalanceCWETH = await getBorrowBalance(
       COMPOUND_V3_CWETH_CONTRACT,
-      COMPOUND_V3_DEBT_POSITION_ADDRESS
+      TEST_DEBT_POSITION_ADDRESSES.compoundUser2
     );
     expect(typeof borrowBalanceCWETH).toBe("bigint");
   });
@@ -116,7 +116,7 @@ describe("CompoundV3 Service Tests", () => {
     for (const collateral of COMPOUND_V3_CUSDC_COLLATERALS) {
       const collateralBalance = await getCollateralBalance(
         COMPOUND_V3_CUSDC_CONTRACT,
-        COMPOUND_V3_DEBT_POSITION_ADDRESS,
+        TEST_DEBT_POSITION_ADDRESSES.compoundUser2,
         collateral.address
       );
       collateralBalancesCUSDC.push(collateralBalance);
@@ -132,7 +132,7 @@ describe("CompoundV3 Service Tests", () => {
     for (const collateral of COMPOUND_V3_CWETH_COLLATERALS) {
       const collateralBalance = await getCollateralBalance(
         COMPOUND_V3_CWETH_CONTRACT,
-        COMPOUND_V3_DEBT_POSITION_ADDRESS,
+        TEST_DEBT_POSITION_ADDRESSES.compoundUser2,
         collateral.address
       );
       collateralBalancesCWETH.push(collateralBalance);

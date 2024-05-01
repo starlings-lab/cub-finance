@@ -1,4 +1,4 @@
-import { COMPOUND_V3_DEBT_POSITION_ADDRESS } from "../contracts/compoundV3";
+import { TEST_DEBT_POSITION_ADDRESSES } from "../constants";
 import { getCompoundV3UserDebtDetails } from "../service/compoundV3Service";
 import {
   getMorphoBlueUserDebtDetails,
@@ -39,7 +39,7 @@ describe("MorphoBlue Service Tests", () => {
 
   test("getRecommendedDebtDetail function should return an array of MorphoBlueRecommendedDebtDetail", async () => {
     const compoundV3UserDebtDetails = await getCompoundV3UserDebtDetails(
-      COMPOUND_V3_DEBT_POSITION_ADDRESS
+      TEST_DEBT_POSITION_ADDRESSES.compoundUser2
     );
     const recommendedDebtDetails = await getRecommendedDebtDetail(
       Protocol.CompoundV3,
