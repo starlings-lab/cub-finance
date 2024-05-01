@@ -49,8 +49,8 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
     return (
       <div
         className={cn(
-          `flex w-9/12 items-center justify-center sm:space-x-2 ${
-            !isHome ? "hidden sm:flex" : ""
+          `flex items-center justify-center sm:space-x-2 ${
+            !isHome ? "hidden sm:flex w-9/12" : "w-full"
           }`,
           className
         )}
