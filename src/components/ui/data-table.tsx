@@ -36,7 +36,7 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const state = useContext(StoreContext);
   const [expanded, setExpanded] = useState<ExpandedState>({
-    0: true
+    0: false
   });
   const [rowSelection, setRowSelected] = useState<RowSelectionState>({
     "0.0": true
@@ -66,6 +66,9 @@ export function DataTable<TData, TValue>({
       const allRows = table.getRowModel().rows;
       const rowOne = allRows[0];
       if (rowOne.subRows.length > 0) {
+        setExpanded({
+          0: true
+        });
         const firstSubRow = allRows[0].subRows[0];
         if (!firstSubRow.getIsSelected()) {
           firstSubRow.toggleSelected();
@@ -85,8 +88,10 @@ export function DataTable<TData, TValue>({
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id} className="hover:bg-white">
               {headerGroup.headers.map((header) => {
+                const isSortable = header.column.getCanSort();
+                const classNameForSort = isSortable ? "hover:bg-muted/50 cursor-pointer" : ''
                 return (
-                  <TableHead key={header.id} className="hover:bg-muted/50">
+                  <TableHead key={header.id} className={classNameForSort}>
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -104,14 +109,13 @@ export function DataTable<TData, TValue>({
             table.getRowModel().rows.map((row) => (
               <Fragment key={row.id}>
                 <TableRow
+                className={(row.getCanExpand() || row.getCanSelect()) ? 'cursor-pointer' : ''}
                   key={row.id}
                   onClick={(e) => {
                     if (row?.depth === 0) {
-                      !row.getIsSelected() &&
-                        !row.getIsExpanded() &&
-                        state?.setActiveDebtPosition(null);
-                      table.resetExpanded();
-                      row.toggleExpanded();
+                      setExpanded({
+                        [row.id] : !row.getIsExpanded()
+                      })
                       if (!row.getCanExpand() && !row.getIsSelected()) {
                         row.toggleSelected();
                         state?.setActiveDebtPosition(row.original);

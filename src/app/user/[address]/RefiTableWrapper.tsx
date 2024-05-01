@@ -57,11 +57,13 @@ export function RefiTableWrapper({
     <div className="rounded-md border">
       <Table>
         <TableHeader>
-          {debtSelectedTable.getHeaderGroups().map((headerGroup) => (
+          {recommendationTable.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id} className="hover:bg-white">
               {headerGroup.headers.map((header) => {
+                const isSortable = header.column.getCanSort();
+                const classNameForSort = isSortable ? "hover:bg-muted/50 cursor-pointer" : ''
                 return (
-                  <TableHead key={header.id} className="py-2 hover:bg-muted/50">
+                  <TableHead key={header.id} className={`py-2 ${classNameForSort}`}>
                     {header.isPlaceholder
                       ? null
                       : flexRender(
