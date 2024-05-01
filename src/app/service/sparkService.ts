@@ -7,7 +7,8 @@ import {
   DebtPosition,
   MorphoBlueDebtPosition,
   Protocol,
-  RecommendedDebtDetail
+  RecommendedDebtDetail,
+  Token
 } from "../type/type";
 import { calculate30DayTrailingBorrowingAndLendingAPYs } from "./defiLlamaDataService";
 import { DEFILLAMA_SPARK_POOL_IDS } from "../constants";
@@ -19,7 +20,7 @@ class SparkAPYProvider implements APYProvider {
     aTokenAddress: Address
   ): Promise<APYInfo> {
     const tokenPoolId = DEFILLAMA_SPARK_POOL_IDS[
-      tokenSymbol as keyof typeof DEFILLAMA_SPARK_POOL_IDS
+      tokenSymbol.toUpperCase() as keyof typeof DEFILLAMA_SPARK_POOL_IDS
     ] as string;
     if (!tokenPoolId) {
       // TODO: DefiLlama doesn't have data for sDAI and GNO(Gnosis Token)
@@ -65,4 +66,14 @@ export async function getRecommendedDebtDetail(
     maxLTVTolerance,
     borrowingAPYTolerance
   );
+}
+
+// Get all debt tokens supported by protocol
+export async function getSupportedDebtTokens(): Promise<Token[]> {
+  return baseAaveService.getSupportedDebtTokens();
+}
+
+// get all collateral tokens supported by protocol
+export async function getSupportedCollateralTokens(): Promise<Token[]> {
+  return baseAaveService.getSupportedCollateralTokens();
 }

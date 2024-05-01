@@ -379,6 +379,26 @@ export class BaseAaveService {
     };
   }
 
+  // Get all debt tokens supported by protocol
+  public async getSupportedDebtTokens(): Promise<Token[]> {
+    // Fetch all reserves data and filter out tokens where borrowing is enabled
+    return this.getReservesData().then(({ reservesMap }) => {
+      return Array.from(reservesMap.values())
+        .filter((reserve) => reserve.borrowingEnabled)
+        .map(createToken);
+    });
+  }
+
+  // get all collateral tokens supported by protocol
+  public async getSupportedCollateralTokens(): Promise<Token[]> {
+    // Fetch all reserves data and filter out tokens where collateral is enabled
+    return this.getReservesData().then(({ reservesMap }) => {
+      return Array.from(reservesMap.values())
+        .filter((reserve) => reserve.usageAsCollateralEnabled)
+        .map(createToken);
+    });
+  }
+
   private async fetchCollateralMarkets(
     collateralTokens: Token[],
     reservesMap: Map<string, any>
@@ -580,6 +600,15 @@ export class BaseAaveService {
         tokenReserve.priceInMarketReferenceCurrency
     };
   }
+}
+
+function createToken(reserve: any) {
+  return {
+    address: reserve.underlyingAsset,
+    name: reserve.name,
+    symbol: reserve.symbol,
+    decimals: reserve.decimals
+  };
 }
 
 function createNewDebtPosition(
