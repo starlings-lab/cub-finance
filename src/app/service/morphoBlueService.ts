@@ -63,7 +63,7 @@ export async function getMorphoBlueUserDebtDetails(
     const queryResult = await request(MORPHO_GRAPHQL_URL, query);
     return parseMarketPositionsQueryResult(queryResult, address);
   } catch (error) {
-    console.log("MorphoBlue query error: ", error);
+    // console.log("MorphoBlue query error: ", error);
 
     return {
       protocol: Protocol.MorphoBlue,
