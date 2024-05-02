@@ -5,9 +5,11 @@ import {
   getMarkets,
   getRecommendedDebtDetail,
   getSupportedDebtTokens,
-  getSupportedCollateralTokens
+  getSupportedCollateralTokens,
+  getBorrowRecommendations
 } from "../service/morphoBlueService";
 import { Protocol } from "../type/type";
+import { DAI, USDT, WETH, WBTC } from "../contracts/ERC20Tokens";
 
 const MORPHO_DEBT_POSITION_ADDRESS =
   "0xf603265f91f58F1EfA4fAd57694Fb3B77b25fC18";
@@ -108,11 +110,41 @@ describe("MorphoBlue Service Tests", () => {
   describe("getSupportedCollateralTokens", () => {
     it("should ensure all returned tokens are unique", async () => {
       const tokens = await getSupportedCollateralTokens();
-      console.log("tokens in test", tokens);
+      // console.log("tokens in test", tokens);
       const uniqueAddresses = tokens.map((token) => token.address);
       const setOfAddresses = new Set(uniqueAddresses);
 
       expect(setOfAddresses.size).toBe(uniqueAddresses.length);
+    });
+  });
+
+  describe("getBorrowRecommendations", () => {
+    it("should return an array of recommendations with valid market details", async () => {
+      const debtTokens = [DAI, USDT];
+      const collaterals = [
+        {
+          token: WETH,
+          amount: BigInt(5 * 10 ** WETH.decimals),
+          amountInUSD: 14973
+        },
+        {
+          token: WBTC,
+          amount: BigInt(10 * 10 * WBTC.decimals),
+          amountInUSD: 592698
+        }
+      ];
+
+      const recommendations = await getBorrowRecommendations(
+        debtTokens,
+        collaterals
+      );
+      console.log("recommendations", recommendations);
+      expect(Array.isArray(recommendations)).toBe(true);
+
+      recommendations.forEach((recommendation) => {
+        expect(recommendation).toHaveProperty("debt");
+        expect(recommendation).toHaveProperty("market");
+      });
     });
   });
 });
