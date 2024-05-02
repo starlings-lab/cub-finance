@@ -20,6 +20,9 @@ import {
 import { getMorphoBlueUserDebtDetails } from "../service/morphoBlueService";
 import { Protocol } from "../type/type";
 
+import dotenv from "dotenv";
+dotenv.config();
+
 const MORPHO_DEBT_POSITION_ADDRESS =
   "0xf603265f91f58F1EfA4fAd57694Fb3B77b25fC18";
 

@@ -108,7 +108,7 @@ describe("MorphoBlue Service Tests", () => {
   describe("getSupportedCollateralTokens", () => {
     it("should ensure all returned tokens are unique", async () => {
       const tokens = await getSupportedCollateralTokens();
-      console.log("tokens in test", tokens);
+      // console.log("tokens in test", tokens);
       const uniqueAddresses = tokens.map((token) => token.address);
       const setOfAddresses = new Set(uniqueAddresses);
 
