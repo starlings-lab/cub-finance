@@ -4,7 +4,10 @@ import { Address } from "abitype";
 import { DataTable } from "@/components/ui/data-table";
 import {
   debtTableColumns,
+  maxLTVColumnId,
   totalDebtAmountInUSDColumnId,
+  trailing30DaysBorrowingAPYColumnId,
+  trailing30DaysLendingAPYColumnId,
   trailing30DaysNetBorrowingAPYColumnId
 } from "./debtTableColumns";
 import { DebtPositionTableRow } from "@/app/type/type";
@@ -22,6 +25,18 @@ const initialSortedColumns: ColumnSort[] = [
     id: totalDebtAmountInUSDColumnId,
     // We want to display the highest debt amount first.
     desc: true
+  },
+  {
+    id: trailing30DaysBorrowingAPYColumnId,
+    desc: false
+  },
+  {
+    id: trailing30DaysLendingAPYColumnId,
+    desc: false
+  },
+  {
+    id: maxLTVColumnId,
+    desc: false
   }
 ];
 

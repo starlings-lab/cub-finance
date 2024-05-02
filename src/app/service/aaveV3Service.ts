@@ -10,7 +10,8 @@ import {
   MorphoBlueDebtPosition,
   Protocol,
   RecommendedDebtDetail,
-  Token
+  Token,
+  TokenAmount
 } from "../type/type";
 import { calculateAPYFromAPR } from "../utils/utils";
 import { request, gql } from "graphql-request";
@@ -155,6 +156,13 @@ export async function getSupportedDebtTokens(): Promise<Token[]> {
 // get all collateral tokens supported by protocol
 export async function getSupportedCollateralTokens(): Promise<Token[]> {
   return baseAaveService.getSupportedCollateralTokens();
+}
+
+export async function getBorrowRecommendations(
+  debtTokens: Token[],
+  collaterals: TokenAmount[]
+): Promise<RecommendedDebtDetail[]> {
+  return baseAaveService.getBorrowRecommendations(debtTokens, collaterals);
 }
 
 async function calculateRewardAPYs(
