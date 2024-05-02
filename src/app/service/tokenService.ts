@@ -8,8 +8,8 @@ import { ethers } from "ethers";
  * @param address an address of account
  * @returns
  */
-export async function getTokensOwnedByAddress(
-  address: string
+export async function getTokenHoldings(
+  address: Address
 ): Promise<TokenAmount[]> {
   const options = {
     method: "POST",
