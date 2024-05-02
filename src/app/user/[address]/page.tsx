@@ -6,7 +6,7 @@ import RecommendationsWrapper from "./RecommendationsWrapper";
 import StoreProvider from "./provider";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { getTokensOwnedByAddress } from "@/app/service/tokenService";
+import { SearchBar } from "@/components/ui/search-bar";
 
 export default async function DebtPage({
   params
@@ -32,13 +32,13 @@ export default async function DebtPage({
   return (
     <StoreProvider>
       <div>
-        {/* <div className="mt-16 w-full p-3 py-4 flex flex-col sm:flex-row justify-between border rounded-md text-slate-500 font-medium tracking-wide text-xs sm:text-base">
-          Wallet Address
-          <div className="right font-bold text-black mt-2 sm:mt-0">
-            {params.address}
-          </div>
-        </div> */}
-        <div className="pt-5">
+        <div className="flex items-center justify-center mt-8 sm:mt-12">
+          <SearchBar
+            isHome={false}
+            defaultUserAddress={(params!.address as string) ?? ""}
+          />
+        </div>
+        <div className="sm:pt-5">
           <div className="mt-10 text-3xl sm:text-4xl font-medium tracking-wide">
             Debt Positions
           </div>
