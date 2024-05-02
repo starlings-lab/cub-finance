@@ -1,6 +1,6 @@
 import { USDC, WETH } from "../contracts/ERC20Tokens";
 import { baseAaveService } from "../service/aaveV3Service";
-import { Protocol } from "../type/type";
+import { Protocol, RecommendedDebtDetail } from "../type/type";
 
 test("An instance of baseAaveService is created", () => {
   expect(baseAaveService).toBeDefined();
@@ -20,6 +20,13 @@ test("getBorrowRecommendations", async () => {
   );
   // console.dir(borrowRecommendations, { depth: null });
 
+  verifyBorrowRecommendations(borrowRecommendations, wethCollateralAmount);
+});
+
+function verifyBorrowRecommendations(
+  borrowRecommendations: RecommendedDebtDetail[],
+  collateralAmount: bigint
+) {
   expect(borrowRecommendations).toBeDefined();
   expect(borrowRecommendations.length).toBe(1);
   const recommendation = borrowRecommendations[0];
@@ -37,6 +44,6 @@ test("getBorrowRecommendations", async () => {
   expect(debt.collaterals).toBeDefined();
   expect(debt.collaterals.length).toEqual(1);
   expect(debt.collaterals[0].token).toEqual(WETH);
-  expect(debt.collaterals[0].amount).toEqual(wethCollateralAmount);
+  expect(debt.collaterals[0].amount).toEqual(collateralAmount);
   expect(debt.collaterals[0].amountInUSD).toBeGreaterThan(0);
-});
+}
