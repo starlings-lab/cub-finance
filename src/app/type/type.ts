@@ -178,5 +178,9 @@ export interface ProtocolService {
   getBorrowRecommendations(
     debtTokens: Token[],
     collaterals: TokenAmount[]
-  ): Promise<RecommendedDebtDetail[]>;
+  ): Promise<
+    | RecommendedDebtDetail[]
+    | CompoundV3RecommendedDebtDetail[]
+    | MorphoBlueRecommendedDebtDetail[]
+  >;
 }

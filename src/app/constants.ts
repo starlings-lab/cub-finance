@@ -1,3 +1,4 @@
+import { gql } from "graphql-request";
 import { Address } from "abitype";
 export const ALCHEMY_API_URL = `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY_ETH_MAINNET}`;
 export const ALCHEMY_RPC_URL = `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_ETH_MAINNET}`;
@@ -7,6 +8,36 @@ export const MESSARI_AAVE_V3_GRAPHQL_URL =
   "https://api.thegraph.com/subgraphs/name/messari/aave-v3-ethereum";
 
 export const MORPHO_GRAPHQL_URL = "https://blue-api.morpho.org/graphql";
+
+export const MORPHO_SUPPORTED_DEBT_TOKEN_QUERY = gql`
+  query {
+    markets(where: { chainId_in: [1] }) {
+      items {
+        loanAsset {
+          address
+          name
+          decimals
+          symbol
+        }
+      }
+    }
+  }
+`;
+
+export const MORPHO_SUPPORTED_COLLATERAL_TOKEN_QUERY = gql`
+  query {
+    markets(where: { chainId_in: [1] }) {
+      items {
+        collateralAsset {
+          address
+          name
+          decimals
+          symbol
+        }
+      }
+    }
+  }
+`;
 
 export const DEFILLAMA_YIELDS_API_URL = "https://yields.llama.fi";
 export const DEFILLAMA_YIELDS_POOLS_API_URL = `${DEFILLAMA_YIELDS_API_URL}/pools`;
