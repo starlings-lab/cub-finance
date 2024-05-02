@@ -101,9 +101,6 @@ function parseMarketPositionsQueryResult(
         position.borrowAssetsUsd > 0 && position.collateralUsd > 0
     )
     .forEach((position: any) => {
-      const rewards = position.market.state.rewards.filter(
-        (reward: any) => reward.borrowApy !== null && reward.borrowApy !== 0
-      );
       const market: MorphoBlueMarket = {
         marketId: position.market.uniqueKey,
         utilizationRatio: position.market.state.utilization,
@@ -112,9 +109,8 @@ function parseMarketPositionsQueryResult(
         collateralToken: position.market.collateralAsset,
         trailing30DaysBorrowingAPY: position.market.monthlyApys.borrowApy,
         trailing30DaysLendingRewardAPY: 0, // MorphoBlue doesn't pay interest on collateral
-        trailing30DaysBorrowingRewardAPY: rewards.reduce(
-          (acc: number, reward: number) => acc + reward,
-          0
+        trailing30DaysBorrowingRewardAPY: calculateRewards(
+          position.market.state.rewards
         )
       };
       markets.set(market.marketId, market);
@@ -137,7 +133,7 @@ function parseMarketPositionsQueryResult(
         trailing30DaysNetBorrowingAPY:
           0 -
           position.market.monthlyApys.borrowApy +
-          rewards.reduce((acc: number, reward: number) => acc + reward, 0)
+          calculateRewards(position.market.state.rewards)
       });
     });
 
@@ -203,13 +199,39 @@ function parseMarketsQueryResult(queryResult: any): MorphoBlueMarket[] {
         utilizationRatio: market.state.utilization,
         maxLTV: market.lltv / 10 ** 18,
         trailing30DaysLendingRewardAPY: 0, // MorphoBlue doesn't pay interest on collateral
-        trailing30DaysBorrowingRewardAPY: market.state.rewards
-          .filter(
-            (reward: any) => reward.borrowApy !== null && reward.borrowApy !== 0 // we pass the borrowApy directly under the assumption that reward APY doesn't fluctuate
-          )
-          .reduce((acc: number, reward: number) => acc + reward, 0)
+        trailing30DaysBorrowingRewardAPY: calculateRewards(market.state.rewards) // we pass the borrowApy directly under the assumption that reward APY doesn't fluctuate
       };
     });
+}
+
+function calculateRewards(rewards: any[]): number {
+  return rewards
+    .filter((reward) => reward.borrowApy !== null && reward.borrowApy !== 0)
+    .reduce((acc, reward) => acc + reward, 0);
+}
+
+function isUtilizationRatioSmallEnough(utilizationRatio: number): boolean {
+  return utilizationRatio < 0.98 && utilizationRatio > 0;
+}
+
+function filterByNetBorrowingAPY(
+  matchedMarkets: MorphoBlueMarket[],
+  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
+  borrowingAPYTolerance: number
+): MorphoBlueMarket[] {
+  return matchedMarkets.filter((matchedMarket) => {
+    if (isZeroOrNegative(debtPosition.trailing30DaysNetBorrowingAPY)) {
+      const newNetBorrowingAPY = matchedMarket.trailing30DaysBorrowingAPY;
+      const oldNetBorrowingAPY = Math.abs(
+        debtPosition.trailing30DaysNetBorrowingAPY
+      );
+
+      // New borrowing cost is lower than the old borrowing cost within tolerance
+      return newNetBorrowingAPY <= oldNetBorrowingAPY - borrowingAPYTolerance;
+    } else if (isZeroOrPositive(debtPosition.trailing30DaysNetBorrowingAPY)) {
+      return false;
+    }
+  });
 }
 
 export async function getRecommendedDebtDetail(
@@ -302,10 +324,7 @@ export async function getRecommendedDebtDetail(
 
   // check if the utilization ratio is small enough and non-zero
   matchedMarkets = matchedMarkets.filter((matchedMarket) => {
-    const isUtilizationRatioSmallEnough =
-      matchedMarket.utilizationRatio < 0.98 &&
-      matchedMarket.utilizationRatio > 0;
-    return isUtilizationRatioSmallEnough;
+    return isUtilizationRatioSmallEnough(matchedMarket.utilizationRatio);
   });
 
   // check if the new max LTV >= (the old max LTV - 5%)
@@ -314,19 +333,11 @@ export async function getRecommendedDebtDetail(
   });
 
   // check if the old borrowing cost - the new borrowing cost > 3%
-  matchedMarkets = matchedMarkets.filter((matchedMarket) => {
-    if (isZeroOrNegative(debtPosition.trailing30DaysNetBorrowingAPY)) {
-      const newNetBorrowingAPY = matchedMarket.trailing30DaysBorrowingAPY;
-      const oldNetBorrowingAPY = Math.abs(
-        debtPosition.trailing30DaysNetBorrowingAPY
-      );
-
-      // New borrowing cost is lower than the old borrowing cost within tolerance
-      return newNetBorrowingAPY <= oldNetBorrowingAPY - borrowingAPYTolerance;
-    } else if (isZeroOrPositive(debtPosition.trailing30DaysNetBorrowingAPY)) {
-      return false;
-    }
-  });
+  matchedMarkets = filterByNetBorrowingAPY(
+    matchedMarkets,
+    debtPosition,
+    borrowingAPYTolerance
+  );
 
   // console.log("Matched markets after cost check:", matchedMarkets);
 
@@ -418,52 +429,7 @@ export async function getRecommendedDebtDetail(
   return recommendedDebtDetails;
 }
 
-export async function getSupportedDebtTokens(): Promise<Token[]> {
-  const query = gql`
-    query {
-      markets(where: { chainId_in: [1] }) {
-        items {
-          loanAsset {
-            address
-            name
-            decimals
-            symbol
-          }
-        }
-      }
-    }
-  `;
-
-  try {
-    const queryResult: any = await request(MORPHO_GRAPHQL_URL, query);
-    const convertedTokenArray: Token[] = queryResult.markets.items.map(
-      (token: any) => {
-        return Object.values(token)[0];
-      }
-    );
-    return removeDuplicateTokens(convertedTokenArray);
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-}
-
-export async function getSupportedCollateralTokens(): Promise<Token[]> {
-  const query = gql`
-    query {
-      markets(where: { chainId_in: [1] }) {
-        items {
-          collateralAsset {
-            address
-            name
-            decimals
-            symbol
-          }
-        }
-      }
-    }
-  `;
-
+export async function getSupportedTokens(query: any): Promise<Token[]> {
   try {
     const queryResult: any = await request(MORPHO_GRAPHQL_URL, query);
     const convertedTokenArray: Token[] = queryResult.markets.items.map(
@@ -529,10 +495,7 @@ export async function getBorrowRecommendations(
   // check if the utilization ratio is small enough and non-zero
   const matchedMarkets = Array.from(marketCollateralMap.entries()).filter(
     ([matchedMarket, collateral]) => {
-      const isUtilizationRatioSmallEnough =
-        matchedMarket.utilizationRatio < 0.98 &&
-        matchedMarket.utilizationRatio > 0;
-      return isUtilizationRatioSmallEnough;
+      return isUtilizationRatioSmallEnough(matchedMarket.utilizationRatio);
     }
   );
 

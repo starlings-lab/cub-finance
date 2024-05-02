@@ -1,11 +1,14 @@
-import { TEST_DEBT_POSITION_ADDRESSES } from "../constants";
+import {
+  TEST_DEBT_POSITION_ADDRESSES,
+  MORPHO_SUPPORTED_DEBT_TOKEN_QUERY,
+  MORPHO_SUPPORTED_COLLATERAL_TOKEN_QUERY
+} from "../constants";
 import { getCompoundV3UserDebtDetails } from "../service/compoundV3Service";
 import {
   getMorphoBlueUserDebtDetails,
   getMarkets,
   getRecommendedDebtDetail,
-  getSupportedDebtTokens,
-  getSupportedCollateralTokens,
+  getSupportedTokens,
   getBorrowRecommendations
 } from "../service/morphoBlueService";
 import { Protocol } from "../type/type";
@@ -96,9 +99,11 @@ describe("MorphoBlue Service Tests", () => {
     });
   });
 
-  describe("getSupportedDebtTokens", () => {
+  describe("get supported debt tokens", () => {
     it("should ensure all returned tokens are unique", async () => {
-      const tokens = await getSupportedDebtTokens();
+      const tokens = await getSupportedTokens(
+        MORPHO_SUPPORTED_DEBT_TOKEN_QUERY
+      );
       // console.log("tokens in test", tokens);
       const uniqueAddresses = tokens.map((token) => token.address);
       const setOfAddresses = new Set(uniqueAddresses);
@@ -107,9 +112,11 @@ describe("MorphoBlue Service Tests", () => {
     });
   });
 
-  describe("getSupportedCollateralTokens", () => {
+  describe("get supported collateral tokens", () => {
     it("should ensure all returned tokens are unique", async () => {
-      const tokens = await getSupportedCollateralTokens();
+      const tokens = await getSupportedTokens(
+        MORPHO_SUPPORTED_COLLATERAL_TOKEN_QUERY
+      );
       // console.log("tokens in test", tokens);
       const uniqueAddresses = tokens.map((token) => token.address);
       const setOfAddresses = new Set(uniqueAddresses);
