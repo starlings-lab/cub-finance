@@ -6,8 +6,11 @@ import { StoreContext } from "./context";
 import Loading from "./loading";
 import {
   debtTableColumns,
+  maxLTVColumnId,
   recommendedTableColumns,
   totalDebtAmountInUSDColumnId,
+  trailing30DaysBorrowingAPYColumnId,
+  trailing30DaysLendingAPYColumnId,
   trailing30DaysNetBorrowingAPYColumnId
 } from "./debtTableColumns";
 import { RefiTableWrapper } from "./RefiTableWrapper";
@@ -26,6 +29,18 @@ const initialSortedColumns: ColumnSort[] = [
     id: totalDebtAmountInUSDColumnId,
     // We want to display the highest debt amount first.
     desc: true
+  },
+  {
+    id: trailing30DaysBorrowingAPYColumnId,
+    desc: false
+  },
+  {
+    id: trailing30DaysLendingAPYColumnId,
+    desc: false
+  },
+  {
+    id: maxLTVColumnId,
+    desc: false
   }
 ];
 

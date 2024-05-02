@@ -32,6 +32,32 @@ const sortByTrailing30DaysNetBorrowingAPY = (
   );
 };
 
+const sortByTrailing30DaysBorrowingAPY = (
+  rowA: any,
+  rowB: any,
+  columnId: any
+) => {
+  return (
+    rowA.original.trailing30DaysBorrowingAPY -
+    rowB.original.trailing30DaysBorrowingAPY
+  );
+};
+
+const sortByTrailing30DaysLendingAPY = (
+  rowA: any,
+  rowB: any,
+  columnId: any
+) => {
+  return (
+    rowA.original.trailing30DaysLendingAPY -
+    rowB.original.trailing30DaysLendingAPY
+  );
+};
+
+const sortByMaxLTV = (rowA: any, rowB: any, columnId: any) => {
+  return rowA.original.maxLTV - rowB.original.maxLTV;
+};
+
 // Define columns for the table to render DebtPositionTableRow
 export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
   {
@@ -191,6 +217,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           }
         />
         <div
+          className="w-4 h-4"
           onClick={() => {
             if (row.column.getNextSortingOrder()) {
               row.column.toggleSorting();
@@ -244,6 +271,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           }
         />
         <div
+          className="w-4 h-4"
           onClick={() => {
             if (row.column.getNextSortingOrder()) {
               row.column.toggleSorting();
@@ -266,7 +294,8 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
     accessorFn: (originalRow) => {
       return `${(originalRow.trailing30DaysBorrowingAPY * 100).toFixed(2)}%`;
     },
-    enableSorting: true
+    enableSorting: true,
+    sortingFn: sortByTrailing30DaysBorrowingAPY
   },
   {
     header: "Collateral Amount",
@@ -298,6 +327,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           }
         />
         <div
+          className="w-4 h-4"
           onClick={() => {
             if (row.column.getNextSortingOrder()) {
               row.column.toggleSorting();
@@ -320,7 +350,8 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
     accessorFn: (originalRow) => {
       return `${(originalRow.trailing30DaysLendingAPY * 100).toFixed(2)}%`;
     },
-    enableSorting: true
+    enableSorting: true,
+    sortingFn: sortByTrailing30DaysLendingAPY
   },
   {
     header: "LTV",
@@ -336,6 +367,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
       <div className="flex items-center">
         <div className="mr-2">Max LTV</div>
         <div
+          className="w-4 h-4"
           onClick={() => {
             if (row.column.getNextSortingOrder()) {
               row.column.toggleSorting();
@@ -354,11 +386,12 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
         </div>
       </div>
     ),
-    // accessorKey: "maxLTV",
+    accessorKey: "maxLTV",
     accessorFn: (originalRow) => {
       return `${(originalRow.maxLTV * 100).toFixed(2)}%`;
     },
-    enableSorting: true
+    enableSorting: true,
+    sortingFn: sortByMaxLTV
   }
 ];
 
@@ -471,6 +504,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
             }
           />
           <div
+            className="w-4 h-4"
             onClick={() => {
               if (row.column.getNextSortingOrder()) {
                 row.column.toggleSorting();
@@ -526,6 +560,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
             }
           />
           <div
+            className="w-4 h-4"
             onClick={() => {
               if (row.column.getNextSortingOrder()) {
                 row.column.toggleSorting();
@@ -548,7 +583,8 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       accessorFn: (originalRow) => {
         return `${(originalRow.trailing30DaysBorrowingAPY * 100).toFixed(2)}%`;
       },
-      enableSorting: true
+      enableSorting: true,
+      sortingFn: sortByTrailing30DaysBorrowingAPY
     },
     {
       header: "Collateral Amount",
@@ -578,6 +614,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
             }
           />
           <div
+            className="w-4 h-4"
             onClick={() => {
               if (row.column.getNextSortingOrder()) {
                 row.column.toggleSorting();
@@ -600,7 +637,8 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       accessorFn: (originalRow) => {
         return `${(originalRow.trailing30DaysLendingAPY * 100).toFixed(2)}%`;
       },
-      enableSorting: true
+      enableSorting: true,
+      sortingFn: sortByTrailing30DaysLendingAPY
     },
     {
       header: "LTV",
@@ -616,6 +654,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
         <div className="flex items-center">
           <div className="mr-2">Max LTV</div>
           <div
+            className="w-4 h-4"
             onClick={() => {
               if (row.column.getNextSortingOrder()) {
                 row.column.toggleSorting();
@@ -634,9 +673,11 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
           </div>
         </div>
       ),
+      accessorKey: "maxLTV",
       accessorFn: (originalRow) => {
         return `${(originalRow.maxLTV * 100).toFixed(2)}%`;
       },
-      enableSorting: true
+      enableSorting: true,
+      sortingFn: sortByMaxLTV
     }
   ];

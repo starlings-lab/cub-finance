@@ -46,20 +46,24 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
         document.removeEventListener("keydown", handleKeyDown);
       };
     }, []); // Run this effect only once on component mount
+
     return (
       <div
         className={cn(
-          `flex items-center justify-center sm:space-x-2 ${
-            !isHome ? "hidden sm:flex w-9/12" : "w-full"
-          }`,
+          `flex w-full items-center justify-center sm:space-x-2`,
           className
         )}
       >
-        <div className="hidden sm:flex flex-col w-9/12 max-w-xl">
+        {/* Desktop search */}
+        <div
+          className={`sm:flex flex-col w-9/12 max-w-xl ${
+            isHome ? "hidden" : "flex w-full"
+          }`}
+        >
           <div
-            className={`flex w-full space-x-2 py-1 pl-3 pr-1 border ${
-              addressErr && isHome ? "border-red-500" : ""
-            } rounded-3xl`}
+            className={`flex w-full space-x-2 py-1 pl-3 pr-1 border rounded-3xl ${
+              addressErr ? "border-red-500" : ""
+            }`}
           >
             <Image
               src={"/search_black.svg"}
@@ -75,6 +79,11 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               placeholder="Enter your wallet address"
               onChange={handleChange}
               onFocus={() => setAddressIsFocused(true)}
+              onBlur={() => {
+                if (!(addressErr || value === "")) {
+                  router.push(`/user/${value}`);
+                }
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   if (!(addressErr || value === "")) {
@@ -92,7 +101,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               <Button
                 disabled={addressErr || value === ""}
                 className={`bg-[#F43F5E] text-white rounded-3xl w-36 ${
-                  !isHome && !addressIsFocused && "hidden"
+                  !isHome && "hidden disabled:opacity-0"
                 }`}
                 onClick={(event) => {
                   setAddressIsFocused(false);
@@ -102,17 +111,27 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               </Button>
             </Link>
           </div>
-          {addressErr && isHome && (
-            <div className="text-red-500 hidden pl-3 pt-1 sm:flex text-sm">
+          {addressErr && (
+            <div
+              className={`text-red-500 pl-3 pt-1 sm:flex text-sm ${
+                isHome ? "hidden" : "flex"
+              }`}
+            >
               Enter a valid address
             </div>
           )}
         </div>
-        <div className="flex flex-col sm:hidden w-full">
+
+        {/* Mobile search */}
+        <div
+          className={`flex flex-col sm:hidden w-full ${
+            !isHome ? "hidden" : ""
+          }`}
+        >
           <div
-            className={`flex border ${
+            className={`flex border  rounded-3xl py-1 px-3 ${
               addressErr ? "border-red-500" : ""
-            } rounded-3xl py-1 px-3`}
+            }`}
           >
             <Input
               className="placeholder:text-slate-400 rounded-3xl"
