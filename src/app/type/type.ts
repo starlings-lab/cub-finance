@@ -176,8 +176,11 @@ export interface ProtocolService {
 
   // Get all borrow recommendations for a token held by an address
   getBorrowRecommendations(
-    address: Address,
-    debts: TokenAmount[],
+    debtTokens: Token[],
     collaterals: TokenAmount[]
-  ): Promise<RecommendedDebtDetail[]>;
+  ): Promise<
+    | RecommendedDebtDetail[]
+    | CompoundV3RecommendedDebtDetail[]
+    | MorphoBlueRecommendedDebtDetail[]
+  >;
 }
