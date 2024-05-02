@@ -192,21 +192,26 @@ export async function getMarkets(): Promise<MorphoBlueMarket[]> {
 }
 
 function parseMarketsQueryResult(queryResult: any): MorphoBlueMarket[] {
-  return queryResult.markets.items.map((market: any) => ({
-    marketId: market.uniqueKey,
-    debtToken: market.loanAsset,
-    collateralToken: market.collateralAsset,
-    trailing30DaysBorrowingAPY: market.monthlyApys.borrowApy,
-    utilizationRatio: market.state.utilization,
-    maxLTV: market.lltv / 10 ** 18,
-    trailing30DaysLendingRewardAPY: 0, // MorphoBlue doesn't pay interest on collateral
-    trailing30DaysBorrowingRewardAPY: market.state.rewards
-      .filter(
-        (reward: any) => reward.borrowApy !== null && reward.borrowApy !== 0 // we pass the borrowApy directly under the assumption that reward APY doesn't fluctuate
-      )
-      .reduce((acc: number, reward: number) => acc + reward, 0)
-  }));
+  return queryResult.markets.items
+    .filter((market: any) => market.collateralAsset !== null)
+    .map((market: any) => {
+      return {
+        marketId: market.uniqueKey,
+        debtToken: market.loanAsset,
+        collateralToken: market.collateralAsset,
+        trailing30DaysBorrowingAPY: market.monthlyApys.borrowApy,
+        utilizationRatio: market.state.utilization,
+        maxLTV: market.lltv / 10 ** 18,
+        trailing30DaysLendingRewardAPY: 0, // MorphoBlue doesn't pay interest on collateral
+        trailing30DaysBorrowingRewardAPY: market.state.rewards
+          .filter(
+            (reward: any) => reward.borrowApy !== null && reward.borrowApy !== 0 // we pass the borrowApy directly under the assumption that reward APY doesn't fluctuate
+          )
+          .reduce((acc: number, reward: number) => acc + reward, 0)
+      };
+    });
 }
+
 export async function getRecommendedDebtDetail(
   protocol: Protocol,
   debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
@@ -485,4 +490,138 @@ function removeDuplicateTokens(tokens: Token[]): Token[] {
 
   const uniqueTokens: Token[] = Array.from(uniqueTokensMap.values());
   return uniqueTokens;
+}
+
+export async function getBorrowRecommendations(
+  debtTokens: Token[],
+  collaterals: TokenAmount[]
+): Promise<MorphoBlueRecommendedDebtDetail[]> {
+  const markets = await getMarkets();
+
+  // Create all possible debtToken-collateral combos
+  const debtTokenCollateralCombo: {
+    debtToken: Token;
+    collateral: TokenAmount;
+  }[] = [];
+  debtTokens.forEach((debtToken) => {
+    collaterals.forEach((collateral) => {
+      debtTokenCollateralCombo.push({
+        debtToken: debtToken,
+        collateral: collateral
+      });
+    });
+  });
+
+  // Find all markets that match the debtToken-collateral combos
+  const marketCollateralMap = new Map<MorphoBlueMarket, TokenAmount>();
+  debtTokenCollateralCombo.forEach((combo) => {
+    const matchingMarkets = markets.filter(
+      (market) =>
+        market.debtToken.address === combo.debtToken.address &&
+        market.collateralToken.address === combo.collateral.token.address
+    );
+
+    matchingMarkets.forEach((market) => {
+      marketCollateralMap.set(market, combo.collateral);
+    });
+  });
+
+  // check if the utilization ratio is small enough and non-zero
+  const matchedMarkets = Array.from(marketCollateralMap.entries()).filter(
+    ([matchedMarket, collateral]) => {
+      const isUtilizationRatioSmallEnough =
+        matchedMarket.utilizationRatio < 0.98 &&
+        matchedMarket.utilizationRatio > 0;
+      return isUtilizationRatioSmallEnough;
+    }
+  );
+
+  // construct an array of MorphoBlueRecommendedDebtDetail[] for recommendations
+  const recommendations: MorphoBlueRecommendedDebtDetail[] = await Promise.all(
+    matchedMarkets.map(async ([market, collateral]) => {
+      const collateralAmountInUSD = await getUsdAmount(
+        collateral.token,
+        Number(collateral.amount) / 10 ** collateral.token.decimals
+      );
+      const debtAmountInUSD: number = collateralAmountInUSD * market.maxLTV;
+      const debtAmount: number = await getTokenAmount(
+        market.debtToken,
+        debtAmountInUSD
+      );
+      const debtPosition: MorphoBlueDebtPosition = {
+        marketId: market.marketId,
+        maxLTV: market.maxLTV,
+        LTV: market.maxLTV, // we assume that the LTV is the same as the maxLTV
+        trailing30DaysNetBorrowingAPY:
+          0 -
+          market.trailing30DaysBorrowingAPY +
+          market.trailing30DaysLendingRewardAPY +
+          market.trailing30DaysBorrowingRewardAPY,
+        debt: {
+          token: market.debtToken,
+          amount: BigInt(
+            Math.round(debtAmount * 10 ** market.debtToken.decimals)
+          ),
+          amountInUSD: debtAmountInUSD
+        },
+        collateral: {
+          token: collateral.token,
+          amount: collateral.amount,
+          amountInUSD: collateralAmountInUSD
+        }
+      };
+      // convert the debt token in usd to the debt token amount
+
+      return {
+        protocol: Protocol.MorphoBlue,
+        debt: debtPosition,
+        market: market
+      };
+    })
+  );
+  return await recommendations;
+}
+
+async function getUsdAmount(
+  token: Token,
+  tokenAmount: number
+): Promise<number> {
+  const query = gql`
+    query {
+      assetByAddress(address: "${token.address}", chainId: 1){
+        priceUsd
+      }
+    }
+  `;
+
+  try {
+    const queryResult: any = await request(MORPHO_GRAPHQL_URL, query); // it returns the Float scalar type represents signed double-precision fractional values as specified by IEEE 754.
+    const usdPrice: number = queryResult.assetByAddress.priceUsd;
+    return tokenAmount * usdPrice;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+async function getTokenAmount(
+  token: Token,
+  usdAmount: number
+): Promise<number> {
+  const query = gql`
+    query {
+      assetByAddress(address: "${token.address}", chainId: 1){
+        priceUsd
+      }
+    }
+  `;
+
+  try {
+    const queryResult: any = await request(MORPHO_GRAPHQL_URL, query); // it returns the Float scalar type represents signed double-precision fractional values as specified by IEEE 754.
+    const usdPrice: number = queryResult.assetByAddress.priceUsd;
+    return usdAmount / usdPrice;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 }
