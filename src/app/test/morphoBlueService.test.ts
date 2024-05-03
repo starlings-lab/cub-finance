@@ -145,7 +145,7 @@ describe("MorphoBlue Service Tests", () => {
         debtTokens,
         collaterals
       );
-      console.log("recommendations", recommendations);
+      // console.log("recommendations", recommendations);
       expect(Array.isArray(recommendations)).toBe(true);
 
       recommendations.forEach((recommendation) => {

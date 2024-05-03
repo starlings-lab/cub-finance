@@ -1,31 +1,44 @@
 import { USDC, WETH } from "../contracts/ERC20Tokens";
 import { baseAaveService } from "../service/aaveV3Service";
-import { Protocol, RecommendedDebtDetail } from "../type/type";
+import {
+  Protocol,
+  RecommendedDebtDetail,
+  Token,
+  TokenAmount
+} from "../type/type";
 
-test("An instance of baseAaveService is created", () => {
-  expect(baseAaveService).toBeDefined();
-});
+describe("baseAaveService", () => {
+  it("An instance of baseAaveService is created", () => {
+    expect(baseAaveService).toBeDefined();
+  });
 
-test("getBorrowRecommendations", async () => {
-  const wethCollateralAmount = BigInt(1.1 * 10 ** 18);
-  const borrowRecommendations = await baseAaveService.getBorrowRecommendations(
-    [USDC],
-    [
-      {
+  describe("getBorrowRecommendations", () => {
+    it("Borrow recommendations for USDC debt against WETH collateral", async () => {
+      const wethCollateralAmount = {
         token: WETH,
-        amount: wethCollateralAmount,
+        amount: BigInt(1.1 * 10 ** 18),
         amountInUSD: 0
-      }
-    ]
-  );
-  // console.dir(borrowRecommendations, { depth: null });
+      };
+      const borrowRecommendations =
+        await baseAaveService.getBorrowRecommendations(
+          [USDC],
+          [wethCollateralAmount]
+        );
+      // console.dir(borrowRecommendations, { depth: null });
 
-  verifyBorrowRecommendations(borrowRecommendations, wethCollateralAmount);
+      verifyBorrowRecommendations(
+        borrowRecommendations,
+        USDC,
+        wethCollateralAmount
+      );
+    });
+  });
 });
 
 function verifyBorrowRecommendations(
   borrowRecommendations: RecommendedDebtDetail[],
-  collateralAmount: bigint
+  debtToken: Token,
+  collateralAmount: TokenAmount
 ) {
   expect(borrowRecommendations).toBeDefined();
   expect(borrowRecommendations.length).toBe(1);
@@ -38,12 +51,12 @@ function verifyBorrowRecommendations(
   expect(debt.LTV).toEqual(debt.maxLTV);
   expect(debt.debts).toBeDefined();
   expect(debt.debts.length).toEqual(1);
-  expect(debt.debts[0].token).toEqual(USDC);
+  expect(debt.debts[0].token).toEqual(debtToken);
   expect(debt.debts[0].amount).toBeGreaterThan(0);
   expect(debt.debts[0].amountInUSD).toBeGreaterThan(0);
   expect(debt.collaterals).toBeDefined();
   expect(debt.collaterals.length).toEqual(1);
-  expect(debt.collaterals[0].token).toEqual(WETH);
-  expect(debt.collaterals[0].amount).toEqual(collateralAmount);
+  expect(debt.collaterals[0].token).toEqual(collateralAmount.token);
+  expect(debt.collaterals[0].amount).toEqual(collateralAmount.amount);
   expect(debt.collaterals[0].amountInUSD).toBeGreaterThan(0);
 }
