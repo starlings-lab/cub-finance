@@ -73,10 +73,10 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
             />
             <Input
               ref={inputRef}
-              className="placeholder:text-slate-400 rounded-3xl"
+              className="placeholder:text-slate-400 rounded-3xl tracking-wide"
               type="text"
               value={value}
-              placeholder="Enter your wallet address"
+              placeholder="Wallet address or ENS"
               onChange={handleChange}
               onFocus={() => setAddressIsFocused(true)}
               onBlur={() => {
@@ -100,7 +100,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
             <Link href={`/user/${value}`}>
               <Button
                 disabled={addressErr || value === ""}
-                className={`bg-[#F43F5E] text-white rounded-3xl w-36 ${
+                className={`bg-[#F43F5E] text-white rounded-3xl w-36 font-hkGrotesk font-medium tracking-wide ${
                   !isHome && "hidden disabled:opacity-0"
                 }`}
                 onClick={(event) => {
