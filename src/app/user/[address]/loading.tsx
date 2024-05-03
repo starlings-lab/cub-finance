@@ -55,7 +55,7 @@ export default function Loading() {
   // You can add any UI inside Loading, including a Skeleton.
   return (
     <div className="max-w-screen-xl mx-auto py-8">
-      <div className="rounded-md border">
+      <div className="rounded-md border bg-white">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-white">
