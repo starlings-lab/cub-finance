@@ -9,7 +9,7 @@ export default function Navbar() {
       <div className="mx-auto max-w-8xl px-4 lg:px-8">
         <div className="flex h-16 justify-between items-center">
           <Link href="/" passHref>
-            <Image src="/refi.png" width={64} height={64} alt="" />
+            <Image src="/refi-v2.png" width={64} height={64} alt="" />
           </Link>
           <div className="flex items-center">
             <Button className="bg-[#F43F5E3a] hover:bg-[#F43F5E] text-black hover:text-white rounded-3xl w-36">
@@ -18,7 +18,7 @@ export default function Navbar() {
                 href="https://t.me/+pL8nGAh5P5k4MWZh"
                 passHref
               >
-                <p className="text-md font-normal">Talk to us</p>
+                <p className="text-md font-normal font-hkGrotesk">Talk to us</p>
               </Link>
             </Button>
           </div>
