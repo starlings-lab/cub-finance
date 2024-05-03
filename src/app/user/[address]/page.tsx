@@ -31,7 +31,7 @@ export default async function DebtPage({
 
   return (
     <StoreProvider>
-      <div className="mt-8 sm:mt-28">
+      <div className="mt-24 mb-32 sm:mt-28">
         <div className="flex items-center justify-center">
           <SearchBar
             isHome={false}
