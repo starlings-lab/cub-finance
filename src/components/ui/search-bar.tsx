@@ -80,7 +80,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               onChange={handleChange}
               onFocus={() => setAddressIsFocused(true)}
               onBlur={() => {
-                if (!(addressErr || value === "")) {
+                if (!(addressErr || value === "") && !isHome) {
                   router.push(`/user/${value}`);
                 }
               }}
