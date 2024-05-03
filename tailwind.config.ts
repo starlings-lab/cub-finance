@@ -18,6 +18,10 @@ const config = {
       },
     },
     extend: {
+      fontFamily: {
+        hkGrotesk: ['var(--font-hk-grotesk)'],
+        notoSerif: ['var(--font-noto-serif)'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
