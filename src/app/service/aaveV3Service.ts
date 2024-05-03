@@ -16,7 +16,6 @@ import {
 import { calculateAPYFromAPR } from "../utils/utils";
 import { request, gql } from "graphql-request";
 import {
-  DEFILLAMA_AAVE_V3_POOL_IDS,
   DEFILLAMA_AAVE_V3_PROJECT_SLUG,
   MESSARI_AAVE_V3_GRAPHQL_URL
 } from "../constants";

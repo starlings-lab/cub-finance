@@ -39,7 +39,7 @@ class SparkAPYProvider implements APYProvider {
 }
 
 // Contract addresses are used from https://docs.sparkprotocol.io/developers/deployed-contracts/mainnet-addresses
-const baseAaveService = new BaseAaveService(
+export const baseSparkService = new BaseAaveService(
   Protocol.Spark,
   "0x02C3eA4e34C0cBd694D2adFa2c690EECbC1793eE", //POOL_ADDRESSES_PROVIDER,
   "0xF028c2F4b19898718fD0F77b9b881CbfdAa5e8Bb", //UI_POOL_DATA_PROVIDER
@@ -47,7 +47,7 @@ const baseAaveService = new BaseAaveService(
 );
 
 export async function getUserDebtDetails(userAddress: Address) {
-  return baseAaveService.getUserDebtDetails(userAddress);
+  return baseSparkService.getUserDebtDetails(userAddress);
 }
 
 /**
@@ -61,7 +61,7 @@ export async function getRecommendedDebtDetail(
   maxLTVTolerance: number,
   borrowingAPYTolerance: number
 ): Promise<RecommendedDebtDetail | null> {
-  return baseAaveService.getRecommendedDebtDetail(
+  return baseSparkService.getRecommendedDebtDetail(
     protocol,
     debtPosition,
     maxLTVTolerance,
@@ -71,17 +71,17 @@ export async function getRecommendedDebtDetail(
 
 // Get all debt tokens supported by protocol
 export async function getSupportedDebtTokens(): Promise<Token[]> {
-  return baseAaveService.getSupportedDebtTokens();
+  return baseSparkService.getSupportedDebtTokens();
 }
 
 // get all collateral tokens supported by protocol
 export async function getSupportedCollateralTokens(): Promise<Token[]> {
-  return baseAaveService.getSupportedCollateralTokens();
+  return baseSparkService.getSupportedCollateralTokens();
 }
 
 export async function getBorrowRecommendations(
   debtTokens: Token[],
   collaterals: TokenAmount[]
 ): Promise<RecommendedDebtDetail[]> {
-  return baseAaveService.getBorrowRecommendations(debtTokens, collaterals);
+  return baseSparkService.getBorrowRecommendations(debtTokens, collaterals);
 }

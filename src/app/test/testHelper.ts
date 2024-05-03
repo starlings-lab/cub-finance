@@ -1,5 +1,4 @@
-import { USDC, WETH } from "../contracts/ERC20Tokens";
-import { baseAaveService } from "../service/aaveV3Service";
+import { expect } from "@jest/globals";
 import {
   Protocol,
   RecommendedDebtDetail,
@@ -7,35 +6,8 @@ import {
   TokenAmount
 } from "../type/type";
 
-describe("baseAaveService", () => {
-  it("An instance of baseAaveService is created", () => {
-    expect(baseAaveService).toBeDefined();
-  });
-
-  describe("getBorrowRecommendations", () => {
-    it("Borrow recommendations for USDC debt against WETH collateral", async () => {
-      const wethCollateralAmount = {
-        token: WETH,
-        amount: BigInt(1.1 * 10 ** 18),
-        amountInUSD: 0
-      };
-      const borrowRecommendations =
-        await baseAaveService.getBorrowRecommendations(
-          [USDC],
-          [wethCollateralAmount]
-        );
-      // console.dir(borrowRecommendations, { depth: null });
-
-      verifyBorrowRecommendations(
-        borrowRecommendations,
-        USDC,
-        wethCollateralAmount
-      );
-    });
-  });
-});
-
-function verifyBorrowRecommendations(
+export function verifyBorrowRecommendations(
+  expectedProtocol: Protocol,
   borrowRecommendations: RecommendedDebtDetail[],
   debtToken: Token,
   collateralAmount: TokenAmount
@@ -44,7 +16,7 @@ function verifyBorrowRecommendations(
   expect(borrowRecommendations.length).toBe(1);
   const recommendation = borrowRecommendations[0];
   expect(recommendation).toBeDefined();
-  expect(recommendation.protocol).toEqual(Protocol.AaveV3);
+  expect(recommendation.protocol).toEqual(expectedProtocol);
   const debt = recommendation.debt;
   expect(debt).toBeDefined();
   expect(debt.maxLTV).toBeGreaterThan(0);
