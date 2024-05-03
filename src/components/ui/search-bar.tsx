@@ -56,7 +56,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
       >
         {/* Desktop search */}
         <div
-          className={`sm:flex flex-col w-9/12 max-w-xl ${
+          className={`sm:flex flex-col w-9/12 max-w-xl bg-white ${
             isHome ? "hidden" : "flex w-full"
           }`}
         >
@@ -129,7 +129,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
           }`}
         >
           <div
-            className={`flex border  rounded-3xl py-1 px-3 ${
+            className={`flex border  rounded-3xl py-1 px-3 bg-white ${
               addressErr ? "border-red-500" : ""
             }`}
           >

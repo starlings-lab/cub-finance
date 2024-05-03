@@ -18,7 +18,7 @@ export default function Navbar() {
                 href="https://t.me/+pL8nGAh5P5k4MWZh"
                 passHref
               >
-                <p className="text-md font-normal font-notoSerif">Talk to us</p>
+                <p className="text-md font-normal font-hkGrotesk">Talk to us</p>
               </Link>
             </Button>
           </div>

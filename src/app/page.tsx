@@ -12,7 +12,7 @@ import { TEST_DEBT_POSITION_ADDRESSES } from "@/app/constants";
 // eslint-disable-next-line @next/next/no-async-client-component
 export default function Home() {
   return (
-    <div className="flex min-h-screen pt-20 flex-col items-center">
+    <div className="flex min-h-excludeHeader flex-col items-center justify-center">
       <Card className="border-none shadow-none sm:w-10/12">
         <CardHeader className="p-0 sm:p-6">
           <CardTitle>

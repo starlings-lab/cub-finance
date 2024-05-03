@@ -31,18 +31,18 @@ export default async function DebtPage({
 
   return (
     <StoreProvider>
-      <div>
-        <div className="flex items-center justify-center mt-8 sm:mt-12">
+      <div className="mt-8 sm:mt-28">
+        <div className="flex items-center justify-center">
           <SearchBar
             isHome={false}
             defaultUserAddress={(params!.address as string) ?? ""}
           />
         </div>
         <div className="sm:pt-5">
-          <div className="mt-10 text-3xl sm:text-4xl font-medium tracking-wide">
+          <div className="mt-10 text-3xl sm:text-4xl font-medium tracking-wide font-hkGrotesk">
             Debt Positions
           </div>
-          <div className="mt-1 sm:mt-2 text-sm text-gray-500">
+          <div className="mt-1 sm:mt-2 text-sm text-gray-500 font-notoSerif">
             Select a debt position to check refinancing options
           </div>
           <Suspense fallback={<Loading />}>

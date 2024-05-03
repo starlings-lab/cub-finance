@@ -9,7 +9,7 @@ import Navbar from "./navbar";
 import { Analytics } from "@vercel/analytics/react";
 
 import dotenv from "dotenv";
-import { notoSerif } from "./fonts";
+import { hkGrotesk, notoSerif } from "./fonts";
 dotenv.config();
 
 export const metadata: Metadata = {
@@ -27,12 +27,14 @@ export default function RootLayout({
       <Head>
         <link rel="icon" href={favicon.src} />
       </Head>
-      <body className={notoSerif.className}>
+      <body className={`${notoSerif.className} ${notoSerif.variable} ${hkGrotesk.className} ${hkGrotesk.variable}`}>
         <Suspense fallback={<div className="font-notoSerif">Loading...</div>}>
           <Navbar />
         </Suspense>
-        <main className="flex min-h-screen max-w-screen-xl mx-auto flex-col p-4 sm:p-12 pt-16">
-          {children}
+        <main className="bg-hero-pattern">
+          <div className="flex min-h-screen max-w-screen-xl mx-auto flex-col px-4">
+            {children}
+          </div>
         </main>
         <Toaster />
         <Analytics />
