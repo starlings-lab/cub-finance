@@ -5,6 +5,7 @@ import { Input } from "./input";
 import { Button } from "./button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { isValidEnsAddress, EOAFromENS } from "../../app/utils/utils";
 import { useRouter } from "next/navigation";
 import { isAddress } from "ethers";
 import { useToast } from "./use-toast";
@@ -20,13 +21,24 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
     const router = useRouter();
     const { toast } = useToast();
     const [value, setValue] = React.useState<string>(defaultUserAddress);
+    const [eoaAddress, setEoaAddress] =
+      React.useState<string>(defaultUserAddress);
     const [addressErr, setAddressErr] = React.useState<boolean>(false);
+    const [buttonDisabled, setButtonDisabled] = React.useState<boolean>(false);
     const [addressIsFocused, setAddressIsFocused] =
       React.useState<boolean>(false);
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const isValidAddress = isAddress(event.target.value);
-      setAddressErr(!isValidAddress);
+    const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
       setValue(event.target.value);
+      setButtonDisabled(true);
+      const isValidAddress =
+        isAddress(event.target.value) ||
+        (await isValidEnsAddress(event.target.value));
+      setAddressErr(!isValidAddress);
+      setButtonDisabled(!isValidAddress);
+      const eoaAddress = (await isValidEnsAddress(event.target.value))
+        ? (await EOAFromENS(event.target.value)) || event.target.value
+        : event.target.value;
+      setEoaAddress(eoaAddress);
     };
 
     const inputRef = React.useRef<HTMLInputElement>(null);
@@ -80,13 +92,13 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               onChange={handleChange}
               onFocus={() => setAddressIsFocused(true)}
               onBlur={() => {
-                if (!(addressErr || value === "")) {
+                if (!(addressErr || value === "" || buttonDisabled)) {
                   router.push(`/user/${value}`);
                 }
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  if (!(addressErr || value === "")) {
+                  if (!(addressErr || value === "" || buttonDisabled)) {
                     router.push(`/user/${value}`);
                   } else {
                     toast({
@@ -99,7 +111,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
             ></Input>
             <Link href={`/user/${value}`}>
               <Button
-                disabled={addressErr || value === ""}
+                disabled={addressErr || value === "" || buttonDisabled}
                 className={`bg-[#F43F5E] text-white rounded-3xl w-36 ${
                   !isHome && "hidden disabled:opacity-0"
                 }`}
@@ -139,7 +151,9 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               value={value}
               placeholder="Enter your wallet address"
               onChange={handleChange}
-              onBlur={() => !isHome && value && router.push(`/user/${value}`)}
+              onBlur={() =>
+                !isHome && value && eoaAddress && router.push(`/user/${value}`)
+              }
             ></Input>
           </div>
           {addressErr && (
@@ -149,7 +163,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
           )}
           <Link href={`/user/${value}`}>
             <Button
-              disabled={!isHome || addressErr}
+              disabled={!isHome || addressErr || buttonDisabled}
               className={`bg-[#F43F5E] text-white rounded-3xl w-full mt-2 ml-0 ${
                 !isHome && "disabled:opacity-0"
               }`}
