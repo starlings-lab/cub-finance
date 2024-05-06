@@ -92,5 +92,8 @@ export const TEST_DEBT_POSITION_ADDRESSES = {
   morphoUser3: `0x${"21c079c580560494De9cCB67FF5D46762c81E525"}` as Address,
   sparkUser1: `0x${"000005151cc6f5e8df4b44b955f440c05df7912f"}` as Address,
   sparkUser2: `0x${"00081cbc7cb307852b22d541f004dc6c6922277a"}` as Address,
-  sparkUser3: `0x${"035dd15ca9621a448c7e47ce49e2525aa0bf14d0"}` as Address // has morpho position too
+  sparkUser3: `0x${"035dd15ca9621a448c7e47ce49e2525aa0bf14d0"}` as Address, // has morpho position too
+  ensAddress1: "zloy.eth",
+  ensAddress2: "juanvilla.eth",
+  ensAddress3: "lozben.eth"
 };
