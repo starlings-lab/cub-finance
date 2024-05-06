@@ -1,9 +1,10 @@
-import { ethers, isAddress } from "ethers";
+import { isAddress } from "ethers";
 import { Suspense } from "react";
 import Loading from "./loading";
 import DebtTableWrapper from "./DebtTableWrapper";
 import RecommendationsWrapper from "./RecommendationsWrapper";
 import StoreProvider from "./provider";
+import { isValidEnsAddress, EOAFromENS } from "../../utils/utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { SearchBar } from "@/components/ui/search-bar";
@@ -13,13 +14,14 @@ export default async function DebtPage({
 }: {
   params: { address: string };
 }) {
-  const isValidAddress = isAddress(params.address);
+  const isValidEns = await isValidEnsAddress(params.address);
+  const isValidAddress = isAddress(params.address) || isValidEns;
   if (!isValidAddress)
     return (
       <div className="flex items-center flex-col h-full pt-20">
         <div className="text-center">
           Looks like you entered a wrong address. Try by entering a valid
-          address.{" "}
+          address.
         </div>
         <Button className={`bg-[#F43F5E] text-white rounded-3xl w-36 mt-4`}>
           <Link href={`/`}>Back to Home</Link>
@@ -27,7 +29,9 @@ export default async function DebtPage({
       </div>
     );
 
-  const userAddress = ethers.getAddress(params.address);
+  const userAddress = isValidEns
+    ? (await EOAFromENS(params.address)) || params.address
+    : params.address;
 
   return (
     <StoreProvider>
