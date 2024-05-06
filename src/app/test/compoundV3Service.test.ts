@@ -15,7 +15,9 @@ import {
   getBorrowBalance,
   getSupportedCollateralByMarket,
   getCollateralBalance,
-  getRecommendedDebtDetail
+  getRecommendedDebtDetail,
+  calculateTokenAmount,
+  getPriceFeedFromTokenSymbol
 } from "../service/compoundV3Service";
 import { getMorphoBlueUserDebtDetails } from "../service/morphoBlueService";
 import { Protocol } from "../type/type";
@@ -26,7 +28,7 @@ dotenv.config();
 const MORPHO_DEBT_POSITION_ADDRESS =
   "0xf603265f91f58F1EfA4fAd57694Fb3B77b25fC18";
 
-describe("CompoundV3 Service Tests", () => {
+describe("compoundV3Service", () => {
   test("getCompoundV3UserDebtDetails function should return CompoundV3UserDebtDetails object for a user address", async () => {
     const userDebtDetails = await getCompoundV3UserDebtDetails(
       TEST_DEBT_POSITION_ADDRESSES.compoundUser2
@@ -178,5 +180,25 @@ describe("CompoundV3 Service Tests", () => {
       });
     });
     // console.log("recommendedDebtDetails", recommendedDebtDetails);
+  });
+
+  it("should calculate correct USDC amount", async () => {
+    const amount: bigint = await calculateTokenAmount(
+      COMPOUND_V3_CUSDC_CONTRACT,
+      getPriceFeedFromTokenSymbol("USDC"),
+      1000,
+      USDC
+    );
+    expect(Number(amount / BigInt(10 ** USDC.decimals))).toBeCloseTo(1000);
+  });
+
+  it("should calculate correct WETH amount", async () => {
+    const amount: bigint = await calculateTokenAmount(
+      COMPOUND_V3_CWETH_CONTRACT,
+      getPriceFeedFromTokenSymbol("WETH"),
+      3200, // amount in USD
+      WETH
+    );
+    expect(amount).toBeGreaterThan(0);
   });
 });

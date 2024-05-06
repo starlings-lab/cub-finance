@@ -40,6 +40,7 @@ import {
 import { calculate30DayTrailingBorrowingAndLendingAPYs } from "./defiLlamaDataService";
 
 const USD_SCALE = BigInt(10 ** 8);
+const MAX_UTILIZATION_RATIO = 0.98;
 
 export async function getCompoundV3UserDebtDetails(
   userAddress: Address
@@ -368,7 +369,7 @@ export async function getCollateralBalance(
   }
 }
 
-function getPriceFeedFromTokenSymbol(tokenSymbol: string): Address {
+export function getPriceFeedFromTokenSymbol(tokenSymbol: string): Address {
   const supportedTokens = {
     USDC: COMPOUND_V3_PRICEFEEDS.USDC,
     WETH: COMPOUND_V3_PRICEFEEDS.WETH,
@@ -421,12 +422,61 @@ async function getDebtUsdPrice(
   }
 }
 
+export async function calculateTokenAmount(
+  market: Contract,
+  priceFeed: Address,
+  amountInUsd: number,
+  token: Token
+): Promise<bigint> {
+  try {
+    let rate: bigint = await market.getPrice(priceFeed);
+
+    // Compound's ETH related price feeds returns price in ETH, e.g. 1 stETH = 1.05 ETH
+    // so we need to multiply price by ETH price in USD
+    if (
+      priceFeed === COMPOUND_V3_PRICEFEEDS.cbETH ||
+      priceFeed === COMPOUND_V3_PRICEFEEDS.wstETH ||
+      priceFeed === COMPOUND_V3_PRICEFEEDS.WETH
+    ) {
+      const ethUsdRate: bigint = await market.getPrice(
+        COMPOUND_V3_PRICEFEEDS.ETH
+      );
+      // console.log(`ETH price: ${ethUsdRate}`);
+      rate = (rate * ethUsdRate) / USD_SCALE;
+    }
+
+    const amount =
+      (BigInt(amountInUsd * 10 ** 8) * BigInt(10 ** token.decimals)) / rate;
+    // console.log(`Amount: ${amount}, Rate: ${rate}`);
+
+    return amount;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
 async function getLtv(
   market: Contract,
   debtAmountInUSD: number,
   collaterals: TokenAmount[]
 ): Promise<number> {
-  const collateralBalanceInUsd: bigint[] = await Promise.all(
+  const totalCollateralBalanceInUsd = await calculateTotalCollateralAmountInUsd(
+    collaterals,
+    market
+  );
+  // console.log(
+  //   `Total collateral balance in USD: ${totalCollateralBalanceInUsd}, Debt amount in USD: ${debtAmountInUSD}`
+  // );
+  const ltv = debtAmountInUSD / totalCollateralBalanceInUsd;
+  return ltv;
+}
+
+async function calculateTotalCollateralAmountInUsd(
+  collaterals: TokenAmount[],
+  market: Contract
+): Promise<number> {
+  const collateralBalanceInUsd: number[] = await Promise.all(
     collaterals.map(async (collateral) => {
       const COLLATERAL_TOKEN_SCALE = BigInt(10 ** collateral.token.decimals);
       const usdPrice: bigint = await getDebtUsdPrice(
@@ -434,18 +484,14 @@ async function getLtv(
         getPriceFeedFromTokenSymbol(collateral.token.symbol),
         collateral.amount
       );
-      return usdPrice / COLLATERAL_TOKEN_SCALE / USD_SCALE;
+      return Number(usdPrice / COLLATERAL_TOKEN_SCALE / USD_SCALE);
     })
   );
-  const totalCollateralBalanceInUsd: bigint = collateralBalanceInUsd.reduce(
-    (totalBalance: bigint, currentBalance) => totalBalance + currentBalance,
-    BigInt(0)
+  const totalCollateralBalanceInUsd: number = collateralBalanceInUsd.reduce(
+    (totalBalance: number, currentBalance) => totalBalance + currentBalance,
+    0
   );
-  // console.log(
-  //   `Total collateral balance in USD: ${totalCollateralBalanceInUsd}, Debt amount in USD: ${debtAmountInUSD}`
-  // );
-  const ltv = debtAmountInUSD / Number(totalCollateralBalanceInUsd);
-  return ltv;
+  return totalCollateralBalanceInUsd;
 }
 
 // collateral factor is max LTV for each collateral
@@ -573,7 +619,7 @@ export async function getRecommendedDebtDetail(
 
   // check if the utilization ratio is small enough
   matchedMarkets = matchedMarkets.filter((matchedMarket) => {
-    return matchedMarket.utilizationRatio < 0.98;
+    return matchedMarket.utilizationRatio < MAX_UTILIZATION_RATIO;
   });
 
   // check if the new max LTV >= (the old max LTV - 5%)
@@ -615,7 +661,10 @@ export async function getRecommendedDebtDetail(
         );
       }
     }
-    return newMaxLTV !== undefined && newMaxLTV >= debtPosition.maxLTV - 0.05;
+    return (
+      newMaxLTV !== undefined &&
+      newMaxLTV >= debtPosition.maxLTV - maxLTVTolerance
+    );
   });
 
   // check if the old borrowing cost - the new borrowing cost > 3%
@@ -698,19 +747,131 @@ export async function getRecommendedDebtDetail(
       trailing30DaysNetBorrowingAPY:
         0 -
         matchedMarket.trailing30DaysBorrowingAPY +
-        matchedMarket.trailing30DaysLendingRewardAPY +
         matchedMarket.trailing30DaysBorrowingRewardAPY,
       debt: newDebtAmount,
       collaterals: matchedCollaterals as TokenAmount[]
     };
 
     recommendedDebtDetails.push({
-      protocol: Protocol.MorphoBlue,
+      protocol: Protocol.CompoundV3,
       debt: newDebt,
       market: matchedMarket
     });
   });
   return recommendedDebtDetails;
+}
+
+export async function getBorrowRecommendations(
+  userDebtTokens: Token[],
+  userCollaterals: TokenAmount[]
+): Promise<CompoundV3RecommendedDebtDetail[]> {
+  console.log(
+    "Generating borrow recommendation from protocol: ",
+    Protocol.CompoundV3
+  );
+
+  const recommendations: CompoundV3RecommendedDebtDetail[] = [];
+
+  // check if the debt token and its required collaterals are supported
+  const supportedDebtTokens = await getSupportedDebtTokens();
+  const supportedCollateralsByDebtTokenMap = new Map<Token, TokenAmount[]>();
+
+  userDebtTokens.forEach((debtToken) => {
+    const debtTokenIsSupported = supportedDebtTokens.some(
+      (supportedDebtToken) => supportedDebtToken.address === debtToken.address
+    );
+
+    if (debtTokenIsSupported) {
+      // Compound only supports certain collaterals for each debt token
+      const supportedCollateralTokensForDebt =
+        getSupportedCollateralTokensByDebtToken(debtToken.address);
+      const filteredCollaterals = userCollaterals.filter((userCollateral) =>
+        supportedCollateralTokensForDebt.some(
+          (supportedCollateral) =>
+            userCollateral.token.address.toLowerCase() ===
+            supportedCollateral.address.toLowerCase()
+        )
+      );
+
+      // Check if the user has the required collaterals for the debt token
+      if (filteredCollaterals.length > 0) {
+        supportedCollateralsByDebtTokenMap.set(debtToken, filteredCollaterals);
+      }
+    }
+  });
+
+  if (supportedCollateralsByDebtTokenMap.size === 0) {
+    return recommendations;
+  }
+
+  const marketsMap = new Map<string, CompoundV3Market>(
+    (await getAllCompoundV3Markets()).map((market) => [
+      market.debtToken.address.toLowerCase(),
+      market
+    ])
+  );
+
+  // create a recommended position for each matched debt token
+  const matchedDebtTokens = Array.from(
+    supportedCollateralsByDebtTokenMap.keys()
+  );
+
+  for (let i = 0; i < matchedDebtTokens.length; i++) {
+    const debtToken = matchedDebtTokens[i];
+
+    // If the utilization ratio is too high, skip the debt recommendation
+    const debtMarket = marketsMap.get(debtToken.address.toLowerCase())!;
+    if (debtMarket.utilizationRatio >= MAX_UTILIZATION_RATIO) {
+      continue;
+    }
+
+    const supportedCollaterals =
+      supportedCollateralsByDebtTokenMap.get(debtToken)!;
+
+    const debtMarketContract =
+      debtToken === USDC
+        ? COMPOUND_V3_CUSDC_CONTRACT
+        : COMPOUND_V3_CWETH_CONTRACT;
+
+    // Calculate total collateral amount in USD
+    const totalCollateralAmountInUSD: number =
+      await calculateTotalCollateralAmountInUsd(
+        supportedCollaterals,
+        debtMarketContract
+      );
+
+    // Calculate recommended debt amount using max LTV
+    const maxLTV = await getMaxLtv(debtMarketContract, supportedCollaterals);
+    const debtAmountInUSD = maxLTV * totalCollateralAmountInUSD;
+
+    const recommendedDebt: CompoundV3DebtPosition = {
+      maxLTV,
+      LTV: debtAmountInUSD / totalCollateralAmountInUSD,
+      debt: {
+        token: debtToken,
+        amount: await calculateTokenAmount(
+          debtMarketContract,
+          getPriceFeedFromTokenSymbol(debtToken.symbol),
+          debtAmountInUSD,
+          debtToken
+        ),
+        amountInUSD: debtAmountInUSD
+      },
+      collaterals: supportedCollaterals,
+      trailing30DaysNetBorrowingAPY:
+        0 -
+        debtMarket.trailing30DaysBorrowingAPY +
+        debtMarket.trailing30DaysBorrowingRewardAPY
+    };
+
+    recommendations.push({
+      protocol: Protocol.CompoundV3,
+      debt: recommendedDebt,
+      market: debtMarket
+    });
+  }
+
+  return recommendations;
 }
 
 function determineNewLTVAndDebtAmount(

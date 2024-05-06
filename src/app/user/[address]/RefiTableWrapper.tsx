@@ -54,7 +54,7 @@ export function RefiTableWrapper({
   });
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border bg-white">
       <Table>
         <TableHeader>
           {recommendationTable.getHeaderGroups().map((headerGroup) => (

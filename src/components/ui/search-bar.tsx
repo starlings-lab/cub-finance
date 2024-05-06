@@ -68,7 +68,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
       >
         {/* Desktop search */}
         <div
-          className={`sm:flex flex-col w-9/12 max-w-xl ${
+          className={`sm:flex flex-col w-9/12 max-w-xl bg-white ${
             isHome ? "hidden" : "flex w-full"
           }`}
         >
@@ -85,14 +85,14 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
             />
             <Input
               ref={inputRef}
-              className="placeholder:text-slate-400 rounded-3xl"
+              className="placeholder:text-slate-400 rounded-3xl tracking-wide"
               type="text"
               value={value}
-              placeholder="Enter your wallet address"
+              placeholder="Wallet address or ENS"
               onChange={handleChange}
               onFocus={() => setAddressIsFocused(true)}
               onBlur={() => {
-                if (!(addressErr || value === "" || buttonDisabled)) {
+                if (!(addressErr || value === "" || buttonDisabled) && !isHome) {
                   router.push(`/user/${value}`);
                 }
               }}
@@ -112,7 +112,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
             <Link href={`/user/${value}`}>
               <Button
                 disabled={addressErr || value === "" || buttonDisabled}
-                className={`bg-[#F43F5E] text-white rounded-3xl w-36 ${
+                className={`bg-[#F43F5E] text-white rounded-3xl w-36 font-hkGrotesk font-medium tracking-wide ${
                   !isHome && "hidden disabled:opacity-0"
                 }`}
                 onClick={(event) => {
@@ -141,7 +141,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
           }`}
         >
           <div
-            className={`flex border  rounded-3xl py-1 px-3 ${
+            className={`flex border  rounded-3xl py-1 px-3 bg-white ${
               addressErr ? "border-red-500" : ""
             }`}
           >
