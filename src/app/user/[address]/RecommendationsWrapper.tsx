@@ -1,5 +1,5 @@
 "use client";
-import { getRecommendations } from "@/app/service/refiananceRecommendationService";
+import { getRefinanceRecommendations } from "@/app/service/refiananceRecommendationService";
 import { RecommendedDebtDetailTableRow } from "@/app/type/type";
 import React, { useContext, useEffect, useState } from "react";
 import { StoreContext } from "./context";
@@ -55,7 +55,7 @@ const RecommendationsWrapper = () => {
   useEffect(() => {
     const fetchRecommendations = async () => {
       setIsLoading(true);
-      const data = await getRecommendations(
+      const data = await getRefinanceRecommendations(
         state!.activeDebtPosition?.protocol!,
         state!.activeDebtPosition?.debtPosition!
       );

@@ -25,7 +25,7 @@ import { Protocol } from "../type/type";
 
 import dotenv from "dotenv";
 import {
-  verifyBorrowRecommendations,
+  verifyAaveOrSparkBorrowRecommendations,
   verifyCompoundBorrowRecommendations
 } from "./testHelper";
 dotenv.config();

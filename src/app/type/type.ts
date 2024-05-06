@@ -164,23 +164,18 @@ export interface APYProvider {
   ): Promise<APYInfo>;
 }
 
-export interface ProtocolService {
-  // Get all tokens owned by an address
-  getTokenHoldings(address: Address): Promise<TokenAmount[]>;
-
-  // Get all debt tokens supported by protocol
-  getSupportedDebtTokens(): Promise<Token[]>;
-
-  // get all collateral tokens supported by protocol
-  getSupportedCollateralTokens(): Promise<Token[]>;
-
-  // Get all borrow recommendations for a token held by an address
-  getBorrowRecommendations(
-    debtTokens: Token[],
-    collaterals: TokenAmount[]
-  ): Promise<
-    | RecommendedDebtDetail[]
-    | CompoundV3RecommendedDebtDetail[]
-    | MorphoBlueRecommendedDebtDetail[]
-  >;
+export interface BorrowRecommendationTableRow {
+  protocol: Protocol;
+  debtToken: Token;
+  collateralTokens: Token[];
+  // negative, 0 or positive
+  trailing30DaysNetBorrowingAPY: number;
+  maxDebtAmountInUSD: number;
+  totalCollateralAmountInUSD: number;
+  // Borrowing apy of debt token.
+  trailing30DaysBorrowingAPY: number;
+  // Lending apy of collateral. weighted average for multiple collateral positions.
+  trailing30DaysLendingAPY: number;
+  trailing30DaysRewardAPY: number;
+  maxLTV: number;
 }

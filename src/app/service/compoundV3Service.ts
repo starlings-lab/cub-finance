@@ -446,7 +446,9 @@ export async function calculateTokenAmount(
     }
 
     const amount =
-      (BigInt(amountInUsd * 10 ** 8) * BigInt(10 ** token.decimals)) / rate;
+      (BigInt(Math.floor(amountInUsd) * 10 ** 8) *
+        BigInt(10 ** token.decimals)) /
+      rate;
     // console.log(`Amount: ${amount}, Rate: ${rate}`);
 
     return amount;
