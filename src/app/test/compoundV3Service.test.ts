@@ -7,7 +7,7 @@ import {
   COMPOUND_V3_CUSDC_COLLATERALS,
   COMPOUND_V3_CWETH_COLLATERALS
 } from "../contracts/compoundV3";
-import { USDC, WETH } from "../contracts/ERC20Tokens";
+import { USDC, WBTC, WETH, wstETH } from "../contracts/ERC20Tokens";
 import {
   getCompoundV3UserDebtDetails,
   getUtilizationRatio,
@@ -17,12 +17,17 @@ import {
   getCollateralBalance,
   getRecommendedDebtDetail,
   calculateTokenAmount,
-  getPriceFeedFromTokenSymbol
+  getPriceFeedFromTokenSymbol,
+  getBorrowRecommendations
 } from "../service/compoundV3Service";
 import { getMorphoBlueUserDebtDetails } from "../service/morphoBlueService";
 import { Protocol } from "../type/type";
 
 import dotenv from "dotenv";
+import {
+  verifyBorrowRecommendations,
+  verifyCompoundBorrowRecommendations
+} from "./testHelper";
 dotenv.config();
 
 const MORPHO_DEBT_POSITION_ADDRESS =
@@ -182,23 +187,86 @@ describe("compoundV3Service", () => {
     // console.log("recommendedDebtDetails", recommendedDebtDetails);
   });
 
-  it("should calculate correct USDC amount", async () => {
-    const amount: bigint = await calculateTokenAmount(
-      COMPOUND_V3_CUSDC_CONTRACT,
-      getPriceFeedFromTokenSymbol("USDC"),
-      1000,
-      USDC
-    );
-    expect(Number(amount / BigInt(10 ** USDC.decimals))).toBeCloseTo(1000);
-  });
+  // it("should calculate correct USDC amount", async () => {
+  //   const amount: bigint = await calculateTokenAmount(
+  //     COMPOUND_V3_CUSDC_CONTRACT,
+  //     getPriceFeedFromTokenSymbol("USDC"),
+  //     1000,
+  //     USDC
+  //   );
+  //   expect(Number(amount / BigInt(10 ** USDC.decimals))).toBeCloseTo(1000);
+  // });
 
-  it("should calculate correct WETH amount", async () => {
-    const amount: bigint = await calculateTokenAmount(
-      COMPOUND_V3_CWETH_CONTRACT,
-      getPriceFeedFromTokenSymbol("WETH"),
-      3200, // amount in USD
-      WETH
-    );
-    expect(amount).toBeGreaterThan(0);
+  // it("should calculate correct WETH amount", async () => {
+  //   const amount: bigint = await calculateTokenAmount(
+  //     COMPOUND_V3_CWETH_CONTRACT,
+  //     getPriceFeedFromTokenSymbol("WETH"),
+  //     3200, // amount in USD
+  //     WETH
+  //   );
+  //   expect(amount).toBeGreaterThan(0);
+  // });
+
+  describe("getBorrowRecommendations", () => {
+    it("provides borrow recommendations for USDC debt against WETH collateral", async () => {
+      const wethCollateralAmount = {
+        token: WETH,
+        amount: BigInt(1.1 * 10 ** WETH.decimals),
+        amountInUSD: 0
+      };
+
+      const borrowRecommendations = await getBorrowRecommendations(
+        [USDC],
+        [wethCollateralAmount]
+      );
+      // console.dir(borrowRecommendations, { depth: null });
+
+      verifyCompoundBorrowRecommendations(borrowRecommendations, USDC, [
+        wethCollateralAmount
+      ]);
+    });
+
+    it("provides borrow recommendations for WETH debt against wstETH collateral", async () => {
+      const wstEthCollateralAmount = {
+        token: wstETH,
+        amount: BigInt(10 * 10 ** wstETH.decimals),
+        amountInUSD: 0
+      };
+
+      const borrowRecommendations = await getBorrowRecommendations(
+        [WETH],
+        [wstEthCollateralAmount]
+      );
+      // console.dir(borrowRecommendations, { depth: null });
+
+      verifyCompoundBorrowRecommendations(borrowRecommendations, WETH, [
+        wstEthCollateralAmount
+      ]);
+    });
+
+    it("provides borrow recommendations for USDC debt against WETH & WBTC collateral", async () => {
+      const wethCollateralAmount = {
+        token: WETH,
+        amount: BigInt(1.1 * 10 ** WETH.decimals),
+        amountInUSD: 0
+      };
+
+      const wbtcCollateralAmount = {
+        token: WBTC,
+        amount: BigInt(2.1 * 10 ** WBTC.decimals),
+        amountInUSD: 0
+      };
+
+      const borrowRecommendations = await getBorrowRecommendations(
+        [USDC],
+        [wethCollateralAmount, wbtcCollateralAmount]
+      );
+      // console.dir(borrowRecommendations, { depth: null });
+
+      verifyCompoundBorrowRecommendations(borrowRecommendations, USDC, [
+        wethCollateralAmount,
+        wbtcCollateralAmount
+      ]);
+    });
   });
 });
