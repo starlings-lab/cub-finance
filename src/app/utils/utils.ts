@@ -16,7 +16,10 @@ import {
   cbETH,
   wstETH
 } from "../contracts/ERC20Tokens";
-import { ethers } from "ethers";
+import { ethers, isAddress } from "ethers";
+import { normalize } from "viem/ens";
+import { getEnsAddress, http, createConfig } from "@wagmi/core";
+import { mainnet } from "@wagmi/core/chains";
 
 export function getTokenByAddress(address: string | Address): Token {
   const tokens: Token[] = [
@@ -57,4 +60,31 @@ export function isZeroOrPositive(num: number): num is number {
 
 export function isZeroOrNegative(num: number): num is number {
   return num <= 0;
+}
+
+export const ensConfig = createConfig({
+  chains: [mainnet],
+  transports: {
+    [mainnet.id]: http()
+  }
+});
+
+export async function isValidEnsAddress(ensAddress: string): Promise<boolean> {
+  let result;
+  try {
+    result = await getEnsAddress(ensConfig, {
+      name: normalize(ensAddress)
+    });
+  } catch (error) {
+    console.error(`Error fetching ENS address: ${error}`);
+    return false;
+  }
+  return isAddress(result);
+}
+
+export async function EOAFromENS(address: string): Promise<string | null> {
+  const eoaAddress = await getEnsAddress(ensConfig, {
+    name: normalize(address)
+  });
+  return eoaAddress;
 }

@@ -32,7 +32,9 @@
     "react": "^18",
     "react-dom": "^18",
     "tailwind-merge": "^2.3.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "viem": "^2.9.31",
+    "wagmi": "^2.8.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.2",
