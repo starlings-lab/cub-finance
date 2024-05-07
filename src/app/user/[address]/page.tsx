@@ -1,14 +1,11 @@
 import { isAddress } from "ethers";
-import { Suspense } from "react";
-import Loading from "./loading";
-import DebtTableWrapper from "./DebtTableWrapper";
-import RecommendationsWrapper from "./RecommendationsWrapper";
 import StoreProvider from "./provider";
 import { isValidEnsAddress, EOAFromENS } from "../../utils/utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { SearchBar } from "@/components/ui/search-bar";
 import { TabsWrapper } from "@/components/ui/tabs";
+import RefinanceOptions from "./RefinanceOptions";
 
 export default async function DebtPage({
   params
@@ -44,23 +41,7 @@ export default async function DebtPage({
           />
         </div>
         <TabsWrapper />
-        <div className="sm:pt-5">
-          <div className="mt-10 text-3xl sm:text-2xl font-medium tracking-wide font-hkGrotesk">
-            Debt Positions
-          </div>
-          <div className="mt-1 sm:mt-2 text-sm text-gray-500 font-notoSerif">
-            Select a debt position to check refinancing options
-          </div>
-          <Suspense fallback={<Loading />}>
-            <DebtTableWrapper userAddress={userAddress} />
-          </Suspense>
-        </div>
-        <div className="pt-2 sm:pt-5">
-          <Suspense fallback={<Loading />}>
-            <RecommendationsWrapper />
-          </Suspense>
-        </div>
-        <div></div>
+        <RefinanceOptions userAddress={userAddress} />
       </div>
     </StoreProvider>
   );

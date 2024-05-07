@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { Fragment, useContext, useEffect, useState } from "react";
 import { StoreContext } from "@/app/user/[address]/context";
+import Image from "next/image";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -38,6 +39,8 @@ export function DataTable<TData, TValue>({
   const [expanded, setExpanded] = useState<ExpandedState>({
     0: false
   });
+
+  const [showFullDebtTable, setShowFullDebtTable] = useState(true);
   const [rowSelection, setRowSelected] = useState<RowSelectionState>({
     "0.0": true
   });
@@ -81,15 +84,19 @@ export function DataTable<TData, TValue>({
     }
   }, [data]);
 
+  const finalTable = showFullDebtTable ? table.getRowModel() : table.getSelectedRowModel()
+
   return (
-    <div className="rounded-md border bg-white">
+    <div>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="hover:bg-white">
+            <TableRow key={headerGroup.id} className="!rounded-md border bg-white hover:bg-white">
               {headerGroup.headers.map((header) => {
                 const isSortable = header.column.getCanSort();
-                const classNameForSort = isSortable ? "hover:bg-muted/50 cursor-pointer" : ''
+                const classNameForSort = isSortable
+                  ? "hover:bg-muted/50 cursor-pointer"
+                  : "";
                 return (
                   <TableHead key={header.id} className={classNameForSort}>
                     {header.isPlaceholder
@@ -105,17 +112,42 @@ export function DataTable<TData, TValue>({
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
+          <TableRow className="hover:bg-white">
+            <TableCell
+              colSpan={columns.length}
+              className="h-16 w-max p-0 pb-4 pt-2 font-lg"
+            >
+              <div className="flex items-center mt-3  sm:mt-2 ">
+                <div className="text-3xl sm:text-2xl font-medium tracking-wide font-hkGrotesk mr-4">
+                  Debt positions
+                </div>
+                <button title="toggle debt positions" onClick={() => setShowFullDebtTable(!showFullDebtTable)}>
+                  <Image
+                    src={showFullDebtTable ? `/collapse.svg` : "/expand.svg"}
+                    alt={"expand debt row"}
+                    width={40}
+                    height={40}
+                    className="rounded-full"
+                  />
+                </button>
+              </div>
+            </TableCell>
+          </TableRow>
+          {finalTable.rows?.length ? (
+            finalTable.rows.map((row) => (
               <Fragment key={row.id}>
                 <TableRow
-                className={(row.getCanExpand() || row.getCanSelect()) ? 'cursor-pointer' : ''}
+                  className={`!rounded-md !border bg-white ${
+                    row.getCanExpand() || row.getCanSelect()
+                      ? "cursor-pointer"
+                      : ""
+                  }`}
                   key={row.id}
                   onClick={(e) => {
                     if (row?.depth === 0) {
                       setExpanded({
-                        [row.id] : !row.getIsExpanded()
-                      })
+                        [row.id]: !row.getIsExpanded()
+                      });
                       if (!row.getCanExpand() && !row.getIsSelected()) {
                         row.toggleSelected();
                         state?.setActiveDebtPosition(row.original);
@@ -148,7 +180,7 @@ export function DataTable<TData, TValue>({
               </Fragment>
             ))
           ) : (
-            <TableRow className="hover:bg-white">
+            <TableRow className="!rounded-md !border bg-white hover:bg-white">
               <TableCell
                 colSpan={columns.length}
                 className="h-16 text-left sm:text-center"

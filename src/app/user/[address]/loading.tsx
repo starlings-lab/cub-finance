@@ -51,13 +51,13 @@ const TableRowWrapper = () => {
   );
 };
 
-export default function Loading() {
+export default function Loading({showHeader = true} : {showHeader?: boolean}) {
   // You can add any UI inside Loading, including a Skeleton.
   return (
-    <div className="max-w-screen-xl mx-auto py-8">
+    <div className="max-w-screen-xl mx-auto py-4">
       <div className="rounded-md border bg-white">
         <Table>
-          <TableHeader>
+          {showHeader && <TableHeader>
             <TableRow className="hover:bg-white">
               <TableHead>Protocol</TableHead>
               <TableHead>Debt Tokens</TableHead>
@@ -66,11 +66,12 @@ export default function Loading() {
               <TableHead>Debt Amount</TableHead>
               <TableHead>Borrowing APY</TableHead>
               <TableHead>Collateral Amount</TableHead>
-              <TableHead>Lending APY</TableHead>
+              <TableHead>Collateral APY</TableHead>
+              <TableHead>Reward APY</TableHead>
               <TableHead>LTV</TableHead>
               <TableHead>Max LTV</TableHead>
             </TableRow>
-          </TableHeader>
+          </TableHeader>}
           <TableBody>
           <TableRowWrapper/>
           <TableRowWrapper/>
