@@ -6,7 +6,7 @@ import RecommendationsWrapper from "./RecommendationsWrapper";
 const RefinanceOptions = ({ userAddress }: { userAddress: string }) => {
   return (
     <div>
-      <div className="sm:pt-5">
+      <div className="pt-2 sm:pt-5">
         <Suspense fallback={<Loading />}>
           <DebtTableWrapper userAddress={userAddress} />
         </Suspense>

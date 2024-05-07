@@ -94,7 +94,7 @@ const RecommendationsWrapper = () => {
 
   return (
     <div>
-      <div className="mt-3 sm:mt-3 text-3xl sm:text-2xl font-medium tracking-wide font-hkGrotesk">
+      <div className="mt-3 sm:mt-3 text-xl sm:text-2xl font-medium tracking-wide font-hkGrotesk">
         Refinance Options
       </div>
       {isLoading ? (

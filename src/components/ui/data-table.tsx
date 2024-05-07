@@ -118,7 +118,7 @@ export function DataTable<TData, TValue>({
               className="h-16 w-max p-0 pb-4 pt-2 font-lg"
             >
               <div className="flex items-center mt-3  sm:mt-2 ">
-                <div className="text-3xl sm:text-2xl font-medium tracking-wide font-hkGrotesk mr-4">
+                <div className="text-xl sm:text-2xl font-medium tracking-wide font-hkGrotesk mr-4">
                   Debt positions
                 </div>
                 <button title="toggle debt positions" onClick={() => setShowFullDebtTable(!showFullDebtTable)}>
