@@ -1,11 +1,10 @@
 "use client";
 import { getRefinanceRecommendations } from "@/app/service/refiananceRecommendationService";
 import { RecommendedDebtDetailTableRow } from "@/app/type/type";
-import React, { useContext, useEffect, useState } from "react";
+import React, { Fragment, useContext, useEffect, useState } from "react";
 import { StoreContext } from "./context";
 import Loading from "./loading";
 import {
-  debtTableColumns,
   maxLTVColumnId,
   recommendedTableColumns,
   totalDebtAmountInUSDColumnId,
@@ -13,8 +12,14 @@ import {
   trailing30DaysLendingAPYColumnId,
   trailing30DaysNetBorrowingAPYColumnId
 } from "./debtTableColumns";
-import { RefiTableWrapper } from "./RefiTableWrapper";
-import { ColumnSort } from "@tanstack/react-table";
+import {
+  ColumnSort,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable
+} from "@tanstack/react-table";
+import { TableCell, TableRow } from "@/components/ui/table";
 
 // Sort debts by descending order of trailing30DaysNetBorrowingAPY and descending order of totalDebtAmountInUSD
 const initialSortedColumns: ColumnSort[] = [
@@ -52,6 +57,16 @@ const RecommendationsWrapper = () => {
 
   const state = useContext(StoreContext);
 
+  const recommendationTable = useReactTable({
+    data: recommendations,
+    columns: recommendedTableColumns,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(), //provide a sorting row model
+    initialState: {
+      sorting: initialSortedColumns
+    }
+  });
+
   useEffect(() => {
     const fetchRecommendations = async () => {
       setIsLoading(true);
@@ -73,24 +88,53 @@ const RecommendationsWrapper = () => {
   }
 
   return (
-    <div>
-      <div className="mt-3 sm:mt-5 text-3xl sm:text-4xl font-medium tracking-wide font-hkGrotesk">
-        Refinance Options
-      </div>
+    <Fragment>
+      <TableRow className="!border-b-0 hover:bg-white">
+        <TableCell
+          colSpan={recommendedTableColumns.length}
+          className="h-16 w-max p-0 pb-4 pt-8 font-lg"
+        >
+          <div className="mt-3 sm:mt-3 text-xl sm:text-2xl font-medium tracking-wide font-hkGrotesk">
+            Refinance Options
+          </div>
+        </TableCell>
+      </TableRow>
       {isLoading ? (
-        <Loading />
+        <TableRow className="hover:bg-white !border-b-0">
+          <TableCell
+            colSpan={recommendedTableColumns.length}
+            className="h-16 w-max p-0 pb-4 font-lg"
+          >
+            <Loading showHeader={false} />
+          </TableCell>
+        </TableRow>
+      ) : recommendationTable.getRowModel().rows?.length ? (
+        recommendationTable.getRowModel().rows.map((row) => (
+          <TableRow
+            key={row.id}
+            className="!rounded-md !border bg-white hover:bg-white"
+          >
+            {row.getVisibleCells().map((cell) => (
+              <TableCell
+                key={cell.id}
+                className={`${cell.column.id === "protocol" ? "flex" : ""}`}
+              >
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </TableCell>
+            ))}
+          </TableRow>
+        ))
       ) : (
-        <div className="max-w-screen-xl mx-auto py-5">
-          <RefiTableWrapper
-            debtColumns={debtTableColumns}
-            activeDebtPositionData={[state?.activeDebtPosition]}
-            recommendationsData={recommendations}
-            recommendedColumns={recommendedTableColumns}
-            initialSortedColumns={initialSortedColumns}
-          />
-        </div>
+        <TableRow className="rounded border hover:bg-white">
+          <TableCell
+            colSpan={recommendedTableColumns.length}
+            className="h-16 text-left sm:text-center"
+          >
+            Your existing positions look good!
+          </TableCell>
+        </TableRow>
       )}
-    </div>
+    </Fragment>
   );
 };
 

@@ -19,6 +19,7 @@ export const trailing30DaysNetBorrowingAPYColumnId =
 export const totalDebtAmountInUSDColumnId = "totalDebtAmountInUSD";
 export const trailing30DaysBorrowingAPYColumnId = "trailing30DaysBorrowingAPY";
 export const trailing30DaysLendingAPYColumnId = "trailing30DaysLendingAPY";
+export const trailing30DaysRewardAPYColumnId = "trailing30DaysRewardAPY";
 export const maxLTVColumnId = "maxLTV";
 
 const sortByTrailing30DaysNetBorrowingAPY = (
@@ -51,6 +52,17 @@ const sortByTrailing30DaysLendingAPY = (
   return (
     rowA.original.trailing30DaysLendingAPY -
     rowB.original.trailing30DaysLendingAPY
+  );
+};
+
+const sortByTrailing30DaysRewardAPY = (
+  rowA: any,
+  rowB: any,
+  columnId: any
+) => {
+  return (
+    rowA.original.trailing30DaysRewardAPY -
+    rowB.original.trailing30DaysRewardAPY
   );
 };
 
@@ -313,7 +325,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           title={
             <div className="flex">
               <div className="mr-2">
-                {"Lending APY"}
+                {"Collateral APY"}
                 <span className="ml-2 text-sm">ⓘ</span>
               </div>
             </div>
@@ -321,7 +333,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           content={
             <div className="text-sm text-slate-800">
               {
-                "Trailing 30 Days Lending APY For Collateral, Weighted Avg In Case of Multiple Collaterals"
+                "Trailing 30 Days Collateral APY For Collateral, Weighted Avg In Case of Multiple Collaterals"
               }
             </div>
           }
@@ -339,7 +351,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
         >
           <Image
             src={"/sort.svg"}
-            alt={"Sort Trailing 30 days Lending APY"}
+            alt={"Sort Trailing 30 days Collateral APY"}
             width={15}
             height={20}
           />
@@ -352,6 +364,54 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
     },
     enableSorting: true,
     sortingFn: sortByTrailing30DaysLendingAPY
+  },
+  {
+    id: trailing30DaysRewardAPYColumnId,
+    header: (row) => (
+      <div className="flex items-center">
+        <PopoverWrapper
+          title={
+            <div className="flex">
+              <div className="mr-2">
+                {"Reward APY"}
+                <span className="ml-2 text-sm">ⓘ</span>
+              </div>
+            </div>
+          }
+          content={
+            <div className="text-sm text-slate-800">
+              {
+                "Trailing 30 Days Reward APY For Reward, Weighted Avg In Case of Multiple Reward"
+              }
+            </div>
+          }
+        />
+        <div
+          className="w-4 h-4"
+          onClick={() => {
+            if (row.column.getNextSortingOrder()) {
+              row.column.toggleSorting();
+            } else {
+              const initialSortOrder = row.column.getFirstSortDir();
+              row.column.toggleSorting(initialSortOrder === "desc");
+            }
+          }}
+        >
+          <Image
+            src={"/sort.svg"}
+            alt={"Sort Trailing 30 days Reward APY"}
+            width={15}
+            height={20}
+          />
+        </div>
+      </div>
+    ),
+    accessorKey: "trailing30DaysRewardAPY",
+    accessorFn: (originalRow) => {
+      return `${(originalRow.trailing30DaysRewardAPY * 100).toFixed(2)}%`;
+    },
+    enableSorting: true,
+    sortingFn: sortByTrailing30DaysRewardAPY
   },
   {
     header: "LTV",
@@ -602,14 +662,14 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
             title={
               <div className="flex">
                 <div className="mr-2">
-                  {"Lending APY"}
+                  {"Collateral APY"}
                   <span className="ml-2 text-sm">ⓘ</span>
                 </div>
               </div>
             }
             content={
               <div className="text-sm text-slate-800">
-                {"Trailing 30 days Lending APY"}
+                {"Trailing 30 days Collateral APY"}
               </div>
             }
           />
@@ -626,7 +686,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
           >
             <Image
               src={"/sort.svg"}
-              alt={"Sort Trailing 30 days Lending APY"}
+              alt={"Sort Trailing 30 days Collateral APY"}
               width={15}
               height={20}
             />
@@ -639,6 +699,52 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       },
       enableSorting: true,
       sortingFn: sortByTrailing30DaysLendingAPY
+    },
+    {
+      id: trailing30DaysRewardAPYColumnId,
+      header: (row) => (
+        <div className="flex items-center">
+          <PopoverWrapper
+            title={
+              <div className="flex">
+                <div className="mr-2">
+                  {"Reward APY"}
+                  <span className="ml-2 text-sm">ⓘ</span>
+                </div>
+              </div>
+            }
+            content={
+              <div className="text-sm text-slate-800">
+                {"Trailing 30 days Reward APY"}
+              </div>
+            }
+          />
+          <div
+            className="w-4 h-4"
+            onClick={() => {
+              if (row.column.getNextSortingOrder()) {
+                row.column.toggleSorting();
+              } else {
+                const initialSortOrder = row.column.getFirstSortDir();
+                row.column.toggleSorting(initialSortOrder === "desc");
+              }
+            }}
+          >
+            <Image
+              src={"/sort.svg"}
+              alt={"Sort Trailing 30 days Reward APY"}
+              width={15}
+              height={20}
+            />
+          </div>
+        </div>
+      ),
+      accessorKey: "trailing30DaysRewardAPY",
+      accessorFn: (originalRow) => {
+        return `${(originalRow.trailing30DaysRewardAPY * 100).toFixed(2)}%`;
+      },
+      enableSorting: true,
+      sortingFn: sortByTrailing30DaysRewardAPY
     },
     {
       header: "LTV",
