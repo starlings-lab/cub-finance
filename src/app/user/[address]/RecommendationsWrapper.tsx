@@ -74,13 +74,13 @@ const RecommendationsWrapper = () => {
 
   return (
     <div>
-      <div className="mt-3 sm:mt-5 text-3xl sm:text-4xl font-medium tracking-wide font-hkGrotesk">
+      <div className="mt-3 sm:mt-5 text-3xl sm:text-2xl font-medium tracking-wide font-hkGrotesk">
         Refinance Options
       </div>
       {isLoading ? (
         <Loading />
       ) : (
-        <div className="max-w-screen-xl mx-auto py-5">
+        <div className="max-w-screen-xl mx-auto pt-3 pb-5">
           <RefiTableWrapper
             debtColumns={debtTableColumns}
             activeDebtPositionData={[state?.activeDebtPosition]}

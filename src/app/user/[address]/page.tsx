@@ -8,6 +8,7 @@ import { isValidEnsAddress, EOAFromENS } from "../../utils/utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { SearchBar } from "@/components/ui/search-bar";
+import { TabsWrapper } from "@/components/ui/tabs";
 
 export default async function DebtPage({
   params
@@ -42,8 +43,9 @@ export default async function DebtPage({
             defaultUserAddress={(params!.address as string) ?? ""}
           />
         </div>
+        <TabsWrapper />
         <div className="sm:pt-5">
-          <div className="mt-10 text-3xl sm:text-4xl font-medium tracking-wide font-hkGrotesk">
+          <div className="mt-10 text-3xl sm:text-2xl font-medium tracking-wide font-hkGrotesk">
             Debt Positions
           </div>
           <div className="mt-1 sm:mt-2 text-sm text-gray-500 font-notoSerif">
