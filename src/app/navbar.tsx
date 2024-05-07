@@ -12,7 +12,7 @@ export default function Navbar() {
             <Image src="/refi-v2.png" width={64} height={64} alt="" />
           </Link>
           <div className="flex items-center">
-            <Button className="bg-[#F43F5E3a] hover:bg-[#F43F5E] text-black hover:text-white rounded-3xl w-36">
+            <Button className="bg-[#009DC4] hover:bg-[#009DC48a] text-white hover:text-black rounded-3xl w-36 transition-colors">
               <Link
                 target="_blank"
                 href="https://t.me/+pL8nGAh5P5k4MWZh"
