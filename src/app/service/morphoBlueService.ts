@@ -13,7 +13,10 @@ import {
   Token
 } from "../type/type";
 import { isZeroOrNegative, isZeroOrPositive } from "../utils/utils";
-import { MORPHO_GRAPHQL_URL } from "../constants";
+import {
+  MORPHO_GRAPHQL_URL,
+  MORPHO_SUPPORTED_DEBT_TOKEN_QUERY
+} from "../constants";
 
 export async function getMorphoBlueUserDebtDetails(
   chainId: number,
@@ -442,6 +445,10 @@ export async function getSupportedTokens(query: any): Promise<Token[]> {
     console.error(error);
     throw error;
   }
+}
+
+export async function getSupportedDebtTokens(): Promise<Token[]> {
+  return getSupportedTokens(MORPHO_SUPPORTED_DEBT_TOKEN_QUERY);
 }
 
 function removeDuplicateTokens(tokens: Token[]): Token[] {
