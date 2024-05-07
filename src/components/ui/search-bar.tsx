@@ -3,9 +3,8 @@ import * as React from "react";
 import Image from "next/image";
 import { Input } from "./input";
 import { Button } from "./button";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { isValidEnsAddress, EOAFromENS } from "../../app/utils/utils";
+import { isValidEnsAddress, EOAFromENS } from "../../app/service/ensService";
 import { useRouter } from "next/navigation";
 import { isAddress } from "ethers";
 import { useToast } from "./use-toast";
@@ -28,19 +27,21 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
     const [addressIsFocused, setAddressIsFocused] =
       React.useState<boolean>(false);
     const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-      setValue(event.target.value);
+      const inputValue = event.target.value;
+      setValue(inputValue);
       setButtonDisabled(true);
       const isValidAddress =
-        isAddress(event.target.value) ||
-        (await isValidEnsAddress(event.target.value));
+        isAddress(inputValue) || (await isValidEnsAddress(inputValue));
       setAddressErr(!isValidAddress);
       setButtonDisabled(!isValidAddress);
-      const eoaAddress = (await isValidEnsAddress(event.target.value))
-        ? (await EOAFromENS(event.target.value)) || event.target.value
-        : event.target.value;
-      setEoaAddress(eoaAddress);
-    };
 
+      if (await isValidEnsAddress(inputValue)) {
+        const resolvedAddress = await EOAFromENS(inputValue);
+        setEoaAddress(resolvedAddress || inputValue);
+      } else {
+        setEoaAddress(inputValue);
+      }
+    };
     const inputRef = React.useRef<HTMLInputElement>(null);
 
     React.useEffect(() => {

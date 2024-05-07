@@ -4,7 +4,7 @@ import Loading from "./loading";
 import DebtTableWrapper from "./DebtTableWrapper";
 import RecommendationsWrapper from "./RecommendationsWrapper";
 import StoreProvider from "./provider";
-import { isValidEnsAddress, EOAFromENS } from "../../utils/utils";
+import { isValidEnsAddress, EOAFromENS } from "../../service/ensService";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { SearchBar } from "@/components/ui/search-bar";
