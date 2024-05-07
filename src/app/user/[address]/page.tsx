@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { SearchBar } from "@/components/ui/search-bar";
 import { TabsWrapper } from "@/components/ui/tabs";
-import RefinanceOptions from "./RefinanceOptions";
+import DebtTableWrapper from "./DebtTableWrapper";
+import { Suspense } from "react";
+import Loading from "./loading";
 
 export default async function DebtPage({
   params
@@ -41,7 +43,11 @@ export default async function DebtPage({
           />
         </div>
         <TabsWrapper />
-        <RefinanceOptions userAddress={userAddress} />
+        <div className="pt-2 sm:pt-5">
+          <Suspense fallback={<Loading />}>
+            <DebtTableWrapper userAddress={userAddress} />
+          </Suspense>
+        </div>
       </div>
     </StoreProvider>
   );
