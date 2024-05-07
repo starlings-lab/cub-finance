@@ -92,7 +92,10 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               onChange={handleChange}
               onFocus={() => setAddressIsFocused(true)}
               onBlur={() => {
-                if (!(addressErr || value === "" || buttonDisabled) && !isHome) {
+                if (
+                  !(addressErr || value === "" || buttonDisabled) &&
+                  !isHome
+                ) {
                   router.push(`/user/${value}`);
                 }
               }}
@@ -109,19 +112,25 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
                 }
               }}
             ></Input>
-            <Link href={`/user/${value}`}>
-              <Button
-                disabled={addressErr || value === "" || buttonDisabled}
-                className={`bg-[#F43F5E] text-white rounded-3xl w-36 font-hkGrotesk font-medium tracking-wide ${
-                  !isHome && "hidden disabled:opacity-0"
-                }`}
-                onClick={(event) => {
-                  setAddressIsFocused(false);
-                }}
-              >
-                Find Now
-              </Button>
-            </Link>
+            <Button
+              disabled={addressErr || value === "" || buttonDisabled}
+              className={`bg-[#F43F5E] text-white rounded-3xl w-36 font-hkGrotesk font-medium tracking-wide ${
+                !isHome && "hidden disabled:opacity-0"
+              }`}
+              onClick={() => {
+                setAddressIsFocused(false);
+                if (!addressErr && value !== "" && !buttonDisabled) {
+                  router.push(`/user/${value}`);
+                } else {
+                  toast({
+                    title: "Enter a valid address",
+                    variant: "destructive"
+                  });
+                }
+              }}
+            >
+              Find Now
+            </Button>
           </div>
           {addressErr && (
             <div
@@ -161,23 +170,22 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               Enter a valid address
             </div>
           )}
-          <Link href={`/user/${value}`}>
-            <Button
-              disabled={!isHome || addressErr || buttonDisabled}
-              className={`bg-[#F43F5E] text-white rounded-3xl w-full mt-2 ml-0 ${
-                !isHome && "disabled:opacity-0"
-              }`}
-            >
-              Find Now
-              <Image
-                src={"/search_white.svg"}
-                alt="icon"
-                width="24"
-                height="24"
-                className="ml-2"
-              />
-            </Button>
-          </Link>
+          <Button
+            disabled={!isHome || addressErr || buttonDisabled}
+            className={`bg-[#F43F5E] text-white rounded-3xl w-full mt-2 ml-0 ${
+              !isHome && "disabled:opacity-0"
+            }`}
+            onClick={() => router.push(`/user/${value}`)}
+          >
+            Find Now
+            <Image
+              src={"/search_white.svg"}
+              alt="icon"
+              width="24"
+              height="24"
+              className="ml-2"
+            />
+          </Button>
         </div>
       </div>
     );
