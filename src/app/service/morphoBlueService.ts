@@ -129,8 +129,8 @@ function parseMarketPositionsQueryResult(
         },
         collateral: {
           token: position.market.collateralAsset,
-          amount: position.collateral,
-          amountInUSD: position.collateralUsd
+          amount: BigInt(position.collateral),
+          amountInUSD: Number(position.collateralUsd)
         },
         // MorphoBlue does not pay interest on collateral
         trailing30DaysNetBorrowingAPY:

@@ -187,25 +187,25 @@ describe("compoundV3Service", () => {
     // console.log("recommendedDebtDetails", recommendedDebtDetails);
   });
 
-  // it("should calculate correct USDC amount", async () => {
-  //   const amount: bigint = await calculateTokenAmount(
-  //     COMPOUND_V3_CUSDC_CONTRACT,
-  //     getPriceFeedFromTokenSymbol("USDC"),
-  //     1000,
-  //     USDC
-  //   );
-  //   expect(Number(amount / BigInt(10 ** USDC.decimals))).toBeCloseTo(1000);
-  // });
+  it("should calculate correct USDC amount", async () => {
+    const amount: bigint = await calculateTokenAmount(
+      COMPOUND_V3_CUSDC_CONTRACT,
+      getPriceFeedFromTokenSymbol("USDC"),
+      1000,
+      USDC
+    );
+    expect(Number(amount / BigInt(10 ** USDC.decimals))).toBeCloseTo(1000);
+  });
 
-  // it("should calculate correct WETH amount", async () => {
-  //   const amount: bigint = await calculateTokenAmount(
-  //     COMPOUND_V3_CWETH_CONTRACT,
-  //     getPriceFeedFromTokenSymbol("WETH"),
-  //     3200, // amount in USD
-  //     WETH
-  //   );
-  //   expect(amount).toBeGreaterThan(0);
-  // });
+  it("should calculate correct WETH amount", async () => {
+    const amount: bigint = await calculateTokenAmount(
+      COMPOUND_V3_CWETH_CONTRACT,
+      getPriceFeedFromTokenSymbol("WETH"),
+      3200, // amount in USD
+      WETH
+    );
+    expect(amount).toBeGreaterThan(0);
+  });
 
   describe("getBorrowRecommendations", () => {
     it("provides borrow recommendations for USDC debt against WETH collateral", async () => {
