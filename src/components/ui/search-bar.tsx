@@ -9,6 +9,9 @@ import { isValidEnsAddress, EOAFromENS } from "../../app/service/ensService";
 import { useRouter } from "next/navigation";
 import { isAddress } from "ethers";
 import { useToast } from "./use-toast";
+import { getUserDebtPositions } from "@/app/service/userDebtPositions";
+import { Address } from "abitype";
+import Link from "next/link";
 
 export interface SearchBarProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -25,9 +28,12 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
       React.useState<string>(defaultUserAddress);
     const [addressErr, setAddressErr] = React.useState<boolean>(false);
     const [buttonDisabled, setButtonDisabled] = React.useState<boolean>(false);
-    const [addressIsFocused, setAddressIsFocused] =
+    const [isFetchingDebtPositions, setIsFetchingDebtPositions] =
       React.useState<boolean>(false);
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
+
+    const [activeRoute, setActiveRoute] = React.useState("refinance");
+
     const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
       const inputValue = event.target.value;
       setValue(inputValue);
@@ -64,6 +70,21 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
       };
     }, []); // Run this effect only once on component mount
 
+    React.useEffect(() => {
+      const fetchRecommendations = async () => {
+        setIsFetchingDebtPositions(true);
+        const data = await getUserDebtPositions(value as Address);
+        setActiveRoute(data.length > 0 ? "refinance" : "borrow");
+        setIsFetchingDebtPositions(false);
+      };
+      if (!(addressErr || value === "" || buttonDisabled)) {
+        fetchRecommendations();
+      }
+    }, [value, addressErr, buttonDisabled]);
+
+    const errorCheck =
+      addressErr || value === "" || buttonDisabled || isFetchingDebtPositions;
+
     return (
       <div
         className={cn(
@@ -95,19 +116,15 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               value={value}
               placeholder="Wallet address or ENS"
               onChange={handleChange}
-              onFocus={() => setAddressIsFocused(true)}
               onBlur={() => {
-                if (
-                  !(addressErr || value === "" || buttonDisabled) &&
-                  !isHome
-                ) {
-                  router.push(`/user/${value}/refinance`);
+                if (!errorCheck && !isHome) {
+                  router.push(`/user/${value}/${activeRoute}`);
                 }
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  if (!(addressErr || value === "" || buttonDisabled)) {
-                    router.push(`/user/${value}/refinance`);
+                  if (!errorCheck) {
+                    router.push(`/user/${value}/${activeRoute}`);
                   } else {
                     toast({
                       title: "Enter a valid address",
@@ -117,25 +134,16 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
                 }
               }}
             ></Input>
-            <Button
-              disabled={addressErr || value === "" || buttonDisabled}
-              className={`bg-[#F43F5E] text-white rounded-3xl w-36 font-hkGrotesk font-medium tracking-wide ${
-                !isHome && "hidden disabled:opacity-0"
-              }`}
-              onClick={() => {
-                setAddressIsFocused(false);
-                if (!addressErr && value !== "" && !buttonDisabled) {
-                  router.push(`/user/${value}/refinance`);
-                } else {
-                  toast({
-                    title: "Enter a valid address",
-                    variant: "destructive"
-                  });
-                }
-              }}
-            >
-              Find Now
-            </Button>
+            <Link href={`/user/${value}/${activeRoute}`}>
+              <Button
+                disabled={errorCheck}
+                className={`bg-[#F43F5E] text-white rounded-3xl w-36 font-hkGrotesk font-medium tracking-wide ${
+                  !isHome && "hidden disabled:opacity-0"
+                }`}
+              >
+                Find Now
+              </Button>
+            </Link>
           </div>
           {isLoading && (
             <div className="flex items-center text-gray-500 text-sm pl-3">
@@ -175,7 +183,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
                 !isHome &&
                 value &&
                 eoaAddress &&
-                router.push(`/user/${value}/refinance`)
+                router.push(`/user/${value}/${activeRoute}`)
               }
             ></Input>
           </div>
@@ -190,22 +198,28 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               Enter a valid address
             </div>
           )}
-          <Button
-            disabled={!isHome || addressErr || buttonDisabled}
-            className={`bg-[#F43F5E] text-white rounded-3xl w-full mt-2 ml-0 ${
-              !isHome && "disabled:opacity-0"
-            }`}
-            onClick={() => router.push(`/user/${value}/refinance`)}
-          >
-            Find Now
-            <Image
-              src={"/search_white.svg"}
-              alt="icon"
-              width="24"
-              height="24"
-              className="ml-2"
-            />
-          </Button>
+          <Link href={`/user/${value}/${activeRoute}`}>
+            <Button
+              disabled={
+                !isHome ||
+                addressErr ||
+                buttonDisabled ||
+                isFetchingDebtPositions
+              }
+              className={`bg-[#F43F5E] text-white rounded-3xl w-full mt-2 ml-0 ${
+                !isHome && "disabled:opacity-0"
+              }`}
+            >
+              Find Now
+              <Image
+                src={"/search_white.svg"}
+                alt="icon"
+                width="24"
+                height="24"
+                className="ml-2"
+              />
+            </Button>
+          </Link>
         </div>
       </div>
     );
