@@ -1,5 +1,6 @@
 "use client";
 import { TokenAmount } from "@/app/type/type";
+import { getFormattedTokenAmount } from "@/app/utils/utils";
 import Image from "next/image";
 import React, { useState } from "react";
 
@@ -25,14 +26,12 @@ const CollateralSelect = ({
   const handleOptionClick = (selectedCollateral: TokenAmount) => {
     const findIndexOfSelectedCollateral = currentList?.findIndex(
       (item) =>
-        item.token.symbol === selectedCollateral.token.symbol &&
-        item.amountInUSD === selectedCollateral.amountInUSD
+        item.token.symbol === selectedCollateral.token.symbol
     );
     if (findIndexOfSelectedCollateral > -1) {
       const updatedFilters = currentList?.filter(
         (item) =>
-          item.token.symbol !== selectedCollateral.token.symbol &&
-          item.amountInUSD !== selectedCollateral.amountInUSD
+          item.token.symbol !== selectedCollateral.token.symbol
       );
       setCurrentList(updatedFilters);
     } else {
@@ -43,8 +42,7 @@ const CollateralSelect = ({
   const isTokenSelected = (selectedCollateral: TokenAmount) =>
     currentList?.findIndex(
       (item) =>
-        item.token.symbol === selectedCollateral.token.symbol &&
-        item.amountInUSD === selectedCollateral.amountInUSD
+        item.token.symbol === selectedCollateral.token.symbol
     ) > -1;
 
   return (
@@ -95,7 +93,7 @@ const CollateralSelect = ({
 
       {showOptions && (
         <ul
-          className="absolute z-10 mt-1 max-h-56 w-full min-w-36 sm:min-w-56 overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+          className="absolute z-10 mt-1 max-h-56 min-w-36 sm:min-w-56 overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
           tabIndex={-1}
           role="listbox"
           aria-labelledby="listbox-label"
@@ -112,7 +110,9 @@ const CollateralSelect = ({
             }
           >
             <div className="flex items-center">
-              <span className="font-normal block truncate">All Collaterals</span>
+              <span className="font-normal block truncate">
+                All Collaterals
+              </span>
             </div>
 
             {currentList?.length === optionsList?.length && (
@@ -150,8 +150,12 @@ const CollateralSelect = ({
                 />
 
                 <span className="font-normal ml-3 block truncate">
-                  ${selectedCollateral.amountInUSD.toFixed(2)}{" "}
-                  ({selectedCollateral.token.symbol})
+                  ${selectedCollateral.amountInUSD} (
+                  {getFormattedTokenAmount(
+                    selectedCollateral.token,
+                    selectedCollateral.amount
+                  )}{" "}
+                  {selectedCollateral.token.symbol})
                 </span>
               </div>
 

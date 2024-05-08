@@ -128,7 +128,7 @@ const DebtSelect = ({
 
       {showOptions && (
         <ul
-          className="absolute z-10 mt-1 max-h-56 w-full min-w-56 overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+          className="absolute z-10 mt-1 max-h-56 min-w-56 overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
           tabIndex={-1}
           role="listbox"
           aria-labelledby="listbox-label"
