@@ -15,6 +15,7 @@ import {
 import { isZeroOrNegative, isZeroOrPositive } from "../utils/utils";
 import {
   MORPHO_GRAPHQL_URL,
+  MORPHO_SUPPORTED_COLLATERAL_TOKEN_QUERY,
   MORPHO_SUPPORTED_DEBT_TOKEN_QUERY
 } from "../constants";
 
@@ -449,6 +450,10 @@ export async function getSupportedTokens(query: any): Promise<Token[]> {
 
 export async function getSupportedDebtTokens(): Promise<Token[]> {
   return getSupportedTokens(MORPHO_SUPPORTED_DEBT_TOKEN_QUERY);
+}
+
+export async function getSupportedCollateralTokens(): Promise<Token[]> {
+  return getSupportedTokens(MORPHO_SUPPORTED_COLLATERAL_TOKEN_QUERY);
 }
 
 function removeDuplicateTokens(tokens: Token[]): Token[] {

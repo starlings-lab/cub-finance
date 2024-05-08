@@ -116,3 +116,7 @@ export const SUPPORTED_DEBT_STABLECOINS = getUniqueTokens([
   ...COMPOUND_V3_DEBT_STABLECOINS,
   ...SPARKFI_DEBT_STABLECOINS
 ]);
+
+// this token seems like scam or test token in morpho blue market with same name as USDC
+export const USDC_DUPLICATE_OR_SCAM =
+  "0xcbfb9B444d9735C345Df3A0F66cd89bD741692E9".toLowerCase();

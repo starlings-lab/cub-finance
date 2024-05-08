@@ -5,11 +5,10 @@ import { getSupportedDebtTokens as getSparkSupportedDebtTokens } from "@/app/ser
 import { getSupportedDebtTokens as getCompoundV3SupportedDebtTokens } from "@/app/service/compoundV3Service";
 import { getSupportedDebtTokens as getMorphoBlueSupportedDebtTokens } from "@/app/service/morphoBlueService";
 import { Token, TokenDetail } from "@/app/type/type";
-import { SUPPORTED_DEBT_STABLECOINS } from "@/app/contracts/ERC20Tokens";
-
-// this token seems like scam or test token in morpho blue market with same name as USDC
-const USDC_DUPLICATE_OR_SCAM =
-  "0xcbfb9B444d9735C345Df3A0F66cd89bD741692E9".toLowerCase();
+import {
+  SUPPORTED_DEBT_STABLECOINS,
+  USDC_DUPLICATE_OR_SCAM
+} from "@/app/contracts/ERC20Tokens";
 
 export async function getAllSupportedDebtTokens(): Promise<TokenDetail[]> {
   // Call all protocol services to get supported debt tokens
