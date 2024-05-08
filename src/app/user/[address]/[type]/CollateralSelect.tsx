@@ -25,13 +25,11 @@ const CollateralSelect = ({
 
   const handleOptionClick = (selectedCollateral: TokenAmount) => {
     const findIndexOfSelectedCollateral = currentList?.findIndex(
-      (item) =>
-        item.token.symbol === selectedCollateral.token.symbol
+      (item) => item.token.symbol === selectedCollateral.token.symbol
     );
     if (findIndexOfSelectedCollateral > -1) {
       const updatedFilters = currentList?.filter(
-        (item) =>
-          item.token.symbol !== selectedCollateral.token.symbol
+        (item) => item.token.symbol !== selectedCollateral.token.symbol
       );
       setCurrentList(updatedFilters);
     } else {
@@ -41,8 +39,7 @@ const CollateralSelect = ({
 
   const isTokenSelected = (selectedCollateral: TokenAmount) =>
     currentList?.findIndex(
-      (item) =>
-        item.token.symbol === selectedCollateral.token.symbol
+      (item) => item.token.symbol === selectedCollateral.token.symbol
     ) > -1;
 
   return (
@@ -150,12 +147,11 @@ const CollateralSelect = ({
                 />
 
                 <span className="font-normal ml-3 block truncate">
-                  ${selectedCollateral.amountInUSD} (
                   {getFormattedTokenAmount(
                     selectedCollateral.token,
                     selectedCollateral.amount
                   )}{" "}
-                  {selectedCollateral.token.symbol})
+                  {selectedCollateral.token.symbol}
                 </span>
               </div>
 
