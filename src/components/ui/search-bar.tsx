@@ -97,13 +97,13 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
                   !(addressErr || value === "" || buttonDisabled) &&
                   !isHome
                 ) {
-                  router.push(`/user/${value}`);
+                  router.push(`/user/${value}/refinance`);
                 }
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   if (!(addressErr || value === "" || buttonDisabled)) {
-                    router.push(`/user/${value}`);
+                    router.push(`/user/${value}/refinance`);
                   } else {
                     toast({
                       title: "Enter a valid address",
@@ -121,7 +121,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               onClick={() => {
                 setAddressIsFocused(false);
                 if (!addressErr && value !== "" && !buttonDisabled) {
-                  router.push(`/user/${value}`);
+                  router.push(`/user/${value}/refinance`);
                 } else {
                   toast({
                     title: "Enter a valid address",
@@ -162,7 +162,10 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               placeholder="Enter your wallet address"
               onChange={handleChange}
               onBlur={() =>
-                !isHome && value && eoaAddress && router.push(`/user/${value}`)
+                !isHome &&
+                value &&
+                eoaAddress &&
+                router.push(`/user/${value}/refinance`)
               }
             ></Input>
           </div>
@@ -176,7 +179,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
             className={`bg-[#F43F5E] text-white rounded-3xl w-full mt-2 ml-0 ${
               !isHome && "disabled:opacity-0"
             }`}
-            onClick={() => router.push(`/user/${value}`)}
+            onClick={() => router.push(`/user/${value}/refinance`)}
           >
             Find Now
             <Image

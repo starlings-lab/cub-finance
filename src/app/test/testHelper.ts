@@ -1,5 +1,6 @@
 import { expect } from "@jest/globals";
 import {
+  BorrowRecommendationTableRow,
   CompoundV3RecommendedDebtDetail,
   Protocol,
   RecommendedDebtDetail,
@@ -7,7 +8,7 @@ import {
   TokenAmount
 } from "../type/type";
 
-export function verifyBorrowRecommendations(
+export function verifyAaveOrSparkBorrowRecommendations(
   expectedProtocol: Protocol,
   borrowRecommendations: RecommendedDebtDetail[],
   debtToken: Token,
@@ -59,4 +60,33 @@ export function verifyCompoundBorrowRecommendations(
     expect(debt.collaterals[i].amount).toEqual(collateralAmounts[i].amount);
     expect(debt.collaterals[i].amountInUSD).toBeGreaterThan(0);
   }
+}
+
+export function verifyBorrowRecommendationTableRow(
+  borrowRecommendation: BorrowRecommendationTableRow,
+  debtToken: Token,
+  collateralAmounts: TokenAmount[]
+) {
+  expect(borrowRecommendation).toBeDefined();
+  expect(borrowRecommendation.debtToken).toEqual(debtToken);
+  expect(borrowRecommendation.collateralTokens).toBeDefined();
+  expect(borrowRecommendation.collateralTokens.length).toEqual(
+    collateralAmounts.length
+  );
+  for (let i = 0; i < collateralAmounts.length; i++) {
+    expect(borrowRecommendation.collateralTokens[i]).toEqual(
+      collateralAmounts[i].token
+    );
+  }
+  expect(borrowRecommendation.maxDebtAmountInUSD).toBeGreaterThan(0);
+  expect(borrowRecommendation.totalCollateralAmountInUSD).toBeGreaterThan(0);
+  expect(borrowRecommendation.maxLTV).toBeGreaterThan(0);
+  expect(borrowRecommendation.trailing30DaysNetBorrowingAPY).not.toEqual(0);
+  expect(borrowRecommendation.trailing30DaysLendingAPY).toBeGreaterThanOrEqual(
+    0
+  );
+  expect(borrowRecommendation.trailing30DaysBorrowingAPY).not.toEqual(0);
+  expect(borrowRecommendation.trailing30DaysRewardAPY).toBeGreaterThanOrEqual(
+    0
+  );
 }

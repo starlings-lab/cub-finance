@@ -11,7 +11,7 @@ import {
   Token,
   TokenAmount
 } from "../type/type";
-import { verifyBorrowRecommendations } from "./testHelper";
+import { verifyAaveOrSparkBorrowRecommendations } from "./testHelper";
 
 describe("aaveService", () => {
   it("creates an instance of baseAaveService", () => {
@@ -52,7 +52,7 @@ describe("aaveService", () => {
       );
       // console.dir(borrowRecommendations, { depth: null });
 
-      verifyBorrowRecommendations(
+      verifyAaveOrSparkBorrowRecommendations(
         Protocol.AaveV3,
         borrowRecommendations,
         USDC,
@@ -73,7 +73,7 @@ describe("aaveService", () => {
       );
       // console.dir(borrowRecommendations, { depth: null });
 
-      verifyBorrowRecommendations(
+      verifyAaveOrSparkBorrowRecommendations(
         Protocol.AaveV3,
         borrowRecommendations,
         WETH,

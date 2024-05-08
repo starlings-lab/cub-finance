@@ -6,7 +6,7 @@ import {
   getSupportedDebtTokens
 } from "../service/sparkService";
 import { Protocol } from "../type/type";
-import { verifyBorrowRecommendations } from "./testHelper";
+import { verifyAaveOrSparkBorrowRecommendations } from "./testHelper";
 
 describe("sparkService", () => {
   it("creates an instance of baseSparkService", () => {
@@ -57,7 +57,7 @@ describe("sparkService", () => {
       );
       // console.dir(borrowRecommendations, { depth: null });
 
-      verifyBorrowRecommendations(
+      verifyAaveOrSparkBorrowRecommendations(
         Protocol.Spark,
         borrowRecommendations,
         USDC,
@@ -78,7 +78,7 @@ describe("sparkService", () => {
       );
       // console.dir(borrowRecommendations, { depth: null });
 
-      verifyBorrowRecommendations(
+      verifyAaveOrSparkBorrowRecommendations(
         Protocol.Spark,
         borrowRecommendations,
         DAI,

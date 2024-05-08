@@ -15,7 +15,7 @@ import { getRecommendedDebtDetail as getSparkRecommendedDebtDetail } from "./spa
 import { getRecommendedDebtDetail as getCompoundRecommendedDebtDetail } from "./compoundV3Service";
 import { getRecommendedDebtDetail as getMorphoRecommendedDebtDetail } from "./morphoBlueService";
 
-export async function getRecommendations(
+export async function getRefinanceRecommendations(
   existingProtocol: Protocol,
   debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition,
   maxLTVTolerance = 0.1, // default 10%
