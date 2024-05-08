@@ -59,6 +59,15 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        tbHover: {
+          DEFAULT: "var(--table-hover)",
+        },
+        tbSelected: {
+          DEFAULT: "var(--table-selected)",
+        },
+        tbHeader: {
+          DEFAULT: "var(--table-header)",
+        }
       },
       borderRadius: {
         lg: "var(--radius)",

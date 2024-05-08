@@ -21,10 +21,10 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { Fragment, Suspense, useContext, useEffect, useState } from "react";
-import { StoreContext } from "@/app/user/[address]/context";
+import { StoreContext } from "@/app/user/[address]/[type]/context";
 import Image from "next/image";
-import Loading from "@/app/user/[address]/loading";
-import RecommendationsWrapper from "@/app/user/[address]/RecommendationsWrapper";
+import Loading from "@/app/user/[address]/[type]/loadingTable";
+import RecommendationsWrapper from "@/app/user/[address]/[type]/RecommendationsWrapper";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -93,11 +93,11 @@ export function DataTable<TData, TValue>({
   return (
     <div>
       <Table>
-        <TableHeader>
+        <TableHeader className="bg-white">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow
               key={headerGroup.id}
-              className="!rounded-md border bg-white hover:bg-white"
+              className="!rounded-md border bg-tbHeader hover:bg-white"
             >
               {headerGroup.headers.map((header) => {
                 const isSortable = header.column.getCanSort();
@@ -118,7 +118,7 @@ export function DataTable<TData, TValue>({
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody>
+        <TableBody className="bg-white">
           <TableRow className="hover:bg-white">
             <TableCell
               colSpan={columns.length}

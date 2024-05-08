@@ -3,7 +3,7 @@ import { getRefinanceRecommendations } from "@/app/service/refiananceRecommendat
 import { RecommendedDebtDetailTableRow } from "@/app/type/type";
 import React, { Fragment, useContext, useEffect, useState } from "react";
 import { StoreContext } from "./context";
-import Loading from "./loading";
+import Loading from "./loadingTable";
 import {
   maxLTVColumnId,
   recommendedTableColumns,
@@ -130,7 +130,7 @@ const RecommendationsWrapper = () => {
             colSpan={recommendedTableColumns.length}
             className="h-16 text-left sm:text-center"
           >
-            Your existing positions look good!
+            Your existing positions look good! Try choosing another debt position.
           </TableCell>
         </TableRow>
       )}
