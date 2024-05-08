@@ -3,6 +3,7 @@ import * as React from "react";
 import Image from "next/image";
 import { Input } from "./input";
 import { Button } from "./button";
+import Spinner from "./spinner";
 import { cn } from "@/lib/utils";
 import { isValidEnsAddress, EOAFromENS } from "../../app/service/ensService";
 import { useRouter } from "next/navigation";
@@ -26,14 +27,17 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
     const [buttonDisabled, setButtonDisabled] = React.useState<boolean>(false);
     const [addressIsFocused, setAddressIsFocused] =
       React.useState<boolean>(false);
+    const [isLoading, setIsLoading] = React.useState<boolean>(false);
     const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
       const inputValue = event.target.value;
       setValue(inputValue);
+      setIsLoading(true);
       setButtonDisabled(true);
       const isValidAddress =
         isAddress(inputValue) || (await isValidEnsAddress(inputValue));
       setAddressErr(!isValidAddress);
       setButtonDisabled(!isValidAddress);
+      setIsLoading(false);
 
       if (await isValidEnsAddress(inputValue)) {
         const resolvedAddress = await EOAFromENS(inputValue);
@@ -133,6 +137,12 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               Find Now
             </Button>
           </div>
+          {isLoading && (
+            <div className="flex items-center text-gray-500 text-sm pl-3">
+              Validating address...
+              <Spinner />
+            </div>
+          )}
           {addressErr && (
             <div
               className={`text-red-500 pl-3 pt-1 sm:flex text-sm ${
@@ -169,6 +179,12 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               }
             ></Input>
           </div>
+          {isLoading && (
+            <div className="flex items-center text-gray-500 text-sm pl-3">
+              Validating address
+              <Spinner />
+            </div>
+          )}
           {addressErr && (
             <div className="text-red-500 text-sm pl-3 pt-1">
               Enter a valid address
