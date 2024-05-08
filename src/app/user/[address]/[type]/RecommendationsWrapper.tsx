@@ -74,7 +74,6 @@ const RecommendationsWrapper = () => {
         state!.activeDebtPosition?.protocol!,
         state!.activeDebtPosition?.debtPosition!
       );
-      console.log("Recommendations: ", data);
       setRecommendations(data ?? []);
       setIsLoading(false);
     };
