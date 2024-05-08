@@ -70,10 +70,16 @@ const RecommendationsWrapper = () => {
   useEffect(() => {
     const fetchRecommendations = async () => {
       setIsLoading(true);
+
+      const startTime = Date.now();
       const data = await getRefinanceRecommendations(
         state!.activeDebtPosition?.protocol!,
         state!.activeDebtPosition?.debtPosition!
       );
+      console.log(
+        `Time taken to fetch recommendations: ${Date.now() - startTime} ms`
+      );
+
       setRecommendations(data ?? []);
       setIsLoading(false);
     };
@@ -129,7 +135,8 @@ const RecommendationsWrapper = () => {
             colSpan={recommendedTableColumns.length}
             className="h-16 text-left sm:text-center"
           >
-            Your existing positions look good! Try choosing another debt position.
+            Your existing positions look good! Try choosing another debt
+            position.
           </TableCell>
         </TableRow>
       )}
