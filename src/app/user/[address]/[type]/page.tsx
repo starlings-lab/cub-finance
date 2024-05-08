@@ -1,18 +1,18 @@
 import { isAddress } from "ethers";
-import StoreProvider from "./provider";
-import { isValidEnsAddress, EOAFromENS } from "../../utils/utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { SearchBar } from "@/components/ui/search-bar";
-import { TabsWrapper } from "@/components/ui/tabs";
-import DebtTableWrapper from "./DebtTableWrapper";
+import { Tabs, TabsWrapper } from "@/components/ui/tabs";
 import { Suspense } from "react";
-import Loading from "./loading";
+import { EOAFromENS, isValidEnsAddress } from "@/app/utils/utils";
+import StoreProvider from "./provider";
+import Loading from "./loadingTable";
+import DebtTableWrapper from "./DebtTableWrapper";
 
 export default async function DebtPage({
   params
 }: {
-  params: { address: string };
+  params: { address: string; type: string };
 }) {
   const isValidEns = await isValidEnsAddress(params.address);
   const isValidAddress = isAddress(params.address) || isValidEns;
@@ -33,21 +33,30 @@ export default async function DebtPage({
     ? (await EOAFromENS(params.address)) || params.address
     : params.address;
 
+  const selectedValue =
+    params?.type === "borrow" ? Tabs.Borrow : Tabs.Refinance;
+
   return (
     <StoreProvider>
       <div className="mt-24 mb-32 sm:mt-28">
-        <div className="flex items-center justify-center">
-          <SearchBar
-            isHome={false}
-            defaultUserAddress={(params!.address as string) ?? ""}
-          />
-        </div>
-        <TabsWrapper />
-        <div className="pt-2 sm:pt-5">
-          <Suspense fallback={<Loading />}>
-            <DebtTableWrapper userAddress={userAddress} />
-          </Suspense>
-        </div>
+        <SearchBar
+          isHome={false}
+          defaultUserAddress={(params!.address as string) ?? ""}
+        />
+        <TabsWrapper selected={selectedValue} userAddress={userAddress} />
+        {params?.type === "borrow" ? (
+          <div className="pt-2 sm:pt-5">
+            <Suspense fallback={<Loading />}>
+              <div>Its borrow</div>
+            </Suspense>
+          </div>
+        ) : (
+          <div className="pt-2 sm:pt-5">
+            <Suspense fallback={<Loading />}>
+              <DebtTableWrapper userAddress={userAddress} />
+            </Suspense>
+          </div>
+        )}
       </div>
     </StoreProvider>
   );

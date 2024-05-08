@@ -21,10 +21,10 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { Fragment, Suspense, useContext, useEffect, useState } from "react";
-import { StoreContext } from "@/app/user/[address]/context";
+import { StoreContext } from "@/app/user/[address]/[type]/context";
 import Image from "next/image";
-import Loading from "@/app/user/[address]/loading";
-import RecommendationsWrapper from "@/app/user/[address]/RecommendationsWrapper";
+import Loading from "@/app/user/[address]/[type]/loadingTable";
+import RecommendationsWrapper from "@/app/user/[address]/[type]/RecommendationsWrapper";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];

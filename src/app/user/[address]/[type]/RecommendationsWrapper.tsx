@@ -3,7 +3,7 @@ import { getRefinanceRecommendations } from "@/app/service/refiananceRecommendat
 import { RecommendedDebtDetailTableRow } from "@/app/type/type";
 import React, { Fragment, useContext, useEffect, useState } from "react";
 import { StoreContext } from "./context";
-import Loading from "./loading";
+import Loading from "./loadingTable";
 import {
   maxLTVColumnId,
   recommendedTableColumns,

@@ -93,13 +93,13 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               onFocus={() => setAddressIsFocused(true)}
               onBlur={() => {
                 if (!(addressErr || value === "" || buttonDisabled) && !isHome) {
-                  router.push(`/user/${value}`);
+                  router.push(`/user/${value}/refinance`);
                 }
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   if (!(addressErr || value === "" || buttonDisabled)) {
-                    router.push(`/user/${value}`);
+                    router.push(`/user/${value}/refinance`);
                   } else {
                     toast({
                       title: "Enter a valid address",
@@ -109,7 +109,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
                 }
               }}
             ></Input>
-            <Link href={`/user/${value}`}>
+            <Link href={`/user/${value}/refinance`}>
               <Button
                 disabled={addressErr || value === "" || buttonDisabled}
                 className={`bg-[#F43F5E] text-white rounded-3xl w-36 font-hkGrotesk font-medium tracking-wide ${
@@ -152,7 +152,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               placeholder="Enter your wallet address"
               onChange={handleChange}
               onBlur={() =>
-                !isHome && value && eoaAddress && router.push(`/user/${value}`)
+                !isHome && value && eoaAddress && router.push(`/user/${value}/refinance`)
               }
             ></Input>
           </div>
@@ -161,7 +161,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               Enter a valid address
             </div>
           )}
-          <Link href={`/user/${value}`}>
+          <Link href={`/user/${value}/refinance`}>
             <Button
               disabled={!isHome || addressErr || buttonDisabled}
               className={`bg-[#F43F5E] text-white rounded-3xl w-full mt-2 ml-0 ${
