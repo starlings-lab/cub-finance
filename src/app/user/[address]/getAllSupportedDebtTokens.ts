@@ -1,3 +1,5 @@
+"use server";
+
 import { getSupportedDebtTokens as getAaveSupportedDebtTokens } from "@/app/service/aaveV3Service";
 import { getSupportedDebtTokens as getSparkSupportedDebtTokens } from "@/app/service/sparkService";
 import { getSupportedDebtTokens as getCompoundV3SupportedDebtTokens } from "@/app/service/compoundV3Service";
