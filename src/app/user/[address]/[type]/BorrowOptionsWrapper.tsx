@@ -1,5 +1,5 @@
 import React from "react";
-import { getUserDebtPositions } from "./getUserDebtPositions";
+import { getUserDebtPositions } from "../../../service/userDebtPositions";
 import { Address } from "abitype";
 import {
   borrowTableColumns,

@@ -1,3 +1,5 @@
+'use server'
+
 import { Address } from "abitype";
 import { getUserDebtDetails as getAaveDebtDetails } from "@/app/service/aaveV3Service";
 import { getUserDebtDetails as getSparkDebtDetails } from "@/app/service/sparkService";
