@@ -13,6 +13,7 @@ import { DebtPositionTableRow, TokenDetail } from "@/app/type/type";
 import { ColumnSort } from "@tanstack/react-table";
 import { getAllSupportedDebtTokens } from "../getAllSupportedDebtTokens";
 import BorrowRecommendationsWrapper from "./BorrowRecommendationsWrapper";
+import { getSupportedUserCollaterals } from "../getSupportedUserCollaterals";
 
 // Sort debts by ascending order of trailing30DaysNetBorrowingAPY and descending order of totalDebtAmountInUSD
 const initialSortedColumns: ColumnSort[] = [
@@ -55,9 +56,7 @@ const BorrowOptionsWrapper = async ({
   const allSupportedDebtTokens: TokenDetail[] = await getAllSupportedDebtTokens();
 
 
-  const collaterals = allDebtPositions
-    .map((debtPosition) => debtPosition.collaterals)
-    .flat();
+  const collaterals = await getSupportedUserCollaterals(userAddress as Address);
 
   return (
     <div className="max-w-screen-xl mx-auto py-8">
