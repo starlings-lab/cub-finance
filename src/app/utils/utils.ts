@@ -72,3 +72,7 @@ export function getUniqueTokens(tokens: Token[]): Token[] {
 
   return Array.from(uniqueTokens.values());
 }
+
+export function getFormattedTokenAmount(token: Token, amount: bigint): string {
+  return ethers.formatUnits(amount, token.decimals);
+}

@@ -1,6 +1,7 @@
 import { getSupportedUserCollaterals } from "../user/[address]/getSupportedUserCollaterals";
 import { TEST_DEBT_POSITION_ADDRESSES } from "../constants";
 import { Address } from "abitype";
+import { getFormattedTokenAmount } from "../utils/utils";
 
 describe("getSupportedUserCollaterals", () => {
   it("should return supported user collaterals", async () => {
@@ -19,7 +20,13 @@ describe("getSupportedUserCollaterals", () => {
       expect(collateral.token.name).toBeDefined();
       expect(collateral.token.decimals).toBeDefined();
       expect(collateral.token.symbol).toBeDefined();
-      expect(collateral.amount).toBeDefined();
+      expect(collateral.amountInUSD).toBeDefined();
+      expect(collateral.amountInUSD).toBeGreaterThanOrEqual(0);
+
+      console.log(
+        "amount",
+        getFormattedTokenAmount(collateral.token, collateral.amount)
+      );
     });
 
     // test all keys in TEST_DEBT_POSITION_ADDRESSES
