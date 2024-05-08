@@ -1,6 +1,6 @@
-import { get } from "http";
+"use server";
+
 import {
-  DEFILLAMA_AAVE_V3_PROJECT_SLUG,
   DEFILLAMA_YIELDS_POOLS_API_URL,
   getDefiLlamaLendBorrowDataApi
 } from "../constants";
@@ -93,7 +93,7 @@ export async function getHistoricalLendBorrowRewardAPY(
  * @param projectSlug project slug defined by DefiLlama API
  * @returns
  */
-export function getProtocolPoolsMap(
+export async function getProtocolPoolsMap(
   projectSlug: string
 ): Promise<Map<string, string>> {
   try {
