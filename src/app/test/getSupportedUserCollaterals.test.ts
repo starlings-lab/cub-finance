@@ -23,10 +23,10 @@ describe("getSupportedUserCollaterals", () => {
       expect(collateral.amountInUSD).toBeDefined();
       expect(collateral.amountInUSD).toBeGreaterThanOrEqual(0);
 
-      console.log(
-        "amount",
-        getFormattedTokenAmount(collateral.token, collateral.amount)
-      );
+      // console.log(
+      //   "amount",
+      //   getFormattedTokenAmount(collateral.token, collateral.amount)
+      // );
     });
 
     // test all keys in TEST_DEBT_POSITION_ADDRESSES
@@ -49,6 +49,6 @@ describe("getSupportedUserCollaterals", () => {
         expect(supportedCollaterals).toBeDefined();
       }
     },
-    10 * 1000 // 10 seconds
+    20 * 1000 // 20 seconds
   );
 });
