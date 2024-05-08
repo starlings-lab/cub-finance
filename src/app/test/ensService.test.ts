@@ -1,4 +1,4 @@
-import { isValidEnsAddress, EOAFromENS } from "../utils/utils";
+import { isValidEnsAddress, EOAFromENS } from "../service/ensService";
 
 describe("isValidEnsAddress function", () => {
   it("should return true for a valid ENS name", async () => {

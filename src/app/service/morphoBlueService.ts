@@ -443,7 +443,7 @@ export async function getSupportedTokens(query: any): Promise<Token[]> {
     return removeDuplicateTokens(convertedTokenArray);
   } catch (error) {
     console.error(error);
-    throw error;
+    return [];
   }
 }
 

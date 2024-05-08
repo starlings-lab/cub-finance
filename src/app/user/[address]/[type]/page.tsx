@@ -1,10 +1,10 @@
 import { isAddress } from "ethers";
+import { isValidEnsAddress, EOAFromENS } from "../../../service/ensService";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { SearchBar } from "@/components/ui/search-bar";
 import { Tabs, TabsWrapper } from "@/components/ui/tabs";
 import { Suspense } from "react";
-import { EOAFromENS, isValidEnsAddress } from "@/app/utils/utils";
 import StoreProvider from "./provider";
 import Loading from "./loadingTable";
 import DebtTableWrapper from "./DebtTableWrapper";
