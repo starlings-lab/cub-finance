@@ -15,12 +15,12 @@ const CollateralSelect = ({
   const [showOptions, setShowOptions] = useState(false);
   const displayValueOfCollateral =
     currentList?.length === optionsList?.length
-      ? "All Holdings"
+      ? "All Collaterals"
       : currentList?.length > 0
       ? currentList
           .map((selectedCollateral) => selectedCollateral?.token.symbol)
           .join(", ")
-      : "Select holdings";
+      : "Select collaterals";
 
   const handleOptionClick = (selectedCollateral: TokenAmount) => {
     const findIndexOfSelectedCollateral = currentList?.findIndex(
@@ -95,7 +95,7 @@ const CollateralSelect = ({
             }
           >
             <div className="flex items-center">
-              <span className="font-normal block truncate">All Holdings</span>
+              <span className="font-normal block truncate">All Collaterals</span>
             </div>
 
             {currentList?.length === optionsList?.length && (

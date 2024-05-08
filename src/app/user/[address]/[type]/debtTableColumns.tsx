@@ -67,6 +67,22 @@ const sortByMaxLTV = (rowA: any, rowB: any, columnId: any) => {
   return rowA.original.maxLTV - rowB.original.maxLTV;
 };
 
+const SortIcon = ({ row }: { row: any }) => (
+  <div
+    className="w-8 h-4"
+    onClick={() => {
+      if (row.column.getNextSortingOrder()) {
+        row.column.toggleSorting();
+      } else {
+        const initialSortOrder = row.column.getFirstSortDir();
+        row.column.toggleSorting(initialSortOrder === "desc");
+      }
+    }}
+  >
+    <Image src={"/sort.svg"} alt={"Sort Max LTV"} width={15} height={20} />
+  </div>
+);
+
 // Define columns for the table to render DebtPositionTableRow
 export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
   {
@@ -225,24 +241,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
             </div>
           }
         />
-        <div
-          className="w-4 h-4"
-          onClick={() => {
-            if (row.column.getNextSortingOrder()) {
-              row.column.toggleSorting();
-            } else {
-              const initialSortOrder = row.column.getFirstSortDir();
-              row.column.toggleSorting(initialSortOrder === "desc");
-            }
-          }}
-        >
-          <Image
-            src={"/sort.svg"}
-            alt={"Sort Trailing 30 days Net Borrowing APY"}
-            width={15}
-            height={20}
-          />
-        </div>
+        <SortIcon row={row} />
       </div>
     ),
     accessorKey: "trailing30DaysNetBorrowingAPY",
@@ -279,24 +278,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
             </div>
           }
         />
-        <div
-          className="w-4 h-4"
-          onClick={() => {
-            if (row.column.getNextSortingOrder()) {
-              row.column.toggleSorting();
-            } else {
-              const initialSortOrder = row.column.getFirstSortDir();
-              row.column.toggleSorting(initialSortOrder === "desc");
-            }
-          }}
-        >
-          <Image
-            src={"/sort.svg"}
-            alt={"Sort Trailing 30 days Borrowing APY"}
-            width={15}
-            height={20}
-          />
-        </div>
+        <SortIcon row={row} />
       </div>
     ),
     accessorKey: "trailing30DaysBorrowingAPY",
@@ -335,24 +317,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
             </div>
           }
         />
-        <div
-          className="w-4 h-4"
-          onClick={() => {
-            if (row.column.getNextSortingOrder()) {
-              row.column.toggleSorting();
-            } else {
-              const initialSortOrder = row.column.getFirstSortDir();
-              row.column.toggleSorting(initialSortOrder === "desc");
-            }
-          }}
-        >
-          <Image
-            src={"/sort.svg"}
-            alt={"Sort Trailing 30 days Collateral APY"}
-            width={15}
-            height={20}
-          />
-        </div>
+        <SortIcon row={row} />
       </div>
     ),
     accessorKey: "trailing30DaysLendingAPY",
@@ -383,24 +348,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
             </div>
           }
         />
-        <div
-          className="w-4 h-4"
-          onClick={() => {
-            if (row.column.getNextSortingOrder()) {
-              row.column.toggleSorting();
-            } else {
-              const initialSortOrder = row.column.getFirstSortDir();
-              row.column.toggleSorting(initialSortOrder === "desc");
-            }
-          }}
-        >
-          <Image
-            src={"/sort.svg"}
-            alt={"Sort Trailing 30 days Reward APY"}
-            width={15}
-            height={20}
-          />
-        </div>
+        <SortIcon row={row} />
       </div>
     ),
     accessorKey: "trailing30DaysRewardAPY",
@@ -423,24 +371,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
     header: (row) => (
       <div className="flex items-center">
         <div className="mr-2">Max LTV</div>
-        <div
-          className="w-4 h-4"
-          onClick={() => {
-            if (row.column.getNextSortingOrder()) {
-              row.column.toggleSorting();
-            } else {
-              const initialSortOrder = row.column.getFirstSortDir();
-              row.column.toggleSorting(initialSortOrder === "desc");
-            }
-          }}
-        >
-          <Image
-            src={"/sort.svg"}
-            alt={"Sort Max LTV"}
-            width={15}
-            height={20}
-          />
-        </div>
+        <SortIcon row={row} />
       </div>
     ),
     accessorKey: "maxLTV",
@@ -560,24 +491,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
               </div>
             }
           />
-          <div
-            className="w-4 h-4"
-            onClick={() => {
-              if (row.column.getNextSortingOrder()) {
-                row.column.toggleSorting();
-              } else {
-                const initialSortOrder = row.column.getFirstSortDir();
-                row.column.toggleSorting(initialSortOrder === "desc");
-              }
-            }}
-          >
-            <Image
-              src={"/sort.svg"}
-              alt={"Sort Trailing 30 days Net Borrowing APY"}
-              width={15}
-              height={20}
-            />
-          </div>
+          <SortIcon row={row} />
         </div>
       ),
       accessorKey: "trailing30DaysNetBorrowingAPY",
@@ -616,24 +530,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
               </div>
             }
           />
-          <div
-            className="w-4 h-4"
-            onClick={() => {
-              if (row.column.getNextSortingOrder()) {
-                row.column.toggleSorting();
-              } else {
-                const initialSortOrder = row.column.getFirstSortDir();
-                row.column.toggleSorting(initialSortOrder === "desc");
-              }
-            }}
-          >
-            <Image
-              src={"/sort.svg"}
-              alt={"Sort Trailing 30 days Borrowing APY"}
-              width={15}
-              height={20}
-            />
-          </div>
+          <SortIcon row={row} />
         </div>
       ),
       accessorKey: "trailing30DaysBorrowingAPY",
@@ -670,24 +567,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
               </div>
             }
           />
-          <div
-            className="w-4 h-4"
-            onClick={() => {
-              if (row.column.getNextSortingOrder()) {
-                row.column.toggleSorting();
-              } else {
-                const initialSortOrder = row.column.getFirstSortDir();
-                row.column.toggleSorting(initialSortOrder === "desc");
-              }
-            }}
-          >
-            <Image
-              src={"/sort.svg"}
-              alt={"Sort Trailing 30 days Collateral APY"}
-              width={15}
-              height={20}
-            />
-          </div>
+          <SortIcon row={row} />
         </div>
       ),
       accessorKey: "trailing30DaysLendingAPY",
@@ -716,24 +596,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
               </div>
             }
           />
-          <div
-            className="w-4 h-4"
-            onClick={() => {
-              if (row.column.getNextSortingOrder()) {
-                row.column.toggleSorting();
-              } else {
-                const initialSortOrder = row.column.getFirstSortDir();
-                row.column.toggleSorting(initialSortOrder === "desc");
-              }
-            }}
-          >
-            <Image
-              src={"/sort.svg"}
-              alt={"Sort Trailing 30 days Reward APY"}
-              width={15}
-              height={20}
-            />
-          </div>
+          <SortIcon row={row} />
         </div>
       ),
       accessorKey: "trailing30DaysRewardAPY",
@@ -756,24 +619,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       header: (row) => (
         <div className="flex items-center">
           <div className="mr-2">Max LTV</div>
-          <div
-            className="w-4 h-4"
-            onClick={() => {
-              if (row.column.getNextSortingOrder()) {
-                row.column.toggleSorting();
-              } else {
-                const initialSortOrder = row.column.getFirstSortDir();
-                row.column.toggleSorting(initialSortOrder === "desc");
-              }
-            }}
-          >
-            <Image
-              src={"/sort.svg"}
-              alt={"Sort Max LTV"}
-              width={15}
-              height={20}
-            />
-          </div>
+          <SortIcon row={row} />
         </div>
       ),
       accessorKey: "maxLTV",
@@ -892,24 +738,7 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
             </div>
           }
         />
-        <div
-          className="w-4 h-4"
-          onClick={() => {
-            if (row.column.getNextSortingOrder()) {
-              row.column.toggleSorting();
-            } else {
-              const initialSortOrder = row.column.getFirstSortDir();
-              row.column.toggleSorting(initialSortOrder === "desc");
-            }
-          }}
-        >
-          <Image
-            src={"/sort.svg"}
-            alt={"Sort Trailing 30 days Net Borrowing APY"}
-            width={15}
-            height={20}
-          />
-        </div>
+        <SortIcon row={row} />
       </div>
     ),
     accessorKey: "trailing30DaysNetBorrowingAPY",
@@ -946,24 +775,7 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
             </div>
           }
         />
-        <div
-          className="w-4 h-4"
-          onClick={() => {
-            if (row.column.getNextSortingOrder()) {
-              row.column.toggleSorting();
-            } else {
-              const initialSortOrder = row.column.getFirstSortDir();
-              row.column.toggleSorting(initialSortOrder === "desc");
-            }
-          }}
-        >
-          <Image
-            src={"/sort.svg"}
-            alt={"Sort Trailing 30 days Borrowing APY"}
-            width={15}
-            height={20}
-          />
-        </div>
+        <SortIcon row={row} />
       </div>
     ),
     accessorKey: "trailing30DaysBorrowingAPY",
@@ -1000,24 +812,7 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
             </div>
           }
         />
-        <div
-          className="w-4 h-4"
-          onClick={() => {
-            if (row.column.getNextSortingOrder()) {
-              row.column.toggleSorting();
-            } else {
-              const initialSortOrder = row.column.getFirstSortDir();
-              row.column.toggleSorting(initialSortOrder === "desc");
-            }
-          }}
-        >
-          <Image
-            src={"/sort.svg"}
-            alt={"Sort Trailing 30 days Collateral APY"}
-            width={15}
-            height={20}
-          />
-        </div>
+        <SortIcon row={row} />
       </div>
     ),
     accessorKey: "trailing30DaysLendingAPY",
@@ -1046,24 +841,7 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
             </div>
           }
         />
-        <div
-          className="w-4 h-4"
-          onClick={() => {
-            if (row.column.getNextSortingOrder()) {
-              row.column.toggleSorting();
-            } else {
-              const initialSortOrder = row.column.getFirstSortDir();
-              row.column.toggleSorting(initialSortOrder === "desc");
-            }
-          }}
-        >
-          <Image
-            src={"/sort.svg"}
-            alt={"Sort Trailing 30 days Reward APY"}
-            width={15}
-            height={20}
-          />
-        </div>
+        <SortIcon row={row} />
       </div>
     ),
     accessorKey: "trailing30DaysRewardAPY",
@@ -1086,24 +864,7 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
     header: (row) => (
       <div className="flex items-center">
         <div className="mr-2">Max LTV</div>
-        <div
-          className="w-4 h-4"
-          onClick={() => {
-            if (row.column.getNextSortingOrder()) {
-              row.column.toggleSorting();
-            } else {
-              const initialSortOrder = row.column.getFirstSortDir();
-              row.column.toggleSorting(initialSortOrder === "desc");
-            }
-          }}
-        >
-          <Image
-            src={"/sort.svg"}
-            alt={"Sort Max LTV"}
-            width={15}
-            height={20}
-          />
-        </div>
+        <SortIcon row={row} />
       </div>
     ),
     accessorKey: "maxLTV",
