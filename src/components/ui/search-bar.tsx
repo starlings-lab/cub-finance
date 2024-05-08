@@ -145,21 +145,21 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               </Button>
             </Link>
           </div>
-          {isLoading && (
-            <div className="flex items-center text-gray-500 text-sm pl-3">
-              Validating address...
-              <Spinner />
-            </div>
-          )}
-          {addressErr && (
-            <div
-              className={`text-red-500 pl-3 pt-1 sm:flex text-sm ${
-                isHome ? "hidden" : "flex"
-              }`}
-            >
-              Enter a valid address
-            </div>
-          )}
+          <div
+            className={`flex items-center text-gray-500 text-sm pl-3 ${
+              isLoading ? "visible" : "invisible"
+            }`}
+          >
+            Validating address...
+            <Spinner />
+          </div>
+          <div
+            className={`text-red-500 pl-3 pt-1 sm:flex text-sm ${
+              isHome ? "hidden" : "flex"
+            } ${addressErr ? "visible" : "invisible"}`}
+          >
+            Enter a valid address
+          </div>
         </div>
 
         {/* Mobile search */}
@@ -187,17 +187,21 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               }
             ></Input>
           </div>
-          {isLoading && (
-            <div className="flex items-center text-gray-500 text-sm pl-3">
-              Validating address
-              <Spinner />
-            </div>
-          )}
-          {addressErr && (
-            <div className="text-red-500 text-sm pl-3 pt-1">
-              Enter a valid address
-            </div>
-          )}
+          <div
+            className={`flex items-center text-gray-500 text-sm pl-3 ${
+              isLoading ? "visible" : "invisible"
+            }`}
+          >
+            Validating address
+            <Spinner />
+          </div>
+          <div
+            className={`text-red-500 text-sm pl-3 pt-1 ${
+              addressErr ? "visible" : "invisible"
+            }`}
+          >
+            Enter a valid address
+          </div>
           <Link href={`/user/${value}/${activeRoute}`}>
             <Button
               disabled={
