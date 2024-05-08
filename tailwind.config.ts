@@ -67,6 +67,9 @@ const config = {
         },
         tbHeader: {
           DEFAULT: "var(--table-header)",
+        },
+        green: {
+          DEFAULT: "var(--green)",
         }
       },
       borderRadius: {

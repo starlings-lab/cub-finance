@@ -23,6 +23,7 @@ export interface TokenAmount {
 export interface DebtPositionTableRow {
   protocol: Protocol;
   debtToken: Token[];
+  collaterals: TokenAmount[];
   collateralTokens: Token[];
   totalDebtAmountInUSD: number;
   totalCollateralAmountInUSD: number;

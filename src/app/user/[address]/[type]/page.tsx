@@ -8,6 +8,7 @@ import { EOAFromENS, isValidEnsAddress } from "@/app/utils/utils";
 import StoreProvider from "./provider";
 import Loading from "./loadingTable";
 import DebtTableWrapper from "./DebtTableWrapper";
+import BorrowOptionsWrapper from "./BorrowOptionsWrapper";
 
 export default async function DebtPage({
   params
@@ -47,7 +48,7 @@ export default async function DebtPage({
         {params?.type === "borrow" ? (
           <div className="pt-2 sm:pt-5">
             <Suspense fallback={<Loading />}>
-              <div>Its borrow</div>
+              <BorrowOptionsWrapper userAddress={userAddress} />
             </Suspense>
           </div>
         ) : (

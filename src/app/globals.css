@@ -37,7 +37,9 @@
 
       --table-hover: rgba(255, 51, 70, 0.05);
       --table-selected: rgba(255, 51, 70, 0.1);
-      --table-header: rgba(0, 157, 196, 0.1)
+      --table-header: rgba(0, 157, 196, 0.1);
+
+      --green: rgba(18, 187, 79, 1)
 
     }
 
@@ -72,7 +74,9 @@
 
       --table-hover: rgba(255, 51, 70, 0.05);
       --table-selected: rgba(255, 51, 70, 0.1);
-      --table-header: rgba(0, 157, 196, 0.1)
+      --table-header: rgba(0, 157, 196, 0.1);
+
+      --green: rgba(18, 187, 79, 1)
     }
   }
 
