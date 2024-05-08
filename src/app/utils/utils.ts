@@ -88,3 +88,17 @@ export async function EOAFromENS(address: string): Promise<string | null> {
   });
   return eoaAddress;
 }
+
+export function getUniqueTokens(tokens: Token[]): Token[] {
+  const uniqueTokens: Map<string, Token> = new Map();
+  tokens.forEach((token) => {
+    const address = token.address.toLowerCase();
+    if (uniqueTokens.has(address)) {
+      return;
+    }
+
+    uniqueTokens.set(address, token);
+  });
+
+  return Array.from(uniqueTokens.values());
+}

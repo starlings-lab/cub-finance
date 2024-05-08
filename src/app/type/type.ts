@@ -180,3 +180,8 @@ export interface BorrowRecommendationTableRow {
   trailing30DaysRewardAPY: number;
   maxLTV: number;
 }
+
+export interface TokenDetail {
+  token: Token;
+  stable: boolean;
+}

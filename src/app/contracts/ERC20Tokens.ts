@@ -1,4 +1,5 @@
 import { Token } from "../type/type";
+import { getUniqueTokens } from "../utils/utils";
 
 export const USDC: Token = {
   address: `0x${"A0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"}`,
@@ -109,3 +110,9 @@ export const MORPHO_BLUE_DEBT_STABLECOINS = [USDC, DAI, USDT, PYUSD, USDA];
 export const AAVE_V3_DEBT_STABLECOINS = [USDC, DAI, USDT, PYUSD, LUSD, crvUSD];
 export const COMPOUND_V3_DEBT_STABLECOINS = [USDC];
 export const SPARKFI_DEBT_STABLECOINS = [DAI];
+export const SUPPORTED_DEBT_STABLECOINS = getUniqueTokens([
+  ...MORPHO_BLUE_DEBT_STABLECOINS,
+  ...AAVE_V3_DEBT_STABLECOINS,
+  ...COMPOUND_V3_DEBT_STABLECOINS,
+  ...SPARKFI_DEBT_STABLECOINS
+]);
