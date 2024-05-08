@@ -44,7 +44,7 @@ export default async function DebtPage({
           isHome={false}
           defaultUserAddress={(params!.address as string) ?? ""}
         />
-        <TabsWrapper selected={selectedValue} userAddress={userAddress} />
+        <TabsWrapper selected={selectedValue} userAddress={params.address} />
         {params?.type === "borrow" ? (
           <div className="pt-2 sm:pt-5">
             <Suspense fallback={<Loading />}>
