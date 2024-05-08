@@ -23,7 +23,13 @@ const optionsSubHeading = {
   [Tabs.Refinance]: "Refinance options based on your debt positions."
 };
 
-const TabsWrapper = ({ selected, userAddress }: { selected: Tabs, userAddress: string }) => {
+const TabsWrapper = ({
+  selected,
+  userAddress
+}: {
+  selected: Tabs;
+  userAddress: string;
+}) => {
   const selectedClassNames = " border-b-2 border-gray-900";
   const unSelectedClassNames = "text-slate-600 border-b-2 border-white";
 
@@ -31,9 +37,12 @@ const TabsWrapper = ({ selected, userAddress }: { selected: Tabs, userAddress: s
     <div>
       <div className="flex font-hkGrotesk cursor-pointer items-end w-fit mx-auto mt-12 text-center mb-4 sm:mb-0">
         {options.map((option) => (
-          <Link href={`/user/${userAddress}/${option.display.toLowerCase()}`} key={option.value} passHref>
+          <Link
+            href={`/user/${userAddress}/${option.display.toLowerCase()}`}
+            key={option.value}
+            passHref
+          >
             <div
-              
               className={`transition-colors ease-linear text-xl sm:text-3xl min-w-32 sm:min-w-36 mx-2 ${
                 selected === option.value
                   ? selectedClassNames
@@ -45,7 +54,7 @@ const TabsWrapper = ({ selected, userAddress }: { selected: Tabs, userAddress: s
           </Link>
         ))}
       </div>
-      <div className="mt-1 sm:mt-4 text-sm sm:text-md text-gray-500 font-notoSerif text-center">
+      <div className="mt-1 sm:mt-4 text-md sm:text-xl text-gray-500 font-notoSerif text-center">
         {optionsSubHeading[selected]}
       </div>
     </div>

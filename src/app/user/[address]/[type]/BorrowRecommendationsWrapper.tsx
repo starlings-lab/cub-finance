@@ -3,7 +3,8 @@ import {
   BorrowRecommendationTableRow,
   DebtPositionTableRow,
   Token,
-  TokenAmount
+  TokenAmount,
+  TokenDetail
 } from "@/app/type/type";
 import React, { useEffect, useState } from "react";
 import { ColumnDef, ColumnSort } from "@tanstack/react-table";
@@ -21,7 +22,7 @@ const BorrowRecommendationsWrapper = ({
 }: {
   columns: ColumnDef<BorrowRecommendationTableRow>[];
   debtPositions: DebtPositionTableRow[];
-  supportedDebtTokens: Token[];
+  supportedDebtTokens: TokenDetail[];
   collaterals: TokenAmount[];
   initialSortedColumns: ColumnSort[];
 }) => {
@@ -31,7 +32,7 @@ const BorrowRecommendationsWrapper = ({
   >([]);
 
   const [selectedDebtTokens, setSelectedDebtTokens] =
-    useState<Token[]>(supportedDebtTokens);
+    useState<TokenDetail[]>(supportedDebtTokens);
   const [selectedCollaterals, setSelectedCollaterals] =
     useState<TokenAmount[]>(collaterals);
 
@@ -43,8 +44,9 @@ const BorrowRecommendationsWrapper = ({
   useEffect(() => {
     const fetchBorrowRecommendations = async () => {
       setIsLoading(true);
+      const debtTokens = selectedDebtTokens?.map((debtToken) => debtToken.token)
       const data = await getBorrowRecommendations(
-        selectedDebtTokens,
+        debtTokens,
         selectedCollaterals
       );
       setBorrowRecommendations(data ?? []);

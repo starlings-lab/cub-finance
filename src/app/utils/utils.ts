@@ -74,5 +74,7 @@ export function getUniqueTokens(tokens: Token[]): Token[] {
 }
 
 export function getFormattedTokenAmount(token: Token, amount: bigint): string {
-  return ethers.formatUnits(amount, token.decimals);
+  const amountFormatted = Number(ethers.formatUnits(amount, token.decimals));
+  const preciseAmount = amountFormatted.toFixed(amountFormatted > 1 ? 2 : 6);
+  return preciseAmount.toString();
 }

@@ -10,7 +10,7 @@ export const hkGrotesk = Hanken_Grotesk({
 
 
   export const notoSerif = Noto_Serif({
-    weight: ["400", "700"],
+    weight: ["200", "300", "400", "700"],
     style: ["normal", "italic"],
     subsets: ["latin"],
     display: "swap",
