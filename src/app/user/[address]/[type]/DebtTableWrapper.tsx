@@ -41,8 +41,14 @@ const initialSortedColumns: ColumnSort[] = [
 ];
 
 const DebtTableWrapper = async ({ userAddress }: { userAddress: string }) => {
+  const startTime = Date.now();
   const allDebtPositions: DebtPositionTableRow[] = await getUserDebtPositions(
     userAddress as Address
+  );
+  console.log(
+    `Time taken to fetch debt positions: ${
+      Date.now() - startTime
+    } ms for user ${userAddress} with ${allDebtPositions.length} items`
   );
 
   return (
