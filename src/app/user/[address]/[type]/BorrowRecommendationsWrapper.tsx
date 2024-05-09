@@ -44,12 +44,30 @@ const BorrowRecommendationsWrapper = ({
   useEffect(() => {
     const fetchBorrowRecommendations = async () => {
       setIsLoading(true);
-      const debtTokens = selectedDebtTokens?.map((debtToken) => debtToken.token)
-      const data = await getBorrowRecommendations(
-        debtTokens,
-        selectedCollaterals
+      const debtTokens = selectedDebtTokens?.map(
+        (debtToken) => debtToken.token
       );
-      setBorrowRecommendations(data ?? []);
+
+      const startTime = Date.now();
+      let borrowRecommendations: BorrowRecommendationTableRow[] = [];
+
+      if (
+        debtTokens &&
+        debtTokens.length > 0 &&
+        selectedCollaterals &&
+        selectedCollaterals.length > 0
+      ) {
+        borrowRecommendations = await getBorrowRecommendations(
+          debtTokens,
+          selectedCollaterals
+        );
+      }
+      console.log(
+        "Time taken to fetch borrow recommendations: ",
+        Date.now() - startTime
+      );
+
+      setBorrowRecommendations(borrowRecommendations);
       setIsLoading(false);
     };
     fetchBorrowRecommendations();

@@ -422,24 +422,33 @@ export class BaseAaveService {
       if (!debtMarket) {
         continue;
       }
+
       const collateralMarkets = await this.fetchCollateralMarkets(
         collaterals.map((collateral) => collateral.token),
         reservesMap
       );
 
       if (!collateralMarkets || collateralMarkets.size === 0) {
-        console.log(
-          "No matching debt or collateral market exist for protocol: ",
-          this.protocol
-        );
+        // console.log(
+        //   "No matching debt or collateral market exist for protocol: ",
+        //   this.protocol
+        // );
         continue;
       }
 
       const debtReserve = reservesMap.get(debtToken!.address.toLowerCase());
       // console.log("Debt reserve", debtReserve);
 
+      // Filter out collateral markets where borrowing is not enabled
+      const supportedCollaterals = collaterals.filter((collateral) => {
+        const collateralMarket = collateralMarkets.get(
+          collateral.token.address.toLowerCase()
+        );
+        return collateralMarket;
+      });
+
       // Calculate total collateral amount in USD
-      const totalCollateralAmountInUSD = collaterals.reduce(
+      const totalCollateralAmountInUSD = supportedCollaterals.reduce(
         (total, collateral) => {
           const amountInUSD = calculateCollateralAmountInBaseCurrency(
             collateral.amount,
@@ -455,7 +464,7 @@ export class BaseAaveService {
       );
 
       // Calculate recommended debt amount using max LTV
-      const maxLTV = calculateMaxLtv(collaterals, reservesMap);
+      const maxLTV = calculateMaxLtv(supportedCollaterals, reservesMap);
       const debtAmountInUSD = maxLTV * totalCollateralAmountInUSD;
 
       const recommendedDebt = {
@@ -469,7 +478,7 @@ export class BaseAaveService {
       };
 
       if (!checkBorrowingAvailability(debtReserve, recommendedDebt.amount)) {
-        console.log("Debt market doesn't have enough liquidity to borrow");
+        // console.log("Debt market doesn't have enough liquidity to borrow");
         continue;
       }
 
@@ -485,7 +494,7 @@ export class BaseAaveService {
         debt: createNewDebtPosition(
           maxLTV,
           recommendedDebt,
-          collaterals,
+          supportedCollaterals,
           debtAndCollateralMarkets,
           baseCurrencyData
         )
@@ -512,15 +521,14 @@ export class BaseAaveService {
       })
       .filter((marketPromise) => marketPromise !== null);
     // Resolve all promises and create a map of collateral markets
-    let newCollateralMarkets = (await Promise.all(promises)).reduce(
-      (acc, curr) => {
-        if (curr) {
-          acc.set(curr.underlyingAsset.address.toLowerCase(), curr);
+    let newCollateralMarkets = (await Promise.all(promises))
+      .filter((market) => market !== null)
+      .reduce((map, market) => {
+        if (market) {
+          map.set(market.underlyingAsset.address.toLowerCase(), market);
         }
-        return acc;
-      },
-      new Map<string, AaveMarket>()
-    );
+        return map;
+      }, new Map<string, AaveMarket>());
     return newCollateralMarkets;
   }
 
