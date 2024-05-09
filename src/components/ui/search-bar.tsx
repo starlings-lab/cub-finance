@@ -72,16 +72,15 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
 
     React.useEffect(() => {
       const fetchRecommendations = async () => {
-        setIsFetchingDebtPositions(true);
-        const data = await getUserDebtPositions(eoaAddress as Address);
-        setActiveRoute(data.length > 0 ? "refinance" : "borrow");
-        setIsFetchingDebtPositions(false);
+        if (!(addressErr || value === "" || buttonDisabled)) {
+          setIsFetchingDebtPositions(true);
+          const data = await getUserDebtPositions(eoaAddress as Address);
+          setActiveRoute(data.length > 0 ? "refinance" : "borrow");
+          setIsFetchingDebtPositions(false);
+        }
       };
-      if (!(addressErr || value === "" || buttonDisabled)) {
-        fetchRecommendations();
-      }
-    }, [value, addressErr, buttonDisabled]);
-
+      fetchRecommendations();
+    }, [value, addressErr, buttonDisabled, eoaAddress]);
     const errorCheck =
       addressErr || value === "" || buttonDisabled || isFetchingDebtPositions;
 
