@@ -70,7 +70,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
       };
     }, []); // Run this effect only once on component mount
 
-    const fetchRecommendations = async () => {
+    const fetchRecommendations = React.useCallback(async () => {
       setIsFetchingDebtPositions(true);
       await getUserDebtPositions(eoaAddress as Address)
         .then((res) => {
@@ -80,13 +80,13 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
           console.log("Failed to fetch positions");
         })
         .finally(() => setIsFetchingDebtPositions(false));
-    };
+    }, [eoaAddress]);
 
     React.useEffect(() => {
-      if (!(addressErr || value === "" || buttonDisabled)) {
+      if (!(addressErr || value === "" || buttonDisabled) && isHome) {
         fetchRecommendations();
       }
-    }, [value, addressErr, buttonDisabled]);
+    }, [value, addressErr, buttonDisabled, isHome, fetchRecommendations]);
 
     const errorCheck =
       addressErr || value === "" || buttonDisabled || isFetchingDebtPositions;
