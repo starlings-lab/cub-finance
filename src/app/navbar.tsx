@@ -9,7 +9,7 @@ export default function Navbar() {
       <div className="mx-auto max-w-8xl px-4 lg:px-8">
         <div className="flex h-16 justify-between items-center">
           <Link href="/" passHref>
-            <Image src="/refi-v2.png" width={64} height={64} alt="" />
+            <Image src="/cub_logo.png" width={64} height={64} alt="" />
           </Link>
           <div className="flex items-center">
             <Button className="bg-[#009DC4] hover:bg-[#009dc4d6] text-white hover:text-white rounded-3xl w-36 transition-colors">
