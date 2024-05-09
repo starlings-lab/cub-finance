@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import { useState, forwardRef, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { Input } from "./input";
 import { Button } from "./button";
@@ -19,42 +20,50 @@ export interface SearchBarProps
   defaultUserAddress: string;
 }
 
-const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
+const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
   ({ className, type, defaultUserAddress, isHome, ...props }, ref) => {
     const router = useRouter();
     const { toast } = useToast();
-    const [value, setValue] = React.useState<string>(defaultUserAddress);
-    const [eoaAddress, setEoaAddress] =
-      React.useState<string>(defaultUserAddress);
-    const [addressErr, setAddressErr] = React.useState<boolean>(false);
-    const [buttonDisabled, setButtonDisabled] = React.useState<boolean>(false);
+    const [inputValue, setInputValue] = useState<string>(defaultUserAddress);
+    const [eoaAddress, setEoaAddress] = useState<string>(defaultUserAddress);
+    const [addressErr, setAddressErr] = useState<boolean>(false);
+    const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
     const [isFetchingDebtPositions, setIsFetchingDebtPositions] =
-      React.useState<boolean>(false);
-    const [isLoading, setIsLoading] = React.useState<boolean>(false);
+      useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
-    const [activeRoute, setActiveRoute] = React.useState("refinance");
+    const [activeRoute, setActiveRoute] = useState("refinance");
 
-    const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const inputValue = event.target.value;
-      setValue(inputValue);
-      setIsLoading(true);
+    const preValidationStateUpdate = (inputValue: string) => {
+      setInputValue(inputValue);
       setButtonDisabled(true);
-      const isValidAddress =
-        isAddress(inputValue) || (await isValidEnsAddress(inputValue));
+      setIsLoading(true);
+    };
+
+    const postValidationStateUpdate = (
+      resolvedAddress: string,
+      isValidAddress: boolean
+    ) => {
+      setEoaAddress(resolvedAddress);
       setAddressErr(!isValidAddress);
       setButtonDisabled(!isValidAddress);
       setIsLoading(false);
-
-      if (await isValidEnsAddress(inputValue)) {
-        const resolvedAddress = await EOAFromENS(inputValue);
-        setEoaAddress(resolvedAddress as string);
-      } else {
-        setEoaAddress(inputValue);
-      }
     };
-    const inputRef = React.useRef<HTMLInputElement>(null);
 
-    React.useEffect(() => {
+    const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const inputValue = event.target.value;
+      preValidationStateUpdate(inputValue);
+      const isValidEns = await isValidEnsAddress(inputValue);
+      const resolvedAddress = isValidEns
+        ? await EOAFromENS(inputValue)
+        : inputValue;
+      const isValidAddress = isAddress(resolvedAddress) || isValidEns;
+      postValidationStateUpdate(resolvedAddress as string, isValidAddress);
+    };
+
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
         if (event.metaKey && event.key === "k") {
           // Check for Cmd + K
@@ -70,26 +79,29 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
       };
     }, []); // Run this effect only once on component mount
 
-    const fetchRecommendations = React.useCallback(async () => {
+    const fetchRecommendations = useCallback(async () => {
       setIsFetchingDebtPositions(true);
-      await getUserDebtPositions(eoaAddress as Address)
-        .then((res) => {
-          setActiveRoute(res.length > 0 ? "refinance" : "borrow");
-        })
-        .catch((e) => {
-          console.log("Failed to fetch positions");
-        })
-        .finally(() => setIsFetchingDebtPositions(false));
+      try {
+        const debtPositions = await getUserDebtPositions(eoaAddress as Address);
+        setActiveRoute(debtPositions.length > 0 ? "refinance" : "borrow");
+      } catch (e) {
+        console.error("Failed to fetch positions:", e);
+      } finally {
+        setIsFetchingDebtPositions(false);
+      }
     }, [eoaAddress]);
 
-    React.useEffect(() => {
-      if (!(addressErr || value === "" || buttonDisabled) && isHome) {
+    useEffect(() => {
+      if (!(addressErr || inputValue === "" || buttonDisabled) && isHome) {
         fetchRecommendations();
       }
-    }, [value, addressErr, buttonDisabled, isHome, fetchRecommendations]);
+    }, [inputValue, addressErr, buttonDisabled, isHome, fetchRecommendations]);
 
     const errorCheck =
-      addressErr || value === "" || buttonDisabled || isFetchingDebtPositions;
+      addressErr ||
+      inputValue === "" ||
+      buttonDisabled ||
+      isFetchingDebtPositions;
 
     return (
       <div
@@ -119,18 +131,18 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               ref={inputRef}
               className="placeholder:text-slate-400 rounded-3xl tracking-wide"
               type="text"
-              value={value}
+              value={inputValue}
               placeholder="Wallet address or ENS"
               onChange={handleChange}
               onBlur={() => {
                 if (!errorCheck && !isHome) {
-                  router.push(`/user/${value}/${activeRoute}`);
+                  router.push(`/user/${inputValue}/${activeRoute}`);
                 }
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   if (!errorCheck) {
-                    router.push(`/user/${value}/${activeRoute}`);
+                    router.push(`/user/${inputValue}/${activeRoute}`);
                   } else {
                     toast({
                       title: "Enter a valid address",
@@ -140,7 +152,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
                 }
               }}
             ></Input>
-            <Link href={`/user/${value}/${activeRoute}`}>
+            <Link href={`/user/${inputValue}/${activeRoute}`}>
               <Button
                 disabled={errorCheck}
                 className={`bg-[#F43F5E] text-white rounded-3xl w-36 font-hkGrotesk font-medium tracking-wide ${
@@ -192,14 +204,14 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
             <Input
               className="placeholder:text-slate-400 rounded-3xl"
               type="text"
-              value={value}
+              value={inputValue}
               placeholder="Enter your wallet address"
               onChange={handleChange}
               onBlur={() =>
                 !isHome &&
-                value &&
+                inputValue &&
                 eoaAddress &&
-                router.push(`/user/${value}/${activeRoute}`)
+                router.push(`/user/${inputValue}/${activeRoute}`)
               }
             ></Input>
           </div>
@@ -228,7 +240,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
           >
             Enter a valid address
           </div>
-          <Link href={`/user/${value}/${activeRoute}`}>
+          <Link href={`/user/${inputValue}/${activeRoute}`}>
             <Button
               disabled={
                 !isHome ||
