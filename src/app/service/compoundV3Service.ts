@@ -821,9 +821,15 @@ export async function getBorrowRecommendations(
       supportedCollateralsByDebtTokenMap.get(debtToken)!;
 
     const debtMarketContract =
-      debtToken === USDC
+      debtToken.address.toLowerCase() === USDC.address.toLowerCase()
         ? COMPOUND_V3_CUSDC_CONTRACT
-        : COMPOUND_V3_CWETH_CONTRACT;
+        : debtToken.address.toLowerCase() === WETH.address.toLowerCase()
+        ? COMPOUND_V3_CWETH_CONTRACT
+        : null;
+    if (!debtMarketContract) {
+      console.log("Compound V3: Unsupported debt token: ", debtToken);
+      continue;
+    }
 
     // Calculate total collateral amount in USD
     const totalCollateralAmountInUSD: number = (

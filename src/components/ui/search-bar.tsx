@@ -70,17 +70,24 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
       };
     }, []); // Run this effect only once on component mount
 
+    const fetchRecommendations = React.useCallback(async () => {
+      setIsFetchingDebtPositions(true);
+      await getUserDebtPositions(eoaAddress as Address)
+        .then((res) => {
+          setActiveRoute(res.length > 0 ? "refinance" : "borrow");
+        })
+        .catch((e) => {
+          console.log("Failed to fetch positions");
+        })
+        .finally(() => setIsFetchingDebtPositions(false));
+    }, [eoaAddress]);
+
     React.useEffect(() => {
-      const fetchRecommendations = async () => {
-        if (!(addressErr || value === "" || buttonDisabled)) {
-          setIsFetchingDebtPositions(true);
-          const data = await getUserDebtPositions(eoaAddress as Address);
-          setActiveRoute(data.length > 0 ? "refinance" : "borrow");
-          setIsFetchingDebtPositions(false);
-        }
-      };
-      fetchRecommendations();
-    }, [value, addressErr, buttonDisabled, eoaAddress]);
+      if (!(addressErr || value === "" || buttonDisabled) && isHome) {
+        fetchRecommendations();
+      }
+    }, [value, addressErr, buttonDisabled, isHome, fetchRecommendations]);
+
     const errorCheck =
       addressErr || value === "" || buttonDisabled || isFetchingDebtPositions;
 
@@ -145,12 +152,22 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
             </Link>
           </div>
           <div
-            className={`flex items-center text-gray-500 text-sm pl-3 ${
-              isLoading ? "visible" : "invisible"
+            className={`items-center text-gray-500 text-sm pl-3 mt-2 ${
+              isLoading ? "visible flex" : "invisible hidden"
             }`}
           >
-            Validating address...
             <Spinner />
+            <span className="ml-2">Validating address</span>
+          </div>
+          <div
+            className={`items-center text-gray-500 text-sm pl-3 mt-2 ${
+              isFetchingDebtPositions && isHome
+                ? "visible flex"
+                : "invisible hidden"
+            }`}
+          >
+            <Spinner />
+            <span className="ml-2">Fetching positions</span>
           </div>
           <div
             className={`text-red-500 pl-3 pt-1 sm:flex text-sm ${
@@ -191,8 +208,18 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
               isLoading ? "visible" : "invisible"
             }`}
           >
-            Validating address
             <Spinner />
+            <span className="ml-2">Validating address</span>
+          </div>
+          <div
+            className={`items-center text-gray-500 text-sm pl-3 mt-2 ${
+              isFetchingDebtPositions && isHome
+                ? "visible flex"
+                : "invisible hidden"
+            }`}
+          >
+            <Spinner />
+            <span className="ml-2">Fetching positions</span>
           </div>
           <div
             className={`text-red-500 text-sm pl-3 pt-1 ${
