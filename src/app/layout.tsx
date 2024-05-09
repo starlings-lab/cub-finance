@@ -6,6 +6,7 @@ import Head from "next/head";
 
 import "./globals.css";
 import Navbar from "./navbar";
+import Fathom from "../components/fathom";
 import { Analytics } from "@vercel/analytics/react";
 
 import dotenv from "dotenv";
@@ -27,7 +28,10 @@ export default function RootLayout({
       <Head>
         <link rel="icon" href={favicon.src} />
       </Head>
-      <body className={`${notoSerif.className} ${notoSerif.variable} ${hkGrotesk.className} ${hkGrotesk.variable}`}>
+      <body
+        className={`${notoSerif.className} ${notoSerif.variable} ${hkGrotesk.className} ${hkGrotesk.variable}`}
+      >
+        <Fathom />
         <Suspense fallback={<div className="font-notoSerif">Loading...</div>}>
           <Navbar />
         </Suspense>
