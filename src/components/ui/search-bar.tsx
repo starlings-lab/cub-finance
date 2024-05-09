@@ -47,7 +47,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
 
       if (await isValidEnsAddress(inputValue)) {
         const resolvedAddress = await EOAFromENS(inputValue);
-        setEoaAddress(resolvedAddress || inputValue);
+        setEoaAddress(resolvedAddress as string);
       } else {
         setEoaAddress(inputValue);
       }
