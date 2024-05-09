@@ -19,8 +19,13 @@ export async function isValidEnsAddress(ensAddress: string): Promise<boolean> {
 }
 
 export async function EOAFromENS(address: string): Promise<string | null> {
-  const eoaAddress = await getEnsAddress(wagmiConfig, {
-    name: normalize(address)
-  });
-  return eoaAddress;
+  try {
+    const eoaAddress = await getEnsAddress(wagmiConfig, {
+      name: normalize(address)
+    });
+    return eoaAddress;
+  } catch (error) {
+    console.error(`Error resolving ENS to EOA: ${error}`);
+    return null;
+  }
 }
