@@ -33,13 +33,14 @@ const DebtSelect = ({
   const stableCoinList = optionsList
     .filter((option) => option.stable)
     .map((option) => option?.token?.symbol);
+
   const displayValueOfDebt =
     currentList?.length === optionsList?.length
       ? "All Tokens"
       : currentList?.length > 0
-      ? currentList
+      ? currentList?.length < 3 ? currentList
           .map((selectedDebt) => selectedDebt?.token?.symbol)
-          .join(", ")
+          .join(", ") : `${currentList?.length} tokens selected`
       : "Select token";
 
   const handleOptionClick = (selectedDebt: TokenDetail) => {
