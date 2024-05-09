@@ -106,8 +106,24 @@ export const rETH: Token = {
   symbol: "rETH"
 };
 
+// https://etherscan.io/address/0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f#readContract
+export const GHO: Token = {
+  address: `0x${"40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f"}`,
+  name: "GHO",
+  decimals: 18,
+  symbol: "GHO"
+};
+
 export const MORPHO_BLUE_DEBT_STABLECOINS = [USDC, DAI, USDT, PYUSD, USDA];
-export const AAVE_V3_DEBT_STABLECOINS = [USDC, DAI, USDT, PYUSD, LUSD, crvUSD];
+export const AAVE_V3_DEBT_STABLECOINS = [
+  GHO,
+  USDC,
+  DAI,
+  USDT,
+  PYUSD,
+  LUSD,
+  crvUSD
+];
 export const COMPOUND_V3_DEBT_STABLECOINS = [USDC];
 export const SPARKFI_DEBT_STABLECOINS = [DAI];
 export const SUPPORTED_DEBT_STABLECOINS = getUniqueTokens([
