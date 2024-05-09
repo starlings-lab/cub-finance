@@ -25,6 +25,7 @@
     "clsx": "^2.1.0",
     "dotenv": "^16.4.5",
     "ethers": "latest",
+    "fathom-client": "^3.6.0",
     "graphql-request": "^6.1.0",
     "jest": "^29.7.0",
     "lucide-react": "^0.372.0",
