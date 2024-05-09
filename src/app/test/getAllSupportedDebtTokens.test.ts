@@ -4,7 +4,7 @@ import { getAllSupportedDebtTokens } from "../user/[address]/getAllSupportedDebt
 describe("getAllSupportedDebtTokens", () => {
   it("should return an array of unique debt tokens", async () => {
     const tokenDetails = await getAllSupportedDebtTokens();
-    // console.log("Supported debt tokens: ", tokens);
+    // console.log("Supported debt tokens: ", tokenDetails);
 
     // Ensure token addresses are unique
     const uniqueAddresses = tokenDetails.map(

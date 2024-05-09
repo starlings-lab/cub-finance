@@ -15,6 +15,13 @@ export const DAI: Token = {
   symbol: "DAI"
 };
 
+export const sDAI: Token = {
+  address: "0x83F20F44975D03b1b09e64809B757c47f942BEeA",
+  name: "Savings Dai",
+  decimals: 18,
+  symbol: "sDAI"
+};
+
 export const USDT: Token = {
   address: `0x${"dAC17F958D2ee523a2206206994597C13D831ec7"}`,
   name: "Tether USD",
@@ -109,9 +116,37 @@ export const rETH: Token = {
 // https://etherscan.io/address/0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f#readContract
 export const GHO: Token = {
   address: `0x${"40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f"}`,
-  name: "GHO",
+  name: "Gho Token",
   decimals: 18,
   symbol: "GHO"
+};
+
+export const USDe: Token = {
+  address: "0x4c9EDD5852cd905f086C759E8383e09bff1E68B3",
+  name: "USDe",
+  decimals: 18,
+  symbol: "USDe"
+};
+
+export const sUSDe: Token = {
+  address: "0x9D39A5DE30e57443BfF2A8307A4256c8797A3497",
+  name: "Staked USDe",
+  decimals: 18,
+  symbol: "sUSDe"
+};
+
+export const weETH: Token = {
+  address: "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+  name: "Wrapped eETH",
+  symbol: "weETH",
+  decimals: 18
+};
+
+export const AAVE: Token = {
+  address: "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9",
+  name: "Aave Token",
+  symbol: "AAVE",
+  decimals: 18
 };
 
 export const MORPHO_BLUE_DEBT_STABLECOINS = [USDC, DAI, USDT, PYUSD, USDA];

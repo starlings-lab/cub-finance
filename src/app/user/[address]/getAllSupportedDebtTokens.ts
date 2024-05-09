@@ -6,11 +6,40 @@ import { getSupportedDebtTokens as getCompoundV3SupportedDebtTokens } from "@/ap
 import { getSupportedDebtTokens as getMorphoBlueSupportedDebtTokens } from "@/app/service/morphoBlueService";
 import { Token, TokenDetail } from "@/app/type/type";
 import {
+  DAI,
   SUPPORTED_DEBT_STABLECOINS,
-  USDC_DUPLICATE_OR_SCAM
+  USDC,
+  USDC_DUPLICATE_OR_SCAM,
+  USDT,
+  WBTC,
+  WETH
 } from "@/app/contracts/ERC20Tokens";
 
 export async function getAllSupportedDebtTokens(): Promise<TokenDetail[]> {
+  // Return hardcoded values for now until we improve performance of borrow recommendations
+  return [
+    {
+      token: USDC,
+      stable: true
+    },
+    {
+      token: USDT,
+      stable: true
+    },
+    {
+      token: DAI,
+      stable: true
+    },
+    {
+      token: WETH,
+      stable: false
+    },
+    {
+      token: WBTC,
+      stable: false
+    }
+  ];
+
   // Call all protocol services to get supported debt tokens
   return Promise.all([
     getAaveSupportedDebtTokens(),

@@ -5,17 +5,79 @@ import { getSupportedCollateralTokens as getSparkSupportedCollateralTokens } fro
 import { getSupportedCollateralTokens as getCompoundV3SupportedCOllateralTokens } from "@/app/service/compoundV3Service";
 import { getSupportedCollateralTokens as getMorphoBlueSupportedCollateralTokens } from "@/app/service/morphoBlueService";
 import { Token, TokenAmount } from "@/app/type/type";
-import { USDC_DUPLICATE_OR_SCAM } from "@/app/contracts/ERC20Tokens";
+import {
+  AAVE,
+  COMP,
+  DAI,
+  LINK,
+  UNI,
+  USDC,
+  USDC_DUPLICATE_OR_SCAM,
+  USDT,
+  USDe,
+  WBTC,
+  WETH,
+  cbETH,
+  rETH,
+  sDAI,
+  sUSDe,
+  weETH,
+  wstETH
+} from "@/app/contracts/ERC20Tokens";
 import { Address } from "abitype";
 import { getTokenHoldings } from "@/app/service/tokenService";
-import { use } from "react";
+
+const supportedCollateralTokens: Token[] = [
+  USDC,
+  USDT,
+  DAI,
+  sDAI,
+  USDe,
+  sUSDe,
+  WETH,
+  WBTC,
+  wstETH,
+  rETH,
+  cbETH,
+  weETH,
+  LINK,
+  AAVE,
+  COMP,
+  UNI
+];
+
+// This function should be used until we fix borrow recommendation performance
+export async function getSupportedUserCollaterals(
+  userAddress: Address
+): Promise<TokenAmount[]> {
+  return getTokenHoldings(userAddress).then((userHoldings) => {
+    if (!userHoldings || userHoldings.length === 0) {
+      return [];
+    }
+
+    const allSupportedCollaterals: Map<string, TokenAmount> = new Map();
+    userHoldings.forEach((userHolding) => {
+      const address = userHolding.token.address.toLowerCase();
+      if (
+        supportedCollateralTokens.some(
+          (token) => token.address.toLowerCase() === address
+        )
+      ) {
+        allSupportedCollaterals.set(address, userHolding);
+      }
+    });
+
+    return Array.from(allSupportedCollaterals.values());
+  });
+}
 
 /**
  * Get all user collaterals that are available in the supported protocols.
  * @param userAddress User address
  * @returns List of supported collaterals
+ * @Remarks This function should not be used until we fix borrow recommendation performance
  */
-export async function getSupportedUserCollaterals(
+export async function getSupportedUserCollaterals_Old(
   userAddress: Address
 ): Promise<TokenAmount[]> {
   return getTokenHoldings(userAddress).then((userHoldings) => {
@@ -25,7 +87,6 @@ export async function getSupportedUserCollaterals(
       return [];
     }
 
-    // Call all protocol services to get supported collateral tokens
     return Promise.all([
       getAaveSupportedCollateralTokens(),
       getSparkSupportedCollateralTokens(),
