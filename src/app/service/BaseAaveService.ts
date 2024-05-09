@@ -169,9 +169,11 @@ export class BaseAaveService {
         (underlyingAssetToken: Token) =>
           this.getAaveMarket(reservesMap, underlyingAssetToken)
       );
-      (await Promise.all(marketPromises)).forEach((market) => {
-        marketMap.set(market.underlyingAsset.address.toLowerCase(), market);
-      });
+      (await Promise.all(marketPromises))
+        .filter((market) => market !== null)
+        .forEach((market) => {
+          marketMap.set(market!.underlyingAsset.address.toLowerCase(), market!);
+        });
 
       // Add an aggregated debt position for user with total collateral and debt
       const totalCollateralAmountInUSD = collaterals.reduce(
@@ -190,6 +192,7 @@ export class BaseAaveService {
         collaterals,
         marketMap
       );
+
       debtPositions.push({
         maxLTV: Number(userAccountData.ltv) / 10000,
         debts: debts,
@@ -281,7 +284,7 @@ export class BaseAaveService {
       return null;
     }
 
-    const newDebtMarket = await this.getAaveMarket(reservesMap, debtToken!);
+    const newDebtMarket = (await this.getAaveMarket(reservesMap, debtToken!))!;
 
     let newCollateralMarkets = await this.fetchCollateralMarkets(
       Array.from(existingCollateralAmountByToken.keys()),
@@ -416,12 +419,15 @@ export class BaseAaveService {
       const debtToken = debtTokens[i];
 
       const debtMarket = await this.getAaveMarket(reservesMap, debtToken);
+      if (!debtMarket) {
+        continue;
+      }
       const collateralMarkets = await this.fetchCollateralMarkets(
         collaterals.map((collateral) => collateral.token),
         reservesMap
       );
 
-      if (!debtMarket || !collateralMarkets || collateralMarkets.size === 0) {
+      if (!collateralMarkets || collateralMarkets.size === 0) {
         console.log(
           "No matching debt or collateral market exist for protocol: ",
           this.protocol
@@ -670,10 +676,16 @@ export class BaseAaveService {
   private async getAaveMarket(
     reservesMap: Map<string, any>,
     underlyingAssetToken: Token
-  ): Promise<AaveMarket> {
+  ): Promise<AaveMarket | null> {
     const tokenReserve = reservesMap.get(
       underlyingAssetToken.address.toLowerCase()
     );
+
+    if (!tokenReserve) {
+      // console.log("No AAVE v3 market found for token: ",underlyingAssetToken.symbol);
+      return null;
+    }
+
     const apyInfo =
       await this.apyProvider.calculateTrailing30DaysBorrowingAndLendingAPYs(
         underlyingAssetToken.symbol,
