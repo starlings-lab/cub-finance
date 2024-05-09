@@ -179,7 +179,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             }`}
           >
             <Spinner />
-            <span className="ml-2">Fetching positions</span>
+            <span className="ml-2">Scanning address</span>
           </div>
           <div
             className={`text-red-500 pl-3 pt-1 sm:flex text-sm ${
