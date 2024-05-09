@@ -381,10 +381,9 @@ export function getPriceFeedFromTokenSymbol(tokenSymbol: string): Address {
     WSTETH: COMPOUND_V3_PRICEFEEDS.wstETH
   };
 
-  if (tokenSymbol in supportedTokens) {
-    return supportedTokens[
-      tokenSymbol.toUpperCase() as keyof typeof supportedTokens
-    ];
+  const tokenSymbolUpper = tokenSymbol.toUpperCase();
+  if (tokenSymbolUpper in supportedTokens) {
+    return supportedTokens[tokenSymbolUpper as keyof typeof supportedTokens];
   } else {
     throw new Error("Unsupported token name: " + tokenSymbol);
   }

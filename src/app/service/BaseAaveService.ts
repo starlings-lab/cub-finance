@@ -274,12 +274,7 @@ export class BaseAaveService {
     const debtReserve = reservesMap.get(debtToken!.address.toLowerCase());
     // console.log("Debt reserve", debtReserve);
 
-    if (
-      !debtToken ||
-      !debtReserve ||
-      !debtReserve.borrowingEnabled ||
-      !debtReserve.isActive
-    ) {
+    if (!isReserveBorrowingEnabled(debtReserve)) {
       // console.log("There is no debt token market for position", debtPosition);
       return null;
     }
@@ -369,10 +364,7 @@ export class BaseAaveService {
     // Fetch all reserves data and filter out tokens where borrowing is enabled
     return this.getReservesData().then(({ reservesMap }) => {
       return Array.from(reservesMap.values())
-        .filter(
-          (reserve) =>
-            reserve.isActive && !reserve.isPaused && reserve.borrowingEnabled
-        )
+        .filter((reserve) => isReserveBorrowingEnabled(reserve))
         .map(createToken);
     });
   }
@@ -385,12 +377,7 @@ export class BaseAaveService {
     // Fetch all reserves data and filter out tokens where collateral is enabled
     return this.getReservesData().then(({ reservesMap }) => {
       return Array.from(reservesMap.values())
-        .filter(
-          (reserve) =>
-            reserve.isActive &&
-            !reserve.isPaused &&
-            reserve.usageAsCollateralEnabled
-        )
+        .filter((reserve) => canReserveBeCollateral(reserve))
         .map(createToken);
     });
   }
@@ -417,6 +404,13 @@ export class BaseAaveService {
     const recommendations: RecommendedDebtDetail[] = [];
     for (let i = 0; i < debtTokens.length; i++) {
       const debtToken = debtTokens[i];
+      const debtReserve = reservesMap.get(debtToken!.address.toLowerCase());
+      // console.log("Debt reserve", debtReserve);
+
+      if (!isReserveBorrowingEnabled(debtReserve)) {
+        // console.log("There is no debt token market for token", debtToken);
+        continue;
+      }
 
       const debtMarket = await this.getAaveMarket(reservesMap, debtToken);
       if (!debtMarket) {
@@ -429,15 +423,9 @@ export class BaseAaveService {
       );
 
       if (!collateralMarkets || collateralMarkets.size === 0) {
-        // console.log(
-        //   "No matching debt or collateral market exist for protocol: ",
-        //   this.protocol
-        // );
+        // console.log("No matching debt or collateral market exist for protocol: ", this.protocol);
         continue;
       }
-
-      const debtReserve = reservesMap.get(debtToken!.address.toLowerCase());
-      // console.log("Debt reserve", debtReserve);
 
       // Filter out collateral markets where borrowing is not enabled
       const supportedCollaterals = collaterals.filter((collateral) => {
@@ -510,10 +498,10 @@ export class BaseAaveService {
   ) {
     const promises = collateralTokens
       ?.map((collateralToken) => {
-        const collateralMarket = reservesMap.get(
+        const collateralReserve = reservesMap.get(
           collateralToken.address.toLowerCase()
         );
-        if (collateralMarket) {
+        if (canReserveBeCollateral(collateralReserve)) {
           return this.getAaveMarket(reservesMap, collateralToken);
         } else {
           return null;
@@ -689,7 +677,11 @@ export class BaseAaveService {
       underlyingAssetToken.address.toLowerCase()
     );
 
-    if (!tokenReserve) {
+    if (
+      !tokenReserve ||
+      (!isReserveBorrowingEnabled(tokenReserve) &&
+        !canReserveBeCollateral(tokenReserve))
+    ) {
       // console.log("No AAVE v3 market found for token: ",underlyingAssetToken.symbol);
       return null;
     }
@@ -710,6 +702,23 @@ export class BaseAaveService {
         tokenReserve.priceInMarketReferenceCurrency
     };
   }
+}
+
+function canReserveBeCollateral(reserve: any): unknown {
+  return (
+    isReserveActive(reserve) &&
+    !reserve.isPaused &&
+    reserve.usageAsCollateralEnabled &&
+    reserve.baseLTVasCollateral > 0
+  );
+}
+
+function isReserveBorrowingEnabled(reserve: any): unknown {
+  return isReserveActive(reserve) && reserve.borrowingEnabled;
+}
+
+function isReserveActive(reserve: any) {
+  return reserve && reserve.isActive && !reserve.isPaused;
 }
 
 function getExistingDebtAndCollateralInfo(
