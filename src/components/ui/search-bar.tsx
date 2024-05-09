@@ -13,29 +13,32 @@ import { useToast } from "./use-toast";
 import { getUserDebtPositions } from "@/app/service/userDebtPositions";
 import { Address } from "abitype";
 import Link from "next/link";
+import { ROUTE_BORROW, ROUTE_REFINANCE } from "@/app/constants";
 
 export interface SearchBarProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   isHome: boolean;
   defaultUserAddress: string;
+  routeType?: string;
 }
 
 const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
-  ({ className, type, defaultUserAddress, isHome, ...props }, ref) => {
+  ({ className, routeType, defaultUserAddress, isHome, ...props }, ref) => {
     const router = useRouter();
     const { toast } = useToast();
-    const [inputValue, setInputValue] = useState<string>(defaultUserAddress);
+    const [address, setAddress] = useState<string>(defaultUserAddress);
     const [eoaAddress, setEoaAddress] = useState<string>(defaultUserAddress);
     const [addressErr, setAddressErr] = useState<boolean>(false);
     const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
     const [isFetchingDebtPositions, setIsFetchingDebtPositions] =
       useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-
-    const [activeRoute, setActiveRoute] = useState("refinance");
+    const [activeRoute, setActiveRoute] = useState(
+      routeType ?? ROUTE_REFINANCE
+    );
 
     const preValidationStateUpdate = (inputValue: string) => {
-      setInputValue(inputValue);
+      setAddress(inputValue);
       setButtonDisabled(true);
       setIsLoading(true);
     };
@@ -79,29 +82,28 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       };
     }, []); // Run this effect only once on component mount
 
-    const fetchRecommendations = useCallback(async () => {
+    const fetchDebtPositions = useCallback(async () => {
       setIsFetchingDebtPositions(true);
       try {
         const debtPositions = await getUserDebtPositions(eoaAddress as Address);
-        setActiveRoute(debtPositions.length > 0 ? "refinance" : "borrow");
+        setActiveRoute(
+          debtPositions.length > 0 ? ROUTE_REFINANCE : ROUTE_BORROW
+        );
       } catch (e) {
-        console.error("Failed to fetch positions:", e);
+        console.error("Failed to fetch debt positions:", e);
       } finally {
         setIsFetchingDebtPositions(false);
       }
     }, [eoaAddress]);
 
     useEffect(() => {
-      if (!(addressErr || inputValue === "" || buttonDisabled) && isHome) {
-        fetchRecommendations();
+      if (!(addressErr || address === "" || buttonDisabled) && isHome) {
+        fetchDebtPositions();
       }
-    }, [inputValue, addressErr, buttonDisabled, isHome, fetchRecommendations]);
+    }, [address, addressErr, buttonDisabled, isHome, fetchDebtPositions]);
 
     const errorCheck =
-      addressErr ||
-      inputValue === "" ||
-      buttonDisabled ||
-      isFetchingDebtPositions;
+      addressErr || address === "" || buttonDisabled || isFetchingDebtPositions;
 
     return (
       <div
@@ -131,18 +133,18 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               ref={inputRef}
               className="placeholder:text-slate-400 rounded-3xl tracking-wide"
               type="text"
-              value={inputValue}
+              value={address}
               placeholder="Wallet address or ENS"
               onChange={handleChange}
               onBlur={() => {
                 if (!errorCheck && !isHome) {
-                  router.push(`/user/${inputValue}/${activeRoute}`);
+                  router.push(`/user/${address}/${activeRoute}`);
                 }
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   if (!errorCheck) {
-                    router.push(`/user/${inputValue}/${activeRoute}`);
+                    router.push(`/user/${address}/${activeRoute}`);
                   } else {
                     toast({
                       title: "Enter a valid address",
@@ -152,7 +154,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 }
               }}
             ></Input>
-            <Link href={`/user/${inputValue}/${activeRoute}`}>
+            <Link href={`/user/${address}/${activeRoute}`}>
               <Button
                 disabled={errorCheck}
                 className={`bg-[#F43F5E] text-white rounded-3xl w-36 font-hkGrotesk font-medium tracking-wide ${
@@ -204,14 +206,14 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             <Input
               className="placeholder:text-slate-400 rounded-3xl"
               type="text"
-              value={inputValue}
+              value={address}
               placeholder="Enter your wallet address"
               onChange={handleChange}
               onBlur={() =>
                 !isHome &&
-                inputValue &&
+                address &&
                 eoaAddress &&
-                router.push(`/user/${inputValue}/${activeRoute}`)
+                router.push(`/user/${address}/${activeRoute}`)
               }
             ></Input>
           </div>
@@ -240,7 +242,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           >
             Enter a valid address
           </div>
-          <Link href={`/user/${inputValue}/${activeRoute}`}>
+          <Link href={`/user/${address}/${activeRoute}`}>
             <Button
               disabled={
                 !isHome ||

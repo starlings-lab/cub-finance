@@ -14,8 +14,8 @@ import { hkGrotesk, notoSerif } from "./fonts";
 dotenv.config();
 
 export const metadata: Metadata = {
-  title: "Refinance",
-  description: "Refinance your DeFi loans with ease."
+  title: "Cub Finance",
+  description: "Borrowing Simplified."
 };
 
 export default function RootLayout({

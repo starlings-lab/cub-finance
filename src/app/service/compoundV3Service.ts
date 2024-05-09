@@ -377,14 +377,16 @@ export function getPriceFeedFromTokenSymbol(tokenSymbol: string): Address {
     WBTC: COMPOUND_V3_PRICEFEEDS.WBTC,
     UNI: COMPOUND_V3_PRICEFEEDS.UNI,
     LINK: COMPOUND_V3_PRICEFEEDS.LINK,
-    cbETH: COMPOUND_V3_PRICEFEEDS.cbETH,
-    wstETH: COMPOUND_V3_PRICEFEEDS.wstETH
+    CBETH: COMPOUND_V3_PRICEFEEDS.cbETH,
+    WSTETH: COMPOUND_V3_PRICEFEEDS.wstETH
   };
 
   if (tokenSymbol in supportedTokens) {
-    return supportedTokens[tokenSymbol as keyof typeof supportedTokens];
+    return supportedTokens[
+      tokenSymbol.toUpperCase() as keyof typeof supportedTokens
+    ];
   } else {
-    throw new Error("Unsupported token name");
+    throw new Error("Unsupported token name: " + tokenSymbol);
   }
 }
 

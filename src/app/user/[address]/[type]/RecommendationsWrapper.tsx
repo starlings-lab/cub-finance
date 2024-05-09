@@ -77,7 +77,9 @@ const RecommendationsWrapper = () => {
         state!.activeDebtPosition?.debtPosition!
       );
       console.log(
-        `Time taken to fetch recommendations: ${Date.now() - startTime} ms`
+        `Time taken to fetch refinance recommendations: ${
+          Date.now() - startTime
+        } ms`
       );
 
       setRecommendations(data ?? []);

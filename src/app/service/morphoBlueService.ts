@@ -187,7 +187,7 @@ export async function getMarkets(): Promise<MorphoBlueMarket[]> {
     return parseMarketsQueryResult(queryResult);
   } catch (error) {
     console.error(error);
-    throw error;
+    return [];
   }
 }
 
@@ -394,10 +394,6 @@ export async function getRecommendedDebtDetail(
     let newDebtAmount: TokenAmount = matchedDebt!;
 
     if (newLTV > newMaxLTV) {
-      console.log(
-        `New LTV: ${newLTV} is higher than new max LTV: ${newMaxLTV}`
-      );
-
       // Multiply maxLTV by 10^8 and divide by 10^8 to preserve precision
       const newDebtAmountInToken =
         (BigInt(matchedMarket.maxLTV * 10 ** 8) * matchedCollateral.amount) /

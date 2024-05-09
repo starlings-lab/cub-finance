@@ -9,6 +9,7 @@ import StoreProvider from "./provider";
 import Loading from "./loadingTable";
 import DebtTableWrapper from "./DebtTableWrapper";
 import BorrowOptionsWrapper from "./BorrowOptionsWrapper";
+import { ROUTE_BORROW } from "@/app/constants";
 
 export default async function DebtPage({
   params
@@ -21,8 +22,7 @@ export default async function DebtPage({
     return (
       <div className="flex items-center flex-col h-full pt-20">
         <div className="text-center">
-          Looks like you entered a wrong address. Try by entering a valid
-          address.
+          Invalid address. Please enter a valid address.
         </div>
         <Button className={`bg-[#F43F5E] text-white rounded-3xl w-36 mt-4`}>
           <Link href={`/`}>Back to Home</Link>
@@ -35,17 +35,18 @@ export default async function DebtPage({
     : params.address;
 
   const selectedValue =
-    params?.type === "borrow" ? Tabs.Borrow : Tabs.Refinance;
+    params?.type === ROUTE_BORROW ? Tabs.Borrow : Tabs.Refinance;
 
   return (
     <StoreProvider>
       <div className="mt-24 mb-32 sm:mt-28">
         <SearchBar
           isHome={false}
+          routeType={params.type as string}
           defaultUserAddress={(params!.address as string) ?? ""}
         />
         <TabsWrapper selected={selectedValue} userAddress={params.address} />
-        {params?.type === "borrow" ? (
+        {params?.type === ROUTE_BORROW ? (
           <div className="pt-2 sm:pt-5">
             <Suspense fallback={<Loading />}>
               <BorrowOptionsWrapper userAddress={userAddress} />

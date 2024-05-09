@@ -98,3 +98,6 @@ export const TEST_DEBT_POSITION_ADDRESSES = {
   ensAddress2: "juanvilla.eth",
   ensAddress3: "lozben.eth"
 };
+
+export const ROUTE_BORROW = "borrow";
+export const ROUTE_REFINANCE = "refinance";
