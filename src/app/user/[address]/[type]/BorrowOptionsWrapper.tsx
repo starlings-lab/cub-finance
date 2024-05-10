@@ -1,5 +1,4 @@
 import React from "react";
-import { getUserDebtPositions } from "../../../service/userDebtPositions";
 import { Address } from "abitype";
 import {
   borrowTableColumns,
@@ -9,7 +8,7 @@ import {
   trailing30DaysLendingAPYColumnId,
   trailing30DaysNetBorrowingAPYColumnId
 } from "./debtTableColumns";
-import { DebtPositionTableRow, TokenDetail } from "@/app/type/type";
+import { TokenDetail } from "@/app/type/type";
 import { ColumnSort } from "@tanstack/react-table";
 import { getAllSupportedDebtTokens } from "../getAllSupportedDebtTokens";
 import BorrowRecommendationsWrapper from "./BorrowRecommendationsWrapper";
@@ -42,27 +41,19 @@ const initialSortedColumns: ColumnSort[] = [
   }
 ];
 
-const DEBT_TOKEN_LIST = ['ETH', 'WBTC','USDT', 'USDC']
-
 const BorrowOptionsWrapper = async ({
   userAddress
 }: {
   userAddress: string;
 }) => {
-  const allDebtPositions: DebtPositionTableRow[] = await getUserDebtPositions(
-    userAddress as Address
-  );
-
-  const allSupportedDebtTokens: TokenDetail[] = await getAllSupportedDebtTokens();
-
-
+  const allSupportedDebtTokens: TokenDetail[] =
+    await getAllSupportedDebtTokens();
   const collaterals = await getSupportedUserCollaterals(userAddress as Address);
 
   return (
     <div className="max-w-screen-xl mx-auto py-8">
       <BorrowRecommendationsWrapper
         columns={borrowTableColumns}
-        debtPositions={allDebtPositions}
         collaterals={collaterals}
         supportedDebtTokens={allSupportedDebtTokens}
         initialSortedColumns={initialSortedColumns}
