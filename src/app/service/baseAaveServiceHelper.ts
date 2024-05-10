@@ -207,8 +207,20 @@ export function calculateCollateralAmountInBaseCurrency(
     (scaledATokenBalance * assetReserveData.liquidityIndex) / BigInt(10 ** 27); // Liquidity index uses ray decimals, see https://docs.aave.com/developers/v/2.0/glossary
 
   // console.log("Supply amount: ", supplyAmount);
+  return calculateAmountInBaseCurrency(
+    supplyAmount,
+    assetReserveData,
+    baseCurrencyUnit
+  );
+}
+
+export function calculateAmountInBaseCurrency(
+  amount: bigint,
+  assetReserveData: any,
+  baseCurrencyUnit: bigint
+) {
   const supplyAmountInBaseCurrency =
-    (supplyAmount * assetReserveData.priceInMarketReferenceCurrency) /
+    (amount * assetReserveData.priceInMarketReferenceCurrency) /
     BigInt(10 ** Number(assetReserveData.decimals));
 
   // Multiply and divide by 10000 to maintain 4 decimal places precision

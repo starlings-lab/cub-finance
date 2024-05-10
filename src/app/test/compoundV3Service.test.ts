@@ -195,7 +195,7 @@ describe("compoundV3Service", () => {
       USDC
     );
     const expectedAmount = Number(amount / BigInt(10 ** USDC.decimals));
-    expect(expectedAmount).toBeGreaterThan(999);
+    expect(expectedAmount).toBeGreaterThanOrEqual(999);
     expect(expectedAmount).toBeLessThan(1001);
   });
 

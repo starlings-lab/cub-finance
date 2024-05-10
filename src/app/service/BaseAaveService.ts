@@ -30,7 +30,8 @@ import {
   createNewDebtPosition,
   createToken,
   calculateMaxLtv,
-  calculateTokenAmount
+  calculateTokenAmount,
+  calculateAmountInBaseCurrency
 } from "./baseAaveServiceHelper";
 
 export interface AaveMarket extends Market {
@@ -393,7 +394,7 @@ export class BaseAaveService {
     collaterals: TokenAmount[]
   ): Promise<RecommendedDebtDetail[]> {
     console.log(
-      "Generating borrow recommendation from protocol: ",
+      "Generating borrow recommendations from protocol: ",
       this.protocol
     );
 
@@ -438,7 +439,7 @@ export class BaseAaveService {
       // Calculate total collateral amount in USD
       const totalCollateralAmountInUSD = supportedCollaterals.reduce(
         (total, collateral) => {
-          const amountInUSD = calculateCollateralAmountInBaseCurrency(
+          const amountInUSD = calculateAmountInBaseCurrency(
             collateral.amount,
             reservesMap.get(collateral.token.address.toLowerCase()),
             baseCurrencyData.marketReferenceCurrencyUnit
