@@ -29,6 +29,11 @@ export async function getUserDebtPositions(address: Address) {
     getCompoundV3DebtDetails(address),
     getMorphoBlueDebtDetails(1, address)
   ]).then((results) => {
+    let id = 1;
+    const generateId = () => {
+      return id++;
+    };
+
     const allDebtPositions: DebtPositionTableRow[] = [];
 
     // Filter out null debt positions
@@ -37,36 +42,49 @@ export async function getUserDebtPositions(address: Address) {
         switch (result.protocol) {
           case Protocol.AaveV3:
             allDebtPositions.push(
-              ...convertAaveOrSparkDebtPositions(result as UserDebtDetails)
+              ...convertAaveOrSparkDebtPositions(
+                result as UserDebtDetails,
+                generateId
+              )
             );
             break;
           case Protocol.Spark:
             allDebtPositions.push(
-              ...convertAaveOrSparkDebtPositions(result as UserDebtDetails)
+              ...convertAaveOrSparkDebtPositions(
+                result as UserDebtDetails,
+                generateId
+              )
             );
             break;
           case Protocol.CompoundV3:
             allDebtPositions.push(
               ...convertCompoundDebtPositions(
-                result as CompoundV3UserDebtDetails
+                result as CompoundV3UserDebtDetails,
+                generateId
               )
             );
             break;
           case Protocol.MorphoBlue:
             allDebtPositions.push(
-              ...convertMorphoDebtPositions(result as MorphoBlueUserDebtDetails)
+              ...convertMorphoDebtPositions(
+                result as MorphoBlueUserDebtDetails,
+                generateId
+              )
             );
             break;
         }
       }
     });
 
+    console.dir(allDebtPositions, { depth: null });
+
     return allDebtPositions;
   });
 }
 
 function convertAaveOrSparkDebtPositions(
-  userDebtDetails: UserDebtDetails
+  userDebtDetails: UserDebtDetails,
+  generateId: () => number
 ): DebtPositionTableRow[] {
   const marketMap: Map<string, Market> = userDebtDetails.markets.reduce(
     (map, market) => {
@@ -82,15 +100,8 @@ function convertAaveOrSparkDebtPositions(
         debtPosition.debts[0].token.address.toLowerCase()
       )!;
 
-      const uniqueId =
-        userDebtDetails.protocol +
-        debtPosition.debts.map((debtToken) => debtToken.token.symbol).join("") +
-        debtPosition.collaterals
-          .map((collateral) => collateral.token.symbol)
-          .join("");
-
       return {
-        id: uniqueId,
+        id: generateId(),
         protocol: userDebtDetails.protocol,
         debtPosition: debtPosition,
         debtToken: debtPosition.debts.map((debt) => debt.token),
@@ -130,7 +141,8 @@ function convertAaveOrSparkDebtPositions(
 }
 
 function convertCompoundDebtPositions(
-  userDebtDetails: CompoundV3UserDebtDetails
+  userDebtDetails: CompoundV3UserDebtDetails,
+  generateId: () => number
 ): DebtPositionTableRow[] {
   const debtMarketsMap: Map<string, CompoundV3Market> =
     userDebtDetails.markets.reduce((map, market) => {
@@ -142,15 +154,9 @@ function convertCompoundDebtPositions(
     const debtMarket = debtMarketsMap.get(
       debtPosition.debt.token.address.toLowerCase()
     )!;
-    const uniqueId =
-      userDebtDetails.protocol +
-      debtPosition.debt.token.symbol +
-      debtPosition.collaterals
-        .map((collateral) => collateral.token.symbol)
-        .join("");
 
     const data = {
-      id: uniqueId,
+      id: generateId(),
       protocol: userDebtDetails.protocol,
       debtPosition: debtPosition,
       debtToken: [debtPosition.debt.token],
@@ -178,7 +184,8 @@ function convertCompoundDebtPositions(
 }
 
 function convertMorphoDebtPositions(
-  userDebtDetails: MorphoBlueUserDebtDetails
+  userDebtDetails: MorphoBlueUserDebtDetails,
+  generateId: () => number
 ): DebtPositionTableRow[] {
   const debtMarketsMap: Map<string, MorphoBlueMarket> =
     userDebtDetails.markets.reduce((map, market) => {
@@ -188,13 +195,9 @@ function convertMorphoDebtPositions(
 
   return userDebtDetails.debtPositions.map((debtPosition) => {
     const debtMarket = debtMarketsMap.get(debtPosition.marketId)!;
-    const uniqueId =
-      userDebtDetails.protocol +
-      debtPosition.debt.token.symbol +
-      debtPosition.collateral.token.symbol;
 
     const data = {
-      id: uniqueId,
+      id: generateId(),
       protocol: userDebtDetails.protocol,
       debtPosition: debtPosition,
       debtToken: [debtPosition.debt.token],
