@@ -34,15 +34,6 @@ const DebtSelect = ({
     .filter((option) => option.stable)
     .map((option) => option?.token?.symbol);
 
-  const displayValueOfDebt =
-    currentList?.length === optionsList?.length
-      ? "All Tokens"
-      : currentList?.length > 0
-      ? currentList?.length < 3 ? currentList
-          .map((selectedDebt) => selectedDebt?.token?.symbol)
-          .join(", ") : `${currentList?.length} tokens selected`
-      : "Select token";
-
   const handleOptionClick = (selectedDebt: TokenDetail) => {
     const findIndexOfSelectedDebt = currentList?.findIndex(
       (item) => item?.token?.symbol === selectedDebt.token?.symbol
@@ -80,6 +71,17 @@ const DebtSelect = ({
   const isStableTokenSelected = () =>
     currentList?.filter((item) => stableCoinList.includes(item.token?.symbol))
       ?.length === stableCoinList?.length;
+
+  const displayValueOfDebt =
+    currentList?.length === optionsList?.length
+      ? "All Tokens"
+      : currentList?.length > 0
+      ? currentList?.length < 3
+        ? currentList
+            .map((selectedDebt) => selectedDebt?.token?.symbol)
+            .join(", ")
+        : `${currentList?.length} tokens selected`
+      : "Select token";
 
   return (
     <div className="relative mr-4 sm:mx-4 cursor-pointer">
