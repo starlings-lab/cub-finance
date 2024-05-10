@@ -486,8 +486,17 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
               </div>
             }
             content={
-              <div className="text-sm text-slate-800">
-                {"Trailing 30 days Net Borrowing APY"}
+              <div>
+                <div className="text-sm text-slate-800">
+                  {
+                    "Trailing 30 days Net Borrowing APY = (Lending Interest - Borrowing Interest) / Debt Amount"
+                  }
+                </div>
+                <div className="text-sm text-slate-800">
+                  {
+                    "Positive value means user will earn interest and negative value means user will pay interest."
+                  }
+                </div>
               </div>
             }
           />
@@ -526,7 +535,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
             }
             content={
               <div className="text-sm text-slate-800">
-                {"Trailing 30 days Borrowing APY"}
+                {"Trailing 30 days Borrowing APY You Pay For Your Debt"}
               </div>
             }
           />
@@ -563,7 +572,9 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
             }
             content={
               <div className="text-sm text-slate-800">
-                {"Trailing 30 days Collateral APY"}
+                {
+                  "Trailing 30 Days Collateral APY For Collateral, Weighted Avg In Case of Multiple Collaterals"
+                }
               </div>
             }
           />
@@ -592,8 +603,10 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
             }
             content={
               <div className="text-sm text-slate-800">
-                {"Trailing 30 days Reward APY"}
-              </div>
+              {
+                "Trailing 30 Days Reward APY For Reward, Weighted Avg In Case of Multiple Reward"
+              }
+            </div>
             }
           />
           <SortIcon row={row} />
@@ -733,8 +746,17 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
             </div>
           }
           content={
-            <div className="text-sm text-slate-800">
-              {"Trailing 30 days Net Borrowing APY"}
+            <div>
+              <div className="text-sm text-slate-800">
+                {
+                  "Trailing 30 days Net Borrowing APY = (Lending Interest - Borrowing Interest) / Debt Amount"
+                }
+              </div>
+              <div className="text-sm text-slate-800">
+                {
+                  "Positive value means user will earn interest and negative value means user will pay interest."
+                }
+              </div>
             </div>
           }
         />
@@ -771,7 +793,7 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
           }
           content={
             <div className="text-sm text-slate-800">
-              {"Trailing 30 days Borrowing APY"}
+              {"Trailing 30 days Borrowing APY You Pay For Your Debt"}
             </div>
           }
         />
@@ -808,7 +830,9 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
           }
           content={
             <div className="text-sm text-slate-800">
-              {"Trailing 30 days Collateral APY"}
+              {
+                "Trailing 30 Days Collateral APY For Collateral, Weighted Avg In Case of Multiple Collaterals"
+              }
             </div>
           }
         />
@@ -837,7 +861,9 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
           }
           content={
             <div className="text-sm text-slate-800">
-              {"Trailing 30 days Reward APY"}
+              {
+                "Trailing 30 Days Reward APY For Reward, Weighted Avg In Case of Multiple Reward"
+              }
             </div>
           }
         />
