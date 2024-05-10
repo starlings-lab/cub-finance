@@ -97,7 +97,7 @@ export function DataTable<TData, TValue>({
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow
               key={headerGroup.id}
-              className="!rounded-md border bg-tbHeader hover:bg-white"
+              className="!rounded-md border bg-tbHeader hover:bg-tbHeader"
             >
               {headerGroup.headers.map((header) => {
                 const isSortable = header.column.getCanSort();
@@ -199,9 +199,7 @@ export function DataTable<TData, TValue>({
               </TableCell>
             </TableRow>
           )}
-        </TableBody>
-
-        <Suspense
+          <Suspense
           fallback={
             <TableRow className="hover:bg-white">
               <TableCell
@@ -215,6 +213,7 @@ export function DataTable<TData, TValue>({
         >
           <RecommendationsWrapper />
         </Suspense>
+        </TableBody>
       </Table>
     </div>
   );

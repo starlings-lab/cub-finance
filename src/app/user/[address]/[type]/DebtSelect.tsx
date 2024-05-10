@@ -12,9 +12,9 @@ const TickIconBox = () => (
       aria-hidden="true"
     >
       <path
-        fill-rule="evenodd"
+        fillRule="evenodd"
         d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-        clip-rule="evenodd"
+        clipRule="evenodd"
       />
     </svg>
   </span>
@@ -103,8 +103,8 @@ const DebtSelect = ({
               aria-hidden="true"
             >
               <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
+                fillRule="evenodd"
+                clipRule="evenodd"
                 d="M17.5 17.5L12 9.25L6.5 17.5L5 16.5L12 6L19 16.5L17.5 17.5Z"
                 fill="black"
               />
@@ -117,8 +117,8 @@ const DebtSelect = ({
               aria-hidden="true"
             >
               <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
+                fillRule="evenodd"
+                clipRule="evenodd"
                 d="M6.50024 6.5L12.0002 14.75L17.5002 6.5L19.0002 7.5L12.0002 18L5.00024 7.5L6.50024 6.5Z"
                 fill="black"
               />

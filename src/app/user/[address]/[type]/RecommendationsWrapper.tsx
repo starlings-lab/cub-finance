@@ -132,7 +132,7 @@ const RecommendationsWrapper = () => {
           </TableRow>
         ))
       ) : (
-        <TableRow className="rounded border hover:bg-white">
+        <TableRow className="!rounded !border hover:bg-white">
           <TableCell
             colSpan={recommendedTableColumns.length}
             className="h-16 text-left sm:text-center"
