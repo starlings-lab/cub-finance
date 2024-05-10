@@ -146,10 +146,12 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                   if (!errorCheck) {
                     router.push(`/user/${address}/${activeRoute}`);
                   } else {
-                    toast({
-                      title: "Enter a valid address",
-                      variant: "destructive"
-                    });
+                    if(!isLoading){
+                      toast({
+                        title: "Enter a valid address",
+                        variant: "destructive"
+                      });
+                    }
                   }
                 }
               }}
