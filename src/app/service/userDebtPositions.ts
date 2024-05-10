@@ -76,8 +76,6 @@ export async function getUserDebtPositions(address: Address) {
       }
     });
 
-    console.dir(allDebtPositions, { depth: null });
-
     return allDebtPositions;
   });
 }
