@@ -10,8 +10,9 @@ import {
   trailing30DaysLendingAPYColumnId,
   trailing30DaysNetBorrowingAPYColumnId
 } from "./debtTableColumns";
-import { DebtPositionTableRow } from "@/app/type/type";
+import { DebtPositionTableRow, RecommendedDebtDetailTableRow } from "@/app/type/type";
 import { ColumnSort } from "@tanstack/react-table";
+import { getUserDebtPositionsHavingRefinanceOptions } from "../getUserDebtPositionsHavingRefinanceOptions";
 
 // Sort debts by ascending order of trailing30DaysNetBorrowingAPY and descending order of totalDebtAmountInUSD
 const initialSortedColumns: ColumnSort[] = [
@@ -45,6 +46,10 @@ const DebtTableWrapper = async ({ userAddress }: { userAddress: string }) => {
   const allDebtPositions: DebtPositionTableRow[] = await getUserDebtPositions(
     userAddress as Address
   );
+
+  const debtPositionsRefinanceOptions: Record<string, RecommendedDebtDetailTableRow[]> =
+    await getUserDebtPositionsHavingRefinanceOptions(allDebtPositions);
+
   console.log(
     `Time taken to fetch debt positions: ${
       Date.now() - startTime
@@ -57,6 +62,7 @@ const DebtTableWrapper = async ({ userAddress }: { userAddress: string }) => {
         columns={debtTableColumns}
         data={allDebtPositions}
         initialSortedColumns={initialSortedColumns}
+        debtPositionsRefinanceOptions={debtPositionsRefinanceOptions}
       />
     </div>
   );

@@ -49,16 +49,13 @@ const initialSortedColumns: ColumnSort[] = [
   }
 ];
 
-const RecommendationsWrapper = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [recommendations, setRecommendations] = useState<
-    RecommendedDebtDetailTableRow[]
-  >([]);
-
-  const state = useContext(StoreContext);
-
+const RecommendationsWrapper = ({
+  activeRecommendation
+}: {
+  activeRecommendation: RecommendedDebtDetailTableRow[];
+}) => {
   const recommendationTable = useReactTable({
-    data: recommendations,
+    data: activeRecommendation,
     columns: recommendedTableColumns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(), //provide a sorting row model
@@ -66,33 +63,6 @@ const RecommendationsWrapper = () => {
       sorting: initialSortedColumns
     }
   });
-
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      setIsLoading(true);
-
-      const startTime = Date.now();
-      const data = await getRefinanceRecommendations(
-        state!.activeDebtPosition?.protocol!,
-        state!.activeDebtPosition?.debtPosition!
-      );
-      console.log(
-        `Time taken to fetch refinance recommendations: ${
-          Date.now() - startTime
-        } ms`
-      );
-
-      setRecommendations(data ?? []);
-      setIsLoading(false);
-    };
-    if (state?.activeDebtPosition) {
-      fetchRecommendations();
-    }
-  }, [state]);
-
-  if (!state?.activeDebtPosition) {
-    return;
-  }
 
   return (
     <Fragment>
@@ -106,16 +76,7 @@ const RecommendationsWrapper = () => {
           </div>
         </TableCell>
       </TableRow>
-      {isLoading ? (
-        <TableRow className="hover:bg-white !border-b-0">
-          <TableCell
-            colSpan={recommendedTableColumns.length}
-            className="h-16 w-max p-0 pb-4 font-lg"
-          >
-            <Loading showHeader={false} />
-          </TableCell>
-        </TableRow>
-      ) : recommendationTable.getRowModel().rows?.length ? (
+      {recommendationTable.getRowModel().rows?.length ? (
         recommendationTable.getRowModel().rows.map((row) => (
           <TableRow
             key={row.id}

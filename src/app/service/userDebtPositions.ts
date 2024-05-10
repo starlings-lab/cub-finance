@@ -1,4 +1,4 @@
-'use server'
+"use server";
 
 import { Address } from "abitype";
 import { getUserDebtDetails as getAaveDebtDetails } from "@/app/service/aaveV3Service";
@@ -81,7 +81,16 @@ function convertAaveOrSparkDebtPositions(
       const debtMarket = marketMap.get(
         debtPosition.debts[0].token.address.toLowerCase()
       )!;
+
+      const uniqueId =
+        userDebtDetails.protocol +
+        debtPosition.debts.map((debtToken) => debtToken.token.symbol).join("") +
+        debtPosition.collaterals
+          .map((collateral) => collateral.token.symbol)
+          .join("");
+
       return {
+        id: uniqueId,
         protocol: userDebtDetails.protocol,
         debtPosition: debtPosition,
         debtToken: debtPosition.debts.map((debt) => debt.token),
@@ -133,7 +142,15 @@ function convertCompoundDebtPositions(
     const debtMarket = debtMarketsMap.get(
       debtPosition.debt.token.address.toLowerCase()
     )!;
+    const uniqueId =
+      userDebtDetails.protocol +
+      debtPosition.debt.token.symbol +
+      debtPosition.collaterals
+        .map((collateral) => collateral.token.symbol)
+        .join("");
+
     const data = {
+      id: uniqueId,
       protocol: userDebtDetails.protocol,
       debtPosition: debtPosition,
       debtToken: [debtPosition.debt.token],
@@ -171,7 +188,13 @@ function convertMorphoDebtPositions(
 
   return userDebtDetails.debtPositions.map((debtPosition) => {
     const debtMarket = debtMarketsMap.get(debtPosition.marketId)!;
+    const uniqueId =
+      userDebtDetails.protocol +
+      debtPosition.debt.token.symbol +
+      debtPosition.collateral.token.symbol;
+
     const data = {
+      id: uniqueId,
       protocol: userDebtDetails.protocol,
       debtPosition: debtPosition,
       debtToken: [debtPosition.debt.token],

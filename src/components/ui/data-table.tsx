@@ -20,27 +20,35 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { Fragment, Suspense, useContext, useEffect, useState } from "react";
-import { StoreContext } from "@/app/user/[address]/[type]/context";
+import { Fragment, Suspense, useEffect, useState } from "react";
 import Image from "next/image";
 import Loading from "@/app/user/[address]/[type]/loadingTable";
 import RecommendationsWrapper from "@/app/user/[address]/[type]/RecommendationsWrapper";
+import { RecommendedDebtDetailTableRow } from "@/app/type/type";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   initialSortedColumns: ColumnSort[];
+  debtPositionsRefinanceOptions: Record<
+    string,
+    RecommendedDebtDetailTableRow[]
+  >;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  initialSortedColumns
+  initialSortedColumns,
+  debtPositionsRefinanceOptions
 }: DataTableProps<TData, TValue>) {
-  const state = useContext(StoreContext);
   const [expanded, setExpanded] = useState<ExpandedState>({
     0: false
   });
+
+  const [activeRecommendations, setActiveRecommendations] = useState<
+    RecommendedDebtDetailTableRow[]
+  >([]);
 
   const [showFullDebtTable, setShowFullDebtTable] = useState(true);
   const [rowSelection, setRowSelected] = useState<RowSelectionState>({
@@ -67,24 +75,54 @@ export function DataTable<TData, TValue>({
   });
 
   useEffect(() => {
-    if (data?.length > 0) {
+    if (data?.length > 0 && debtPositionsRefinanceOptions) {
       const allRows = table.getRowModel().rows;
-      const rowOne = allRows[0];
-      if (rowOne.subRows.length > 0) {
+      const checkIfWeHaveAaveAggregatedPosition = allRows.find(
+        (row) => row?.subRows?.length > 0
+      );
+      if (checkIfWeHaveAaveAggregatedPosition) {
         setExpanded({
           0: true
         });
-        const firstSubRow = allRows[0].subRows[0];
-        if (!firstSubRow.getIsSelected()) {
-          firstSubRow.toggleSelected();
+        const checkIfAggregatedPositionHasRefinanceOptions =
+          checkIfWeHaveAaveAggregatedPosition.subRows.find(
+            (row) => debtPositionsRefinanceOptions[row.original?.id]?.length > 0
+          );
+        const positionIfThereIsNoOptionHavingRefinanceOptions =
+          checkIfAggregatedPositionHasRefinanceOptions ?? allRows[0].subRows[0];
+
+        if (
+          !positionIfThereIsNoOptionHavingRefinanceOptions!?.getIsSelected()
+        ) {
+          positionIfThereIsNoOptionHavingRefinanceOptions!?.toggleSelected();
         }
-        state?.setActiveDebtPosition(firstSubRow.original);
+        setActiveRecommendations(
+          checkIfAggregatedPositionHasRefinanceOptions!?.original?.id
+            ? debtPositionsRefinanceOptions[
+                checkIfAggregatedPositionHasRefinanceOptions!?.original?.id
+              ]
+            : []
+        );
       } else {
-        rowOne.toggleSelected();
-        state?.setActiveDebtPosition(rowOne.original);
+        const checkIfOtherPositionHasRefinanceOptions = allRows.find(
+          (row) => debtPositionsRefinanceOptions[row.original?.id]?.length > 0
+        );
+
+        const positionIfThereIsNoOptionHavingRefinanceOptions =
+          checkIfOtherPositionHasRefinanceOptions ?? allRows[0];
+
+        positionIfThereIsNoOptionHavingRefinanceOptions?.toggleSelected();
+
+        setActiveRecommendations(
+          checkIfOtherPositionHasRefinanceOptions!?.original?.id
+            ? debtPositionsRefinanceOptions[
+                checkIfOtherPositionHasRefinanceOptions!?.original?.id
+              ]
+            : []
+        );
       }
     }
-  }, [data]);
+  }, [data, debtPositionsRefinanceOptions]);
 
   const finalTable = showFullDebtTable
     ? table.getRowModel()
@@ -160,13 +198,21 @@ export function DataTable<TData, TValue>({
                       });
                       if (!row.getCanExpand() && !row.getIsSelected()) {
                         row.toggleSelected();
-                        state?.setActiveDebtPosition(row.original);
+                        setActiveRecommendations(
+                          row!?.original?.id
+                            ? debtPositionsRefinanceOptions[row!?.original?.id]
+                            : []
+                        );
                       }
                     }
                     if (row?.depth === 1) {
                       if (!row.getIsSelected()) {
                         row.toggleSelected();
-                        state?.setActiveDebtPosition(row.original);
+                        setActiveRecommendations(
+                          row!?.original?.id
+                            ? debtPositionsRefinanceOptions[row!?.original?.id]
+                            : []
+                        );
                       }
                     }
                   }}
@@ -200,19 +246,21 @@ export function DataTable<TData, TValue>({
             </TableRow>
           )}
           <Suspense
-          fallback={
-            <TableRow className="hover:bg-white">
-              <TableCell
-                colSpan={columns.length}
-                className="h-16 w-max p-0 pb-4 pt-2 font-lg"
-              >
-                <Loading />
-              </TableCell>
-            </TableRow>
-          }
-        >
-          <RecommendationsWrapper />
-        </Suspense>
+            fallback={
+              <TableRow className="hover:bg-white">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-16 w-max p-0 pb-4 pt-2 font-lg"
+                >
+                  <Loading />
+                </TableCell>
+              </TableRow>
+            }
+          >
+            <RecommendationsWrapper
+              activeRecommendation={activeRecommendations}
+            />
+          </Suspense>
         </TableBody>
       </Table>
     </div>
