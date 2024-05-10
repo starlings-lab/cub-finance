@@ -16,10 +16,8 @@ import { getBorrowRecommendations as getMorphoBorrowRecommendations } from "./mo
 
 /**
  * Provides borrow recommendations by aggregating all borrow recommendations from supported protocols
- * @param existingProtocol
- * @param debtPosition
- * @param maxLTVTolerance
- * @param borrowingAPYTolerance
+ * @param debtTokens
+ * @param collaterals
  * @returns
  */
 export async function getBorrowRecommendations(

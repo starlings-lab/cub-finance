@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "src/app/service/*.ts": {
+      "maxDuration": 25
+    }
+  }
+}
