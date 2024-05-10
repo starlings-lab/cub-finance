@@ -107,9 +107,9 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
                 <path
                   fill="none"
                   stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
                   d="m7 10l5 5m0 0l5-5"
                 />
               </svg>
@@ -123,9 +123,9 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
                 <path
                   fill="none"
                   stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
                   d="m10 17l5-5m0 0l-5-5"
                 />
               </svg>
