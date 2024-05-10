@@ -77,6 +77,13 @@ const config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      maxWidth: {
+        '1/4': '25%',
+        '1/2': '50%',
+        '3/4': '75%',
+        '4/5': '80%',
+        '9/10': '90%'
+      },
       minHeight: {
         excludeHeader: 'calc(var(--full-height) - 4rem)'
       },

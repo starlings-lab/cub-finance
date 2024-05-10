@@ -47,6 +47,9 @@ const TableRowWrapper = () => {
       <TableCell>
         <div className="h-3 w-10 bg-gray-300 rounded" />
       </TableCell>
+      <TableCell>
+        <div className="h-3 w-10 bg-gray-300 rounded" />
+      </TableCell>
     </TableRow>
   );
 };
@@ -54,7 +57,7 @@ const TableRowWrapper = () => {
 export default function Loading({showHeader = true} : {showHeader?: boolean}) {
   // You can add any UI inside Loading, including a Skeleton.
   return (
-    <div className="max-w-screen-xl mx-auto pb-4">
+    <div className="w-full mx-auto pb-4">
       <div className="rounded-md border bg-white">
         <Table>
           {showHeader && <TableHeader>

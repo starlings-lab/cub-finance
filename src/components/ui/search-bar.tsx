@@ -220,8 +220,8 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             ></Input>
           </div>
           <div
-            className={`flex items-center text-gray-500 text-sm pl-3 ${
-              isLoading ? "visible" : "invisible"
+            className={`items-center text-gray-500 text-sm pl-3 ${
+              isLoading ? "visible flex" : "invisible hidden"
             }`}
           >
             <Spinner />

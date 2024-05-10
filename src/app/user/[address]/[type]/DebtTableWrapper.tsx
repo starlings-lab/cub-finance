@@ -57,7 +57,7 @@ const DebtTableWrapper = async ({ userAddress }: { userAddress: string }) => {
   );
 
   return (
-    <div className="max-w-screen-xl mx-auto py-8">
+    <div className="w-full mx-auto py-8">
       <DataTable
         columns={debtTableColumns}
         data={allDebtPositions}

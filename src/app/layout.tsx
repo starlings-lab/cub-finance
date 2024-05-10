@@ -33,7 +33,7 @@ export default function RootLayout({
           <Navbar />
         </Suspense>
         <main className="bg-hero-pattern">
-          <div className="flex min-h-screen max-w-screen-xl mx-auto flex-col px-4">
+          <div className="flex min-h-screen max-w-screen-xl sm:max-w-4/5 mx-auto flex-col px-4">
             {children}
           </div>
         </main>

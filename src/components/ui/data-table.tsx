@@ -145,7 +145,6 @@ export function DataTable<TData, TValue>({
     : table.getSelectedRowModel();
 
   return (
-    <div>
       <Table>
         <TableHeader className="bg-white">
           {table.getHeaderGroups().map((headerGroup) => (
@@ -279,6 +278,5 @@ export function DataTable<TData, TValue>({
           </Suspense>
         </TableBody>
       </Table>
-    </div>
   );
 }
