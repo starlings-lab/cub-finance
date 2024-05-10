@@ -11,6 +11,10 @@ import DebtTableWrapper from "./DebtTableWrapper";
 import BorrowOptionsWrapper from "./BorrowOptionsWrapper";
 import { ROUTE_BORROW } from "@/app/constants";
 
+// increased max duration to 25 seconds
+// see: https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#maxduration
+export const maxDuration = 25;
+
 export default async function DebtPage({
   params
 }: {
