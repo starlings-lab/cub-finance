@@ -4,6 +4,7 @@ import {
   ColumnDef,
   ColumnSort,
   ExpandedState,
+  Row,
   RowSelectionState,
   flexRender,
   getCoreRowModel,
@@ -88,8 +89,23 @@ export function DataTable<TData, TValue>({
           checkIfWeHaveAaveAggregatedPosition.subRows.find(
             (row) => debtPositionsRefinanceOptions[row.original?.id]?.length > 0
           );
-        const positionIfThereIsNoOptionHavingRefinanceOptions =
-          checkIfAggregatedPositionHasRefinanceOptions ?? allRows[0].subRows[0];
+
+        let positionIfThereIsNoOptionHavingRefinanceOptions: Row<any>;
+
+        if (!checkIfAggregatedPositionHasRefinanceOptions) {
+          const otherRows = allRows?.filter((row) => !(row.subRows?.length > 0));
+
+          const checkIfOtherPositionHasRefinanceOptions = otherRows.find(
+            (row) => debtPositionsRefinanceOptions[row.original?.id]?.length > 0
+          );
+
+          positionIfThereIsNoOptionHavingRefinanceOptions =
+            checkIfOtherPositionHasRefinanceOptions ?? allRows[0].subRows[0];
+
+        } else {
+          positionIfThereIsNoOptionHavingRefinanceOptions =
+            checkIfAggregatedPositionHasRefinanceOptions;
+        }
 
         if (
           !positionIfThereIsNoOptionHavingRefinanceOptions!?.getIsSelected()
@@ -97,9 +113,9 @@ export function DataTable<TData, TValue>({
           positionIfThereIsNoOptionHavingRefinanceOptions!?.toggleSelected();
         }
         setActiveRecommendations(
-          checkIfAggregatedPositionHasRefinanceOptions!?.original?.id
+          positionIfThereIsNoOptionHavingRefinanceOptions!?.original?.id
             ? debtPositionsRefinanceOptions[
-                checkIfAggregatedPositionHasRefinanceOptions!?.original?.id
+              positionIfThereIsNoOptionHavingRefinanceOptions!?.original?.id
               ]
             : []
         );
