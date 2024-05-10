@@ -146,10 +146,12 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                   if (!errorCheck) {
                     router.push(`/user/${address}/${activeRoute}`);
                   } else {
-                    toast({
-                      title: "Enter a valid address",
-                      variant: "destructive"
-                    });
+                    if(!isLoading){
+                      toast({
+                        title: "Enter a valid address",
+                        variant: "destructive"
+                      });
+                    }
                   }
                 }
               }}
@@ -218,8 +220,8 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             ></Input>
           </div>
           <div
-            className={`flex items-center text-gray-500 text-sm pl-3 ${
-              isLoading ? "visible" : "invisible"
+            className={`items-center text-gray-500 text-sm pl-3 ${
+              isLoading ? "visible flex" : "invisible hidden"
             }`}
           >
             <Spinner />
@@ -233,7 +235,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             }`}
           >
             <Spinner />
-            <span className="ml-2">Fetching positions</span>
+            <span className="ml-2">Scanning address</span>
           </div>
           <div
             className={`text-red-500 text-sm pl-3 pt-1 ${

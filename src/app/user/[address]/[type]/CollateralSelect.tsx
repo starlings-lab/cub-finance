@@ -7,13 +7,18 @@ import React, { useState } from "react";
 const CollateralSelect = ({
   optionsList,
   currentList,
+  activeDropDown,
+  setActiveDropDown,
   setCurrentList
 }: {
   optionsList: TokenAmount[];
   currentList: TokenAmount[];
+  activeDropDown: boolean;
+  setActiveDropDown: React.Dispatch<
+    React.SetStateAction<"debt" | "collateral" | "">
+  >;
   setCurrentList: React.Dispatch<React.SetStateAction<TokenAmount[]>>;
 }) => {
-  const [showOptions, setShowOptions] = useState(false);
   const displayValueOfCollateral =
     currentList?.length === optionsList?.length
       ? "All Collaterals"
@@ -51,12 +56,12 @@ const CollateralSelect = ({
         aria-expanded="false"
         aria-labelledby="listbox-label"
         onClick={() => {
-          setShowOptions(!showOptions);
+          setActiveDropDown(activeDropDown ? "" : "collateral");
         }}
       >
         <span className="truncate">{displayValueOfCollateral}</span>
         <span className="pointer-events-none right-0 ml-3 flex items-center">
-          {showOptions ? (
+          {activeDropDown ? (
             <svg
               className="h-5 w-5 text-gray-400"
               viewBox="0 0 20 20"
@@ -64,8 +69,8 @@ const CollateralSelect = ({
               aria-hidden="true"
             >
               <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
+                fillRule="evenodd"
+                clipRule="evenodd"
                 d="M17.5 17.5L12 9.25L6.5 17.5L5 16.5L12 6L19 16.5L17.5 17.5Z"
                 fill="black"
               />
@@ -78,8 +83,8 @@ const CollateralSelect = ({
               aria-hidden="true"
             >
               <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
+                fillRule="evenodd"
+                clipRule="evenodd"
                 d="M6.50024 6.5L12.0002 14.75L17.5002 6.5L19.0002 7.5L12.0002 18L5.00024 7.5L6.50024 6.5Z"
                 fill="black"
               />
@@ -88,7 +93,7 @@ const CollateralSelect = ({
         </span>
       </button>
 
-      {showOptions && (
+      {activeDropDown && (
         <ul
           className="absolute z-10 mt-1 max-h-56 min-w-36 sm:min-w-56 overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
           tabIndex={-1}
@@ -121,9 +126,9 @@ const CollateralSelect = ({
                   aria-hidden="true"
                 >
                   <path
-                    fill-rule="evenodd"
+                    fillRule="evenodd"
                     d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                    clip-rule="evenodd"
+                    clipRule="evenodd"
                   />
                 </svg>
               </span>
@@ -164,9 +169,9 @@ const CollateralSelect = ({
                     aria-hidden="true"
                   >
                     <path
-                      fill-rule="evenodd"
+                      fillRule="evenodd"
                       d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                      clip-rule="evenodd"
+                      clipRule="evenodd"
                     />
                   </svg>
                 </span>

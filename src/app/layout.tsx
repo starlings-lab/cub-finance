@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import favicon from "/public/favicon2.ico";
-import Head from "next/head";
 
 import "./globals.css";
 import Navbar from "./navbar";
@@ -15,7 +14,8 @@ dotenv.config();
 
 export const metadata: Metadata = {
   title: "Cub Finance",
-  description: "Borrowing Simplified."
+  description: "Borrowing Simplified.",
+  icons: [{rel: 'icon', url: favicon.src}]
 };
 
 export default function RootLayout({
@@ -25,9 +25,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <Head>
-        <link rel="icon" href={favicon.src} />
-      </Head>
       <body
         className={`${notoSerif.className} ${notoSerif.variable} ${hkGrotesk.className} ${hkGrotesk.variable}`}
       >
@@ -36,7 +33,7 @@ export default function RootLayout({
           <Navbar />
         </Suspense>
         <main className="bg-hero-pattern">
-          <div className="flex min-h-screen max-w-screen-xl mx-auto flex-col px-4">
+          <div className="flex min-h-screen max-w-screen-xl sm:max-w-4/5 mx-auto flex-col px-4">
             {children}
           </div>
         </main>

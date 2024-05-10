@@ -15,21 +15,25 @@ import DebtSelect from "./DebtSelect";
 
 const BorrowRecommendationsWrapper = ({
   columns,
-  debtPositions,
   collaterals,
   supportedDebtTokens,
   initialSortedColumns
 }: {
   columns: ColumnDef<BorrowRecommendationTableRow>[];
-  debtPositions: DebtPositionTableRow[];
   supportedDebtTokens: TokenDetail[];
   collaterals: TokenAmount[];
   initialSortedColumns: ColumnSort[];
 }) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [activeDropDown, setActiveDropDown] = useState<
+    "debt" | "collateral" | ""
+  >("");
   const [borrowRecommendations, setBorrowRecommendations] = useState<
     BorrowRecommendationTableRow[]
   >([]);
+
+  const [filteredBorrowRecommendations, setFilteredBorrowRecommendations] =
+    useState<BorrowRecommendationTableRow[]>([]);
 
   const [selectedDebtTokens, setSelectedDebtTokens] =
     useState<TokenDetail[]>(supportedDebtTokens);
@@ -42,9 +46,20 @@ const BorrowRecommendationsWrapper = ({
   }, [collaterals, supportedDebtTokens]);
 
   useEffect(() => {
+    const debtTokenSymbolsMap = selectedDebtTokens.map(
+      (selectedDebtToken) => selectedDebtToken.token.symbol
+    );
+    const filterBorrowRecommendations = borrowRecommendations?.filter(
+      (borrowRecommendation) =>
+        debtTokenSymbolsMap.includes(borrowRecommendation.debtToken.symbol)
+    );
+    setFilteredBorrowRecommendations(filterBorrowRecommendations);
+  }, [selectedDebtTokens, borrowRecommendations]);
+
+  useEffect(() => {
     const fetchBorrowRecommendations = async () => {
       setIsLoading(true);
-      const debtTokens = selectedDebtTokens?.map(
+      const debtTokens = supportedDebtTokens?.map(
         (debtToken) => debtToken.token
       );
 
@@ -68,22 +83,27 @@ const BorrowRecommendationsWrapper = ({
       );
 
       setBorrowRecommendations(borrowRecommendations);
+      setFilteredBorrowRecommendations(borrowRecommendations);
       setIsLoading(false);
     };
     fetchBorrowRecommendations();
-  }, [selectedDebtTokens, selectedCollaterals]);
+  }, [selectedCollaterals, supportedDebtTokens]);
 
   return (
     <div>
       <div className="hidden sm:flex items-center mb-8 mx-auto justify-center">
         <div>I want to borrow</div>
         <DebtSelect
+          activeDropDown={activeDropDown === "debt"}
+          setActiveDropDown={setActiveDropDown}
           optionsList={supportedDebtTokens}
           currentList={selectedDebtTokens}
           setCurrentList={setSelectedDebtTokens}
         />
         <div>against</div>
         <CollateralSelect
+          activeDropDown={activeDropDown === "collateral"}
+          setActiveDropDown={setActiveDropDown}
           optionsList={collaterals}
           currentList={selectedCollaterals}
           setCurrentList={setSelectedCollaterals}
@@ -93,12 +113,16 @@ const BorrowRecommendationsWrapper = ({
         <div>I want to borrow</div>
         <div className="flex items-center justify-center mt-4">
           <DebtSelect
+            activeDropDown={activeDropDown === "debt"}
+            setActiveDropDown={setActiveDropDown}
             optionsList={supportedDebtTokens}
             currentList={selectedDebtTokens}
             setCurrentList={setSelectedDebtTokens}
           />
           <div>against</div>
           <CollateralSelect
+            activeDropDown={activeDropDown === "collateral"}
+            setActiveDropDown={setActiveDropDown}
             optionsList={collaterals}
             currentList={selectedCollaterals}
             setCurrentList={setSelectedCollaterals}
@@ -108,7 +132,7 @@ const BorrowRecommendationsWrapper = ({
       <BorrowRecommendations
         isLoading={isLoading}
         columns={columns}
-        borrowOptions={borrowRecommendations}
+        borrowOptions={filteredBorrowRecommendations}
         initialSortedColumns={initialSortedColumns}
       />
     </div>
