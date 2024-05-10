@@ -7,13 +7,18 @@ import React, { useState } from "react";
 const CollateralSelect = ({
   optionsList,
   currentList,
+  activeDropDown,
+  setActiveDropDown,
   setCurrentList
 }: {
   optionsList: TokenAmount[];
   currentList: TokenAmount[];
+  activeDropDown: boolean;
+  setActiveDropDown: React.Dispatch<
+    React.SetStateAction<"debt" | "collateral" | "">
+  >;
   setCurrentList: React.Dispatch<React.SetStateAction<TokenAmount[]>>;
 }) => {
-  const [showOptions, setShowOptions] = useState(false);
   const displayValueOfCollateral =
     currentList?.length === optionsList?.length
       ? "All Collaterals"
@@ -51,12 +56,12 @@ const CollateralSelect = ({
         aria-expanded="false"
         aria-labelledby="listbox-label"
         onClick={() => {
-          setShowOptions(!showOptions);
+          setActiveDropDown(activeDropDown ? "" : "collateral");
         }}
       >
         <span className="truncate">{displayValueOfCollateral}</span>
         <span className="pointer-events-none right-0 ml-3 flex items-center">
-          {showOptions ? (
+          {activeDropDown ? (
             <svg
               className="h-5 w-5 text-gray-400"
               viewBox="0 0 20 20"
@@ -88,7 +93,7 @@ const CollateralSelect = ({
         </span>
       </button>
 
-      {showOptions && (
+      {activeDropDown && (
         <ul
           className="absolute z-10 mt-1 max-h-56 min-w-36 sm:min-w-56 overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
           tabIndex={-1}

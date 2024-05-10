@@ -15,18 +15,19 @@ import DebtSelect from "./DebtSelect";
 
 const BorrowRecommendationsWrapper = ({
   columns,
-  debtPositions,
   collaterals,
   supportedDebtTokens,
   initialSortedColumns
 }: {
   columns: ColumnDef<BorrowRecommendationTableRow>[];
-  debtPositions: DebtPositionTableRow[];
   supportedDebtTokens: TokenDetail[];
   collaterals: TokenAmount[];
   initialSortedColumns: ColumnSort[];
 }) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [activeDropDown, setActiveDropDown] = useState<
+    "debt" | "collateral" | ""
+  >("");
   const [borrowRecommendations, setBorrowRecommendations] = useState<
     BorrowRecommendationTableRow[]
   >([]);
@@ -78,12 +79,16 @@ const BorrowRecommendationsWrapper = ({
       <div className="hidden sm:flex items-center mb-8 mx-auto justify-center">
         <div>I want to borrow</div>
         <DebtSelect
+          activeDropDown={activeDropDown === "debt"}
+          setActiveDropDown={setActiveDropDown}
           optionsList={supportedDebtTokens}
           currentList={selectedDebtTokens}
           setCurrentList={setSelectedDebtTokens}
         />
         <div>against</div>
         <CollateralSelect
+          activeDropDown={activeDropDown === "collateral"}
+          setActiveDropDown={setActiveDropDown}
           optionsList={collaterals}
           currentList={selectedCollaterals}
           setCurrentList={setSelectedCollaterals}
@@ -93,12 +98,16 @@ const BorrowRecommendationsWrapper = ({
         <div>I want to borrow</div>
         <div className="flex items-center justify-center mt-4">
           <DebtSelect
+            activeDropDown={activeDropDown === "debt"}
+            setActiveDropDown={setActiveDropDown}
             optionsList={supportedDebtTokens}
             currentList={selectedDebtTokens}
             setCurrentList={setSelectedDebtTokens}
           />
           <div>against</div>
           <CollateralSelect
+            activeDropDown={activeDropDown === "collateral"}
+            setActiveDropDown={setActiveDropDown}
             optionsList={collaterals}
             currentList={selectedCollaterals}
             setCurrentList={setSelectedCollaterals}
