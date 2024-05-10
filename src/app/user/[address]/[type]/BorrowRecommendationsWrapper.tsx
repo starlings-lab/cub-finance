@@ -32,6 +32,9 @@ const BorrowRecommendationsWrapper = ({
     BorrowRecommendationTableRow[]
   >([]);
 
+  const [filteredBorrowRecommendations, setFilteredBorrowRecommendations] =
+    useState<BorrowRecommendationTableRow[]>([]);
+
   const [selectedDebtTokens, setSelectedDebtTokens] =
     useState<TokenDetail[]>(supportedDebtTokens);
   const [selectedCollaterals, setSelectedCollaterals] =
@@ -43,9 +46,20 @@ const BorrowRecommendationsWrapper = ({
   }, [collaterals, supportedDebtTokens]);
 
   useEffect(() => {
+    const debtTokenSymbolsMap = selectedDebtTokens.map(
+      (selectedDebtToken) => selectedDebtToken.token.symbol
+    );
+    const filterBorrowRecommendations = borrowRecommendations?.filter(
+      (borrowRecommendation) =>
+        debtTokenSymbolsMap.includes(borrowRecommendation.debtToken.symbol)
+    );
+    setFilteredBorrowRecommendations(filterBorrowRecommendations);
+  }, [selectedDebtTokens, borrowRecommendations]);
+
+  useEffect(() => {
     const fetchBorrowRecommendations = async () => {
       setIsLoading(true);
-      const debtTokens = selectedDebtTokens?.map(
+      const debtTokens = supportedDebtTokens?.map(
         (debtToken) => debtToken.token
       );
 
@@ -69,10 +83,11 @@ const BorrowRecommendationsWrapper = ({
       );
 
       setBorrowRecommendations(borrowRecommendations);
+      setFilteredBorrowRecommendations(borrowRecommendations);
       setIsLoading(false);
     };
     fetchBorrowRecommendations();
-  }, [selectedDebtTokens, selectedCollaterals]);
+  }, [selectedCollaterals, supportedDebtTokens]);
 
   return (
     <div>
@@ -117,7 +132,7 @@ const BorrowRecommendationsWrapper = ({
       <BorrowRecommendations
         isLoading={isLoading}
         columns={columns}
-        borrowOptions={borrowRecommendations}
+        borrowOptions={filteredBorrowRecommendations}
         initialSortedColumns={initialSortedColumns}
       />
     </div>
