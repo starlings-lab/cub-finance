@@ -23,6 +23,7 @@ export interface TokenAmount {
 export interface DebtPositionTableRow {
   protocol: Protocol;
   debtToken: Token[];
+  collaterals: TokenAmount[];
   collateralTokens: Token[];
   totalDebtAmountInUSD: number;
   totalCollateralAmountInUSD: number;
@@ -31,6 +32,7 @@ export interface DebtPositionTableRow {
   trailing30DaysNetBorrowingAPY: number; // negative, 0 or positive
   trailing30DaysLendingAPY: number; // Lending apy of collateral. weighted average for multiple collateral positions.
   trailing30DaysBorrowingAPY: number; // Borrowing apy of debt token.
+  trailing30DaysRewardAPY: number;
   subRows?: DebtPositionTableRow[] | undefined;
   // Original debt position
   debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition;
@@ -59,6 +61,9 @@ export interface CompoundV3UserDebtDetails extends UserDebtDetailsBase {
 export interface DebtPositionBase {
   maxLTV: number;
   LTV: number; // debtAmountInUSD / sum of collateralAmountInUSD array
+  // ((lendingAPY * lendingAmount) - (borrowingAPY * (debtAmount)))/debAmount
+  // Positive value means user will earn interest and
+  // negative value means user will pay interest.
   trailing30DaysNetBorrowingAPY: number; // negative, 0 or positive
 }
 
@@ -66,6 +71,8 @@ export interface DebtPosition extends DebtPositionBase {
   debts: TokenAmount[]; // if debt count > 0, the debt position is an aggregate of multiple debt positions.
   collaterals: TokenAmount[];
   weightedAvgTrailing30DaysLendingAPY: number; // For multiple collateral positions, this is the weighted average = total interest/ total collateral.
+  // For multiple collateral positions, this is the weighted average reward APY = total lending reward / total collateral.
+  weightedAvgTrailing30DaysLendingRewardAPY: number;
 }
 
 export interface MorphoBlueDebtPosition extends DebtPositionBase {
@@ -81,6 +88,8 @@ export interface CompoundV3DebtPosition extends DebtPositionBase {
 
 export interface MarketBase {
   trailing30DaysBorrowingAPY: number; // >=0
+  trailing30DaysLendingRewardAPY: number;
+  trailing30DaysBorrowingRewardAPY: number;
 }
 
 export interface Market extends MarketBase {
@@ -108,10 +117,6 @@ export interface CompoundV3Market extends MarketBase {
 
 export interface RecommendedDebtDetailBase {
   protocol: Protocol;
-  // ((lendingAPY * lendingAmount) - (borrowingAPY * (debtAmount)))/debAmount
-  // Positive value means user will earn interest and
-  // negative value means user will pay interest.
-  trailing30DaysNetBorrowingAPY: number; // negative, 0 or positive
 }
 
 // Interface for Aave & Spark
@@ -143,4 +148,40 @@ export interface RecommendedDebtDetailTableRow {
   trailing30DaysNetBorrowingAPY: number; // negative, 0 or positive
   trailing30DaysLendingAPY: number; // Lending apy of collateral. weighted average for multiple collateral positions.
   trailing30DaysBorrowingAPY: number; // Borrowing apy of debt token.
+  trailing30DaysRewardAPY: number;
+}
+
+export interface APYInfo {
+  lendingAPY: number;
+  lendingRewardAPY: number;
+  borrowingAPY: number;
+  borrowingRewardAPY: number;
+}
+
+export interface APYProvider {
+  calculateTrailing30DaysBorrowingAndLendingAPYs(
+    tokenSymbol: string,
+    aTokenAddress: Address
+  ): Promise<APYInfo>;
+}
+
+export interface BorrowRecommendationTableRow {
+  protocol: Protocol;
+  debtToken: Token;
+  collateralTokens: Token[];
+  // negative, 0 or positive
+  trailing30DaysNetBorrowingAPY: number;
+  maxDebtAmountInUSD: number;
+  totalCollateralAmountInUSD: number;
+  // Borrowing apy of debt token.
+  trailing30DaysBorrowingAPY: number;
+  // Lending apy of collateral. weighted average for multiple collateral positions.
+  trailing30DaysLendingAPY: number;
+  trailing30DaysRewardAPY: number;
+  maxLTV: number;
+}
+
+export interface TokenDetail {
+  token: Token;
+  stable: boolean;
 }

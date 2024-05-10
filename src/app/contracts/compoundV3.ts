@@ -6,15 +6,13 @@ import {
   COMP,
   WBTC,
   WETH,
+  USDC,
   UNI,
   LINK,
   cbETH,
   wstETH,
   rETH
 } from "./ERC20Tokens";
-
-export const COMPOUND_V3_DEBT_POSITION_ADDRESS =
-  "0x9CF423E929d661a0fB25e4AEf05bEB1037298fFb";
 
 export const COMPOUND_V3_CUSDC_ADDRESS = `0x${"c3d688B66703497DAA19211EEdff47f25384cdc3"}`;
 export const COMPOUND_V3_CWETH_ADDRESS = `0x${"A17581A9E3356d9A858b789D68B4d866e593aE94"}`;
@@ -27,6 +25,13 @@ export const COMPOUND_V3_CUSDC_COLLATERALS: Token[] = [
   LINK
 ];
 export const COMPOUND_V3_CWETH_COLLATERALS: Token[] = [cbETH, wstETH, rETH];
+
+export const COMPOUND_V3_COLLATERALS: Token[] = [
+  ...COMPOUND_V3_CUSDC_COLLATERALS,
+  ...COMPOUND_V3_CWETH_COLLATERALS
+];
+
+export const COMPOUND_V3_DEBTS: Token[] = [USDC, WETH];
 
 export const COMPOUND_V3_PRICEFEEDS = {
   USDC: `0x${"8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6"}` as Address,

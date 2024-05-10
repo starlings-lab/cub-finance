@@ -1,10 +1,13 @@
 import React from "react";
-import { getUserDebtPositions } from "./getUserDebtPositions";
+import { getUserDebtPositions } from "../../../service/userDebtPositions";
 import { Address } from "abitype";
 import { DataTable } from "@/components/ui/data-table";
 import {
   debtTableColumns,
+  maxLTVColumnId,
   totalDebtAmountInUSDColumnId,
+  trailing30DaysBorrowingAPYColumnId,
+  trailing30DaysLendingAPYColumnId,
   trailing30DaysNetBorrowingAPYColumnId
 } from "./debtTableColumns";
 import { DebtPositionTableRow } from "@/app/type/type";
@@ -22,12 +25,30 @@ const initialSortedColumns: ColumnSort[] = [
     id: totalDebtAmountInUSDColumnId,
     // We want to display the highest debt amount first.
     desc: true
+  },
+  {
+    id: trailing30DaysBorrowingAPYColumnId,
+    desc: false
+  },
+  {
+    id: trailing30DaysLendingAPYColumnId,
+    desc: false
+  },
+  {
+    id: maxLTVColumnId,
+    desc: false
   }
 ];
 
 const DebtTableWrapper = async ({ userAddress }: { userAddress: string }) => {
+  const startTime = Date.now();
   const allDebtPositions: DebtPositionTableRow[] = await getUserDebtPositions(
     userAddress as Address
+  );
+  console.log(
+    `Time taken to fetch debt positions: ${
+      Date.now() - startTime
+    } ms for user ${userAddress} with ${allDebtPositions.length} items`
   );
 
   return (

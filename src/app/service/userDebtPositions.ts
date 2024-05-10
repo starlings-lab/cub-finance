@@ -1,3 +1,5 @@
+'use server'
+
 import { Address } from "abitype";
 import { getUserDebtDetails as getAaveDebtDetails } from "@/app/service/aaveV3Service";
 import { getUserDebtDetails as getSparkDebtDetails } from "@/app/service/sparkService";
@@ -76,10 +78,14 @@ function convertAaveOrSparkDebtPositions(
 
   const debtPositionTableRows: DebtPositionTableRow[] =
     userDebtDetails.debtPositions.map((debtPosition, index) => {
+      const debtMarket = marketMap.get(
+        debtPosition.debts[0].token.address.toLowerCase()
+      )!;
       return {
         protocol: userDebtDetails.protocol,
         debtPosition: debtPosition,
         debtToken: debtPosition.debts.map((debt) => debt.token),
+        collaterals: debtPosition.collaterals,
         collateralTokens: debtPosition.collaterals.map(
           (collateral) => collateral.token
         ),
@@ -97,9 +103,10 @@ function convertAaveOrSparkDebtPositions(
           debtPosition.trailing30DaysNetBorrowingAPY,
         trailing30DaysLendingAPY:
           debtPosition.weightedAvgTrailing30DaysLendingAPY,
-        trailing30DaysBorrowingAPY: marketMap.get(
-          debtPosition.debts[0].token.address.toLowerCase()
-        )!.trailing30DaysBorrowingAPY
+        trailing30DaysBorrowingAPY: debtMarket.trailing30DaysBorrowingAPY,
+        trailing30DaysRewardAPY:
+          debtMarket.trailing30DaysBorrowingRewardAPY +
+          debtPosition.weightedAvgTrailing30DaysLendingRewardAPY
       };
     });
 
@@ -123,10 +130,14 @@ function convertCompoundDebtPositions(
     }, new Map<string, CompoundV3Market>());
 
   return userDebtDetails.debtPositions.map((debtPosition) => {
+    const debtMarket = debtMarketsMap.get(
+      debtPosition.debt.token.address.toLowerCase()
+    )!;
     const data = {
       protocol: userDebtDetails.protocol,
       debtPosition: debtPosition,
       debtToken: [debtPosition.debt.token],
+      collaterals: debtPosition.collaterals,
       collateralTokens: debtPosition.collaterals.map(
         (collateral) => collateral.token
       ),
@@ -139,9 +150,8 @@ function convertCompoundDebtPositions(
       maxLTV: debtPosition.maxLTV,
       trailing30DaysNetBorrowingAPY: debtPosition.trailing30DaysNetBorrowingAPY,
       trailing30DaysLendingAPY: 0,
-      trailing30DaysBorrowingAPY: debtMarketsMap.get(
-        debtPosition.debt.token.address.toLowerCase()
-      )!.trailing30DaysBorrowingAPY
+      trailing30DaysBorrowingAPY: debtMarket.trailing30DaysBorrowingAPY,
+      trailing30DaysRewardAPY: debtMarket.trailing30DaysBorrowingRewardAPY
     };
     return {
       ...data,
@@ -160,10 +170,12 @@ function convertMorphoDebtPositions(
     }, new Map<string, MorphoBlueMarket>());
 
   return userDebtDetails.debtPositions.map((debtPosition) => {
+    const debtMarket = debtMarketsMap.get(debtPosition.marketId)!;
     const data = {
       protocol: userDebtDetails.protocol,
       debtPosition: debtPosition,
       debtToken: [debtPosition.debt.token],
+      collaterals: [debtPosition.collateral],
       collateralTokens: [debtPosition.collateral.token],
       totalDebtAmountInUSD: debtPosition.debt.amountInUSD,
       totalCollateralAmountInUSD: debtPosition.collateral.amountInUSD,
@@ -171,8 +183,8 @@ function convertMorphoDebtPositions(
       maxLTV: debtPosition.maxLTV,
       trailing30DaysNetBorrowingAPY: debtPosition.trailing30DaysNetBorrowingAPY,
       trailing30DaysLendingAPY: 0,
-      trailing30DaysBorrowingAPY: debtMarketsMap.get(debtPosition.marketId)!
-        .trailing30DaysBorrowingAPY
+      trailing30DaysBorrowingAPY: debtMarket.trailing30DaysBorrowingAPY,
+      trailing30DaysRewardAPY: debtMarket.trailing30DaysBorrowingRewardAPY
     };
 
     return {

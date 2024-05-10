@@ -1,30 +1,24 @@
 "use client";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { SearchBar } from "@/components/ui/search-bar";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 export default function Navbar() {
-  const pathname = usePathname();
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
       <div className="mx-auto max-w-8xl px-4 lg:px-8">
         <div className="flex h-16 justify-between items-center">
           <Link href="/" passHref>
-            <Image src="/refi.png" width={64} height={64} alt="" />
+            <Image src="/cub_logo.png" width={64} height={64} alt="" />
           </Link>
-          {pathname.includes("user") && (
-            <SearchBar isHome={false} defaultUserAddress="" />
-          )}
           <div className="flex items-center">
-            <Button className="bg-[#F43F5E3a] hover:bg-[#F43F5E] text-black hover:text-white rounded-3xl w-36">
+            <Button className="bg-[#009DC4] hover:bg-[#009dc4d6] text-white hover:text-white rounded-3xl w-36 transition-colors">
               <Link
                 target="_blank"
                 href="https://t.me/+pL8nGAh5P5k4MWZh"
                 passHref
               >
-                <p className="text-md font-normal">Talk to us</p>
+                <p className="text-md font-normal font-hkGrotesk">Talk to us</p>
               </Link>
             </Button>
           </div>

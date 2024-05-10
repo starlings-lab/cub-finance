@@ -58,3 +58,23 @@ export function isZeroOrPositive(num: number): num is number {
 export function isZeroOrNegative(num: number): num is number {
   return num <= 0;
 }
+
+export function getUniqueTokens(tokens: Token[]): Token[] {
+  const uniqueTokens: Map<string, Token> = new Map();
+  tokens.forEach((token) => {
+    const address = token.address.toLowerCase();
+    if (uniqueTokens.has(address)) {
+      return;
+    }
+
+    uniqueTokens.set(address, token);
+  });
+
+  return Array.from(uniqueTokens.values());
+}
+
+export function getFormattedTokenAmount(token: Token, amount: bigint): string {
+  const amountFormatted = Number(ethers.formatUnits(amount, token.decimals));
+  const preciseAmount = amountFormatted.toFixed(amountFormatted > 1 ? 2 : 6);
+  return preciseAmount.toString();
+}

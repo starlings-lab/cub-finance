@@ -18,6 +18,13 @@ const config = {
       },
     },
     extend: {
+      backgroundImage: {
+        'hero-pattern': "url('/hero-pattern.svg')",
+      },
+      fontFamily: {
+        hkGrotesk: ['var(--font-hk-grotesk)'],
+        notoSerif: ['var(--font-noto-serif)'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -52,11 +59,26 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        tbHover: {
+          DEFAULT: "var(--table-hover)",
+        },
+        tbSelected: {
+          DEFAULT: "var(--table-selected)",
+        },
+        tbHeader: {
+          DEFAULT: "var(--table-header)",
+        },
+        green: {
+          DEFAULT: "var(--green)",
+        }
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      minHeight: {
+        excludeHeader: 'calc(var(--full-height) - 4rem)'
       },
       keyframes: {
         "accordion-down": {

@@ -1,11 +1,15 @@
-import { BaseAaveService, APYProvider, APYInfo } from "./BaseAaveService";
+import { BaseAaveService } from "./BaseAaveService";
 import { Address } from "abitype";
 import {
+  APYInfo,
+  APYProvider,
   CompoundV3DebtPosition,
   DebtPosition,
   MorphoBlueDebtPosition,
   Protocol,
-  RecommendedDebtDetail
+  RecommendedDebtDetail,
+  Token,
+  TokenAmount
 } from "../type/type";
 import { calculate30DayTrailingBorrowingAndLendingAPYs } from "./defiLlamaDataService";
 import { DEFILLAMA_SPARK_POOL_IDS } from "../constants";
@@ -13,35 +17,29 @@ import { DEFILLAMA_SPARK_POOL_IDS } from "../constants";
 // implement APYProvider interface for Spark protocol
 class SparkAPYProvider implements APYProvider {
   public async calculateTrailing30DaysBorrowingAndLendingAPYs(
-    tokenSymbolOrATokenAddress: string | Address
+    tokenSymbol: string,
+    aTokenAddress: Address
   ): Promise<APYInfo> {
-    const tokenSymbol = (tokenSymbolOrATokenAddress as string).toUpperCase();
-
     const tokenPoolId = DEFILLAMA_SPARK_POOL_IDS[
-      tokenSymbol as keyof typeof DEFILLAMA_SPARK_POOL_IDS
+      tokenSymbol.toUpperCase() as keyof typeof DEFILLAMA_SPARK_POOL_IDS
     ] as string;
     if (!tokenPoolId) {
       // TODO: DefiLlama doesn't have data for sDAI and GNO(Gnosis Token)
       console.log(`DefiLlama pool id not found for token: ${tokenSymbol}`);
       return Promise.resolve({
         borrowingAPY: 0,
-        lendingAPY: 0
+        lendingAPY: 0,
+        borrowingRewardAPY: 0,
+        lendingRewardAPY: 0
       });
     }
-    // Implement logic to calculate APYs
-    return calculate30DayTrailingBorrowingAndLendingAPYs(tokenPoolId).then(
-      (apyInfo) => {
-        return {
-          borrowingAPY: apyInfo.trailingDayBorrowingAPY,
-          lendingAPY: apyInfo.trailingDayLendingAPY
-        };
-      }
-    );
+
+    return calculate30DayTrailingBorrowingAndLendingAPYs(tokenPoolId);
   }
 }
 
 // Contract addresses are used from https://docs.sparkprotocol.io/developers/deployed-contracts/mainnet-addresses
-const baseAaveService = new BaseAaveService(
+export const baseSparkService = new BaseAaveService(
   Protocol.Spark,
   "0x02C3eA4e34C0cBd694D2adFa2c690EECbC1793eE", //POOL_ADDRESSES_PROVIDER,
   "0xF028c2F4b19898718fD0F77b9b881CbfdAa5e8Bb", //UI_POOL_DATA_PROVIDER
@@ -49,7 +47,7 @@ const baseAaveService = new BaseAaveService(
 );
 
 export async function getUserDebtDetails(userAddress: Address) {
-  return baseAaveService.getUserDebtDetails(userAddress);
+  return baseSparkService.getUserDebtDetails(userAddress);
 }
 
 /**
@@ -63,10 +61,27 @@ export async function getRecommendedDebtDetail(
   maxLTVTolerance: number,
   borrowingAPYTolerance: number
 ): Promise<RecommendedDebtDetail | null> {
-  return baseAaveService.getRecommendedDebtDetail(
+  return baseSparkService.getRecommendedDebtDetail(
     protocol,
     debtPosition,
     maxLTVTolerance,
     borrowingAPYTolerance
   );
+}
+
+// Get all debt tokens supported by protocol
+export async function getSupportedDebtTokens(): Promise<Token[]> {
+  return baseSparkService.getSupportedDebtTokens();
+}
+
+// get all collateral tokens supported by protocol
+export async function getSupportedCollateralTokens(): Promise<Token[]> {
+  return baseSparkService.getSupportedCollateralTokens();
+}
+
+export async function getBorrowRecommendations(
+  debtTokens: Token[],
+  collaterals: TokenAmount[]
+): Promise<RecommendedDebtDetail[]> {
+  return baseSparkService.getBorrowRecommendations(debtTokens, collaterals);
 }

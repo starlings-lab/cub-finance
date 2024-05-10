@@ -1,22 +1,21 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
-import favicon from "/public/favicon.ico";
+import favicon from "/public/favicon2.ico";
 import Head from "next/head";
 
 import "./globals.css";
 import Navbar from "./navbar";
+import Fathom from "../components/fathom";
 import { Analytics } from "@vercel/analytics/react";
 
 import dotenv from "dotenv";
+import { hkGrotesk, notoSerif } from "./fonts";
 dotenv.config();
 
-const inter = Inter({ subsets: ["latin"] });
-
 export const metadata: Metadata = {
-  title: "Refinance",
-  description: "Refinance your DeFi loans with ease."
+  title: "Cub Finance",
+  description: "Borrowing Simplified."
 };
 
 export default function RootLayout({
@@ -29,12 +28,17 @@ export default function RootLayout({
       <Head>
         <link rel="icon" href={favicon.src} />
       </Head>
-      <body className={inter.className}>
-        <Suspense fallback={<div>Loading...</div>}>
+      <body
+        className={`${notoSerif.className} ${notoSerif.variable} ${hkGrotesk.className} ${hkGrotesk.variable}`}
+      >
+        <Fathom />
+        <Suspense fallback={<div className="font-notoSerif">Loading...</div>}>
           <Navbar />
         </Suspense>
-        <main className="flex min-h-screen max-w-screen-xl mx-auto flex-col p-4 sm:p-12 pt-16">
-          {children}
+        <main className="bg-hero-pattern">
+          <div className="flex min-h-screen max-w-screen-xl mx-auto flex-col px-4">
+            {children}
+          </div>
         </main>
         <Toaster />
         <Analytics />

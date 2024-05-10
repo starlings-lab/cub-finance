@@ -1,6 +1,6 @@
 import { Address } from "abitype";
 import { ALCHEMY_API_URL } from "../constants";
-import { Token } from "../type/type";
+import { Token, TokenAmount } from "../type/type";
 import { ethers } from "ethers";
 
 /**
@@ -8,7 +8,9 @@ import { ethers } from "ethers";
  * @param address an address of account
  * @returns
  */
-export async function getTokensOwnedByAddress(address: string): Promise<any> {
+export async function getTokenHoldings(
+  address: Address
+): Promise<TokenAmount[]> {
   const options = {
     method: "POST",
     headers: { accept: "application/json", "content-type": "application/json" },
@@ -16,48 +18,42 @@ export async function getTokensOwnedByAddress(address: string): Promise<any> {
       id: 1,
       jsonrpc: "2.0",
       method: "alchemy_getTokenBalances",
-      params: [address],
-    }),
+      params: [address]
+    })
   };
 
   const responseJson = await fetch(ALCHEMY_API_URL, options);
   const response = await responseJson.json();
   const tokenBalances = response.result.tokenBalances;
-  // console.log(tokenBalances);
+  // console.dir(tokenBalances, { depth: null });
 
-  // Remove tokens with zero balance
-  const nonZeroBalances = tokenBalances.filter((token: any) => {
-    return token.tokenBalance !== "0";
-  });
+  const tokenAmounts = [];
 
-  const tokens = [];
-  // Counter
-  let i = 1;
+  // get ETH balance
+  const ethBalance = await getEthBalance(address);
+  tokenAmounts.push(ethBalance);
 
   // Loop through all tokens with non-zero balance
-  for (let token of nonZeroBalances) {
+  for (let tokenData of tokenBalances) {
     // Get balance of token
-    let balance = parseInt(token.tokenBalance!);
+    let balance = BigInt(tokenData.tokenBalance!);
+
+    if (!balance || balance === BigInt(0)) {
+      continue;
+    }
 
     // Get metadata of token
-    const metadata = await getTokenMetadata(token.contractAddress);
+    const token = await getTokenMetadata(tokenData.contractAddress);
     // console.log(metadata);
 
-    balance = balance / Math.pow(10, metadata.decimals!);
-
-    // Print name, balance, and symbol of token
-    console.log(
-      `${i++}. ${metadata.name}: ${balance.toFixed(2)} ${metadata.symbol}`
-    );
-
-    tokens.push({
-      name: metadata.name,
-      balance: balance.toFixed(2),
-      symbol: metadata.symbol,
+    tokenAmounts.push({
+      token: token,
+      amount: balance,
+      amountInUSD: 0
     });
   }
 
-  return tokens;
+  return tokenAmounts;
 }
 
 export async function getTokenMetadata(
@@ -70,8 +66,8 @@ export async function getTokenMetadata(
       id: 1,
       jsonrpc: "2.0",
       method: "alchemy_getTokenMetadata",
-      params: [contractAddress],
-    }),
+      params: [contractAddress]
+    })
   };
 
   return fetch(ALCHEMY_API_URL, options)
@@ -81,7 +77,39 @@ export async function getTokenMetadata(
         address: contractAddress,
         name: response.result.name,
         symbol: response.result.symbol,
-        decimals: response.result.decimals,
+        decimals: response.result.decimals
       };
     });
+}
+
+export async function getEthBalance(address: string): Promise<TokenAmount> {
+  const options = {
+    method: "POST",
+    headers: { accept: "application/json", "content-type": "application/json" },
+    body: JSON.stringify({
+      id: 1,
+      jsonrpc: "2.0",
+      method: "eth_getBalance",
+      params: [address, "latest"]
+    })
+  };
+
+  return fetch(ALCHEMY_API_URL, options).then((response: any) =>
+    response.json().then((response: any) => {
+      // console.dir(response, { depth: null });
+
+      let balance = BigInt(response.result);
+
+      return {
+        token: {
+          address: ethers.ZeroAddress,
+          name: "Ethereum",
+          symbol: "ETH",
+          decimals: 18
+        },
+        amount: BigInt(response.result),
+        amountInUSD: 0
+      };
+    })
+  );
 }
