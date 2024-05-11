@@ -32,7 +32,7 @@ export default function RootLayout({
         <Suspense fallback={<div className="font-notoSerif">Loading...</div>}>
           <Navbar />
         </Suspense>
-        <main className="bg-hero-pattern">
+        <main className="bg-hero-pattern bg-white">
           <div className="flex min-h-screen max-w-screen-xl sm:max-w-4/5 mx-auto flex-col px-4">
             {children}
           </div>
