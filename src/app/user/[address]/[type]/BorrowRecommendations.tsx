@@ -99,7 +99,7 @@ const BorrowRecommendations = ({
               colSpan={columns.length}
               className="h-16 text-left sm:text-center"
             >
-              You don&apos;t have borrow options
+              You don&apos;t have borrow options because you have no supported collaterals.
             </TableCell>
           </TableRow>
         )}
