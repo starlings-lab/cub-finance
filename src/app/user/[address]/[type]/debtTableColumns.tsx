@@ -519,7 +519,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
       accessorFn: (originalRow) => {
         return USDollar.format(originalRow.totalDebtAmountInUSD);
       },
-      enableSorting: true
+      enableSorting: false
     },
     {
       id: trailing30DaysBorrowingAPYColumnId,
@@ -777,7 +777,7 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
     accessorFn: (originalRow) => {
       return USDollar.format(originalRow.maxDebtAmountInUSD);
     },
-    enableSorting: true
+    enableSorting: false
   },
   {
     id: trailing30DaysBorrowingAPYColumnId,
