@@ -48,10 +48,10 @@ const CollateralSelect = ({
     ) > -1;
 
   return (
-    <div className="relative ml-4 cursor-pointer">
+    <div className="relative sm:ml-4 cursor-pointer">
       <button
         type="button"
-        className="relative flex items-center w-full cursor-default bg-white py-0.5 text-left text-gray-900 sm:text-sm sm:leading-6 border-b border-black"
+        className="relative flex items-center justify-between sm:justify-start w-full cursor-default bg-white py-0.5 text-left text-gray-900 sm:text-sm sm:leading-6 border-b border-black"
         aria-haspopup="listbox"
         aria-expanded="false"
         aria-labelledby="listbox-label"

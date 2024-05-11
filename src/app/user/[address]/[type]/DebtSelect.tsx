@@ -89,10 +89,10 @@ const DebtSelect = ({
       : "Select token";
 
   return (
-    <div className="relative mr-4 sm:mx-4 cursor-pointer">
+    <div className="relative sm:mx-4 cursor-pointer">
       <button
         type="button"
-        className="relative flex items-center w-full cursor-default bg-white py-0.5 text-left text-gray-900 sm:text-sm sm:leading-6 border-b border-black"
+        className="relative flex items-center justify-between sm:justify-start w-full cursor-default bg-white py-0.5 text-left text-gray-900 sm:text-sm sm:leading-6 border-b border-black"
         aria-haspopup="listbox"
         aria-expanded="false"
         aria-labelledby="listbox-label"
