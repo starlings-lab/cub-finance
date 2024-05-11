@@ -3,7 +3,7 @@ import { Token, TokenDetail } from "@/app/type/type";
 import Image from "next/image";
 import React from "react";
 
-const TickIconBox = ({ isSelected }: { isSelected: boolean }) => (
+export const TickIconBox = ({ isSelected }: { isSelected: boolean }) => (
   <span
     className={`text-green inset-y-0 flex items-center justify-center border border-slate-200 h-6 w-6`}
   >
