@@ -6,60 +6,31 @@ import { getSupportedCollateralTokens as getCompoundV3SupportedCOllateralTokens 
 import { getSupportedCollateralTokens as getMorphoBlueSupportedCollateralTokens } from "@/app/service/morphoBlueService";
 import { Token, TokenAmount } from "@/app/type/type";
 import {
-  AAVE,
-  COMP,
-  DAI,
-  LINK,
-  UNI,
-  USDC,
   USDC_DUPLICATE_OR_SCAM,
-  USDT,
-  USDe,
-  WBTC,
-  WETH,
-  cbETH,
-  rETH,
-  sDAI,
-  sUSDe,
-  weETH,
-  wstETH
+  SUPPORTED_COLLATERAL_TOKENS
 } from "@/app/contracts/ERC20Tokens";
 import { Address } from "abitype";
 import { getTokenHoldings } from "@/app/service/tokenService";
-
-const supportedCollateralTokens: Token[] = [
-  USDC,
-  USDT,
-  DAI,
-  sDAI,
-  USDe,
-  sUSDe,
-  WETH,
-  WBTC,
-  wstETH,
-  rETH,
-  cbETH,
-  weETH,
-  LINK,
-  AAVE,
-  COMP,
-  UNI
-];
 
 // This function should be used until we fix borrow recommendation performance
 export async function getSupportedUserCollaterals(
   userAddress: Address
 ): Promise<TokenAmount[]> {
+  const MIN_TOKEN_AMOUNT_IN_USD = 100;
+
   return getTokenHoldings(userAddress).then((userHoldings) => {
     if (!userHoldings || userHoldings.length === 0) {
       return [];
     }
 
+    // console.log("userHoldings", userHoldings);
+
     const allSupportedCollaterals: Map<string, TokenAmount> = new Map();
     userHoldings.forEach((userHolding) => {
       const address = userHolding.token.address.toLowerCase();
       if (
-        supportedCollateralTokens.some(
+        userHolding.amountInUSD > MIN_TOKEN_AMOUNT_IN_USD &&
+        SUPPORTED_COLLATERAL_TOKENS.some(
           (token) => token.address.toLowerCase() === address
         )
       ) {

@@ -17,7 +17,7 @@ export default function Home() {
         <CardHeader className="p-0 sm:p-6">
           <CardTitle>
             <div className="font-hkGrotesk text-5xl sm:m-2 sm:text-6xl sm:m-10 leading-normal tracking-wider sm:text-center">
-                Borrowing Simplified
+              Borrowing Simplified
             </div>
           </CardTitle>
         </CardHeader>
@@ -29,7 +29,7 @@ export default function Home() {
           <SearchBar
             className="mt-16"
             isHome={true}
-            defaultUserAddress={TEST_DEBT_POSITION_ADDRESSES.compoundUser3}
+            defaultUserAddress={TEST_DEBT_POSITION_ADDRESSES.compoundUser4}
           />
         </CardContent>
       </Card>
