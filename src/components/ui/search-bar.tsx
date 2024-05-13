@@ -25,6 +25,8 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     const router = useRouter();
     const { toast } = useToast();
     const [address, setAddress] = useState<string>(defaultUserAddress);
+    const [debouncedAddress, setDebouncedAddress] =
+      useState<string>(defaultUserAddress);
     const [eoaAddress, setEoaAddress] = useState<string>(defaultUserAddress);
     const [addressErr, setAddressErr] = useState<boolean>(false);
     const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
@@ -42,21 +44,37 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       resolvedAddress: string,
       isValidAddress: boolean
     ) => {
+      console.log(resolvedAddress, isValidAddress);
       setEoaAddress(resolvedAddress);
       setAddressErr(!isValidAddress);
       setButtonDisabled(!isValidAddress);
       setIsLoading(false);
     };
 
+    React.useEffect(() => {
+      const timeoutId = setTimeout(() => {
+        setDebouncedAddress(address);
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    }, [address]);
+
+    useEffect(() => {
+      const validateAddress = async () => {
+        preValidationStateUpdate(debouncedAddress);
+        const isValidEns = await isValidEnsAddress(debouncedAddress);
+        const resolvedAddress = isValidEns
+          ? await EOAFromENS(debouncedAddress)
+          : debouncedAddress;
+        const isValidAddress = isAddress(resolvedAddress) || isValidEns;
+        postValidationStateUpdate(resolvedAddress as string, isValidAddress);
+      };
+
+      validateAddress();
+    }, [debouncedAddress]);
+
     const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
       const inputValue = event.target.value;
-      preValidationStateUpdate(inputValue);
-      const isValidEns = await isValidEnsAddress(inputValue);
-      const resolvedAddress = isValidEns
-        ? await EOAFromENS(inputValue)
-        : inputValue;
-      const isValidAddress = isAddress(resolvedAddress) || isValidEns;
-      postValidationStateUpdate(resolvedAddress as string, isValidAddress);
+      setAddress(inputValue);
     };
 
     const inputRef = useRef<HTMLInputElement>(null);
@@ -93,7 +111,9 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
         } catch (e) {
           console.error("Failed to scan debt positions:", e);
         } finally {
-          setIsFetchingDebtPositions(false);
+          setTimeout(() => {
+            setIsFetchingDebtPositions(false);
+          }, 1000);
         }
       }
     }, [eoaAddress, address, router, isHome, defaultUserAddress]);
@@ -117,7 +137,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           <div
             className={`flex w-full space-x-2 py-1 pr-1 border rounded-2xl ${
               addressErr ? "border-red-500" : ""
-            } ${isHome ? "pl-3" : "pl-1 -ml-2.5 sm:ml-0"}`}
+            } ${isHome ? "pl-3" : "pl-1"}`}
           >
             <Image
               src={"/search_black.svg"}
@@ -156,7 +176,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             <Button
               disabled={errorCheck}
               className={`bg-[#F43F5E] text-white rounded-2xl py-4 px-8 font-hkGrotesk font-medium tracking-wide transition-opacity hover:bg-[#F43F5E] hover:opacity-80 ${
-                isHome ? "w-36" : "w-12 sm:w-24 !-mr-7 sm:!mr-0"
+                isHome ? "w-36" : "w-12 sm:w-24"
               }`}
               onClick={fetchDebtPositions}
             >
