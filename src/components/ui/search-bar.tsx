@@ -209,7 +209,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           <div
             className={`text-red-500 pl-3 pt-1 sm:flex text-sm ${
               isHome ? "hidden" : "flex"
-            } ${addressErr ? "visible" : "invisible"}`}
+            } ${addressErr && !isLoading ? "visible" : "invisible"}`}
           >
             Enter a valid address
           </div>
@@ -249,7 +249,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           </div>
           <div
             className={`text-red-500 text-sm pl-3 pt-1 ${
-              addressErr ? "visible" : "invisible"
+              addressErr && !isLoading ? "visible" : "invisible"
             }`}
           >
             Enter a valid address
