@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { useState, forwardRef, useRef, useEffect, useCallback } from "react";
+import { useState, forwardRef, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Input } from "./input";
 import { Button } from "./button";
@@ -12,8 +12,6 @@ import { isAddress } from "ethers";
 import { useToast } from "./use-toast";
 import { getUserDebtPositions } from "@/app/service/userDebtPositions";
 import { Address } from "abitype";
-import Link from "next/link";
-import { ROUTE_BORROW, ROUTE_REFINANCE } from "@/app/constants";
 
 export interface SearchBarProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -33,9 +31,6 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     const [isFetchingDebtPositions, setIsFetchingDebtPositions] =
       useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [activeRoute, setActiveRoute] = useState(
-      routeType ?? ROUTE_REFINANCE
-    );
 
     const preValidationStateUpdate = (inputValue: string) => {
       setAddress(inputValue);
@@ -82,25 +77,26 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       };
     }, []); // Run this effect only once on component mount
 
-    const fetchDebtPositions = useCallback(async () => {
-      setIsFetchingDebtPositions(true);
-      try {
-        const debtPositions = await getUserDebtPositions(eoaAddress as Address);
-        setActiveRoute(
-          debtPositions.length > 0 ? ROUTE_REFINANCE : ROUTE_BORROW
-        );
-      } catch (e) {
-        console.error("Failed to fetch debt positions:", e);
-      } finally {
-        setIsFetchingDebtPositions(false);
+    const fetchDebtPositions = React.useCallback(async () => {
+      // it should not refetch for same address
+      if (address !== defaultUserAddress || isHome) {
+        setIsFetchingDebtPositions(true);
+        try {
+          const debtPositions = await getUserDebtPositions(
+            eoaAddress as Address
+          );
+          if (debtPositions?.length > 0) {
+            router.push(`/user/${address}/refinance`);
+          } else {
+            router.push(`/user/${address}/borrow`);
+          }
+        } catch (e) {
+          console.error("Failed to scan debt positions:", e);
+        } finally {
+          setIsFetchingDebtPositions(false);
+        }
       }
-    }, [eoaAddress]);
-
-    useEffect(() => {
-      if (!(addressErr || address === "" || buttonDisabled) && isHome) {
-        fetchDebtPositions();
-      }
-    }, [address, addressErr, buttonDisabled, isHome, fetchDebtPositions]);
+    }, [eoaAddress, address, router, isHome, defaultUserAddress]);
 
     const errorCheck =
       addressErr || address === "" || buttonDisabled || isFetchingDebtPositions;
@@ -119,32 +115,33 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           }`}
         >
           <div
-            className={`flex w-full space-x-2 py-1 pl-3 pr-1 border rounded-2xl ${
+            className={`flex w-full space-x-2 py-1 pr-1 border rounded-2xl ${
               addressErr ? "border-red-500" : ""
-            }`}
+            } ${isHome ? "pl-3" : "pl-1 -ml-2.5 sm:ml-0"}`}
           >
             <Image
               src={"/search_black.svg"}
               alt="icon"
               width="24"
               height="24"
+              className={isHome ? "block" : "hidden"}
             />
             <Input
               ref={inputRef}
-              className="placeholder:text-slate-400 rounded-2xl tracking-wide"
+              className="placeholder:text-slate-400 rounded-2xl tracking-wide text-xs sm:text-sm !ml-1 sm:!ml-2"
               type="text"
               value={address}
               placeholder="Wallet address or ENS"
               onChange={handleChange}
-              onBlur={() => {
+              onBlur={async () => {
                 if (!errorCheck && !isHome) {
-                  router.push(`/user/${address}/${activeRoute}`);
+                  await fetchDebtPositions();
                 }
               }}
-              onKeyDown={(e) => {
+              onKeyDown={async (e) => {
                 if (e.key === "Enter") {
                   if (!errorCheck) {
-                    router.push(`/user/${address}/${activeRoute}`);
+                    await fetchDebtPositions();
                   } else {
                     if (!isLoading) {
                       toast({
@@ -156,16 +153,30 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 }
               }}
             ></Input>
-            <Link href={`/user/${address}/${activeRoute}`}>
-              <Button
-                disabled={errorCheck}
-                className={`bg-[#F43F5E] text-white rounded-2xl py-4 px-8 font-hkGrotesk font-medium tracking-wide transition-opacity hover:bg-[#F43F5E] hover:opacity-80 ${
-                  !isHome && "hidden disabled:opacity-0"
-                }`}
-              >
-                Find Now
-              </Button>
-            </Link>
+            <Button
+              disabled={errorCheck}
+              className={`bg-[#F43F5E] text-white rounded-2xl py-4 px-8 font-hkGrotesk font-medium tracking-wide transition-opacity hover:bg-[#F43F5E] hover:opacity-80 ${
+                isHome ? "w-36" : "w-12 sm:w-24 !-mr-7 sm:!mr-0"
+              }`}
+              onClick={fetchDebtPositions}
+            >
+              {isFetchingDebtPositions ? (
+                <Spinner color={"#fff"} />
+              ) : (
+                <div>
+                  {isHome ? (
+                    "Find Now"
+                  ) : (
+                    <Image
+                      src={"/search_white.svg"}
+                      alt="icon"
+                      width="20"
+                      height="20"
+                    />
+                  )}
+                </div>
+              )}
+            </Button>
           </div>
           <div
             className={`items-center text-gray-500 text-sm pl-3 mt-2 ${
@@ -174,16 +185,6 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           >
             <Spinner />
             <span className="ml-2">Validating address</span>
-          </div>
-          <div
-            className={`items-center text-gray-500 text-sm pl-3 mt-2 ${
-              isFetchingDebtPositions && isHome
-                ? "visible flex"
-                : "invisible hidden"
-            }`}
-          >
-            <Spinner />
-            <span className="ml-2">Scanning address</span>
           </div>
           <div
             className={`text-red-500 pl-3 pt-1 sm:flex text-sm ${
@@ -211,13 +212,12 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               value={address}
               placeholder="Enter your wallet address"
               onChange={handleChange}
-              onBlur={() =>
-                !isHome &&
-                address &&
-                eoaAddress &&
-                router.push(`/user/${address}/${activeRoute}`)
-              }
-            ></Input>
+              onBlur={async () => {
+                if (!isHome && address && eoaAddress) {
+                  await fetchDebtPositions();
+                }
+              }}
+            />
           </div>
           <div
             className={`items-center text-gray-500 text-sm pl-3 ${
@@ -228,42 +228,34 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             <span className="ml-2">Validating address</span>
           </div>
           <div
-            className={`items-center text-gray-500 text-sm pl-3 mt-2 ${
-              isFetchingDebtPositions && isHome
-                ? "visible flex"
-                : "invisible hidden"
+            className={`text-red-500 text-sm pl-3 pt-1 ${
+              addressErr ? "visible" : "invisible"
             }`}
           >
-            <Spinner />
-            <span className="ml-2">Scanning address</span>
+            Enter a valid address
           </div>
-          {addressErr && (
-            <div className="text-red-500 text-sm pl-3 pt-1 visible">
-              Enter a valid address
-            </div>
-          )}
-          <Link href={`/user/${address}/${activeRoute}`}>
-            <Button
-              disabled={
-                !isHome ||
-                addressErr ||
-                buttonDisabled ||
-                isFetchingDebtPositions
-              }
-              className={`bg-[#F43F5E] text-white rounded-2xl py-4 px-8 w-full mt-2 ml-0 hover:bg-[#F43F5E] hover:opacity-80 ${
-                !isHome && "disabled:opacity-0"
-              }`}
-            >
-              Find Now
-              <Image
-                src={"/search_white.svg"}
-                alt="icon"
-                width="24"
-                height="24"
-                className="ml-2"
-              />
-            </Button>
-          </Link>
+          <Button
+            disabled={!isHome || errorCheck}
+            className={`bg-[#F43F5E] text-white rounded-2xl py-4 px-8 w-full mt-2 ml-0 hover:bg-[#F43F5E] hover:opacity-80 ${
+              !isHome && "disabled:opacity-0"
+            }`}
+            onClick={fetchDebtPositions}
+          >
+            {isFetchingDebtPositions ? (
+              <Spinner color={"#fff"} />
+            ) : (
+              <div className="flex">
+                Find Now
+                <Image
+                  src={"/search_white.svg"}
+                  alt="icon"
+                  width="24"
+                  height="24"
+                  className="ml-2"
+                />
+              </div>
+            )}
+          </Button>
         </div>
       </div>
     );

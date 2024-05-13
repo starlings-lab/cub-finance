@@ -1,6 +1,6 @@
 import React from "react";
 
-const Spinner = () => (
+const Spinner = ({ color }: { color?: string }) => (
   <div className="spinner">
     <style jsx>{`
       .spinner {
@@ -8,7 +8,7 @@ const Spinner = () => (
         width: 12px;
         height: 12px;
         border-radius: 50%;
-        border-left-color: #12BB4F;
+        border-left-color: ${color ? color : "#12BB4F"};
         animation: spin 1s ease infinite;
       }
 
