@@ -12,6 +12,7 @@ import { isAddress } from "ethers";
 import { useToast } from "./use-toast";
 import { getUserDebtPositions } from "@/app/service/userDebtPositions";
 import { Address } from "abitype";
+import { ROUTE_BORROW, ROUTE_REFINANCE } from "@/app/constants";
 
 export interface SearchBarProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -95,18 +96,22 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       };
     }, []); // Run this effect only once on component mount
 
-    const fetchDebtPositions = React.useCallback(async () => {
+    const verifyAndFetchDebtPositions = React.useCallback(async () => {
       // it should not refetch for same address
       if (address !== defaultUserAddress || isHome) {
         setIsFetchingDebtPositions(true);
         try {
-          const debtPositions = await getUserDebtPositions(
-            eoaAddress as Address
-          );
-          if (debtPositions?.length > 0) {
-            router.push(`/user/${address}/refinance`);
+          if (routeType) {
+            router.push(`/user/${address}/${routeType}`);
           } else {
-            router.push(`/user/${address}/borrow`);
+            const debtPositions = await getUserDebtPositions(
+              eoaAddress as Address
+            );
+            if (debtPositions?.length > 0) {
+              router.push(`/user/${address}/${ROUTE_REFINANCE}`);
+            } else {
+              router.push(`/user/${address}/${ROUTE_BORROW}`);
+            }
           }
         } catch (e) {
           console.error("Failed to scan debt positions:", e);
@@ -116,7 +121,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           }, 1000);
         }
       }
-    }, [eoaAddress, address, router, isHome, defaultUserAddress]);
+    }, [eoaAddress, address, router, isHome, defaultUserAddress, routeType]);
 
     const errorCheck =
       addressErr || address === "" || buttonDisabled || isFetchingDebtPositions;
@@ -155,13 +160,13 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               onChange={handleChange}
               onBlur={async () => {
                 if (!errorCheck && !isHome) {
-                  await fetchDebtPositions();
+                  await verifyAndFetchDebtPositions();
                 }
               }}
               onKeyDown={async (e) => {
                 if (e.key === "Enter") {
                   if (!errorCheck) {
-                    await fetchDebtPositions();
+                    await verifyAndFetchDebtPositions();
                   } else {
                     if (!isLoading) {
                       toast({
@@ -178,7 +183,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               className={`bg-[#F43F5E] text-white rounded-2xl sm:py-4 sm:px-8 font-hkGrotesk font-medium tracking-wide transition-opacity hover:bg-[#F43F5E] hover:opacity-80 ${
                 isHome ? "w-36" : "w-12 sm:w-24"
               }`}
-              onClick={fetchDebtPositions}
+              onClick={verifyAndFetchDebtPositions}
             >
               {isFetchingDebtPositions ? (
                 <Spinner color={"#fff"} />
@@ -234,7 +239,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               onChange={handleChange}
               onBlur={async () => {
                 if (!isHome && address && eoaAddress) {
-                  await fetchDebtPositions();
+                  await verifyAndFetchDebtPositions();
                 }
               }}
             />
@@ -259,7 +264,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             className={`bg-[#F43F5E] text-white rounded-2xl py-4 px-8 w-full mt-2 ml-0 hover:bg-[#F43F5E] hover:opacity-80 ${
               !isHome && "disabled:opacity-0"
             }`}
-            onClick={fetchDebtPositions}
+            onClick={verifyAndFetchDebtPositions}
           >
             {isFetchingDebtPositions ? (
               <Spinner color={"#fff"} />
