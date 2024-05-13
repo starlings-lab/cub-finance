@@ -175,7 +175,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             ></Input>
             <Button
               disabled={errorCheck}
-              className={`bg-[#F43F5E] text-white rounded-2xl py-4 px-8 font-hkGrotesk font-medium tracking-wide transition-opacity hover:bg-[#F43F5E] hover:opacity-80 ${
+              className={`bg-[#F43F5E] text-white rounded-2xl sm:py-4 sm:px-8 font-hkGrotesk font-medium tracking-wide transition-opacity hover:bg-[#F43F5E] hover:opacity-80 ${
                 isHome ? "w-36" : "w-12 sm:w-24"
               }`}
               onClick={fetchDebtPositions}
