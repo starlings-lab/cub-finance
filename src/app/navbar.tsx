@@ -12,13 +12,13 @@ export default function Navbar() {
             <Image src="/cub_logo.png" width={64} height={64} alt="" />
           </Link>
           <div className="flex items-center">
-            <Button className="bg-[#009DC4] hover:bg-[#009dc4d6] text-white hover:text-white rounded-3xl w-36 transition-colors">
+            <Button className="bg-[#009DC4] hover:bg-[#009dc4d6] text-white hover:text-white rounded-2xl py-4 px-8 transition-colors">
               <Link
                 target="_blank"
                 href="https://t.me/+pL8nGAh5P5k4MWZh"
                 passHref
               >
-                <p className="text-md font-normal font-hkGrotesk">Talk to us</p>
+                <p className="text-md font-normal font-hkGrotesk">Talk to Us</p>
               </Link>
             </Button>
           </div>

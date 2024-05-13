@@ -119,7 +119,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           }`}
         >
           <div
-            className={`flex w-full space-x-2 py-1 pl-3 pr-1 border rounded-3xl ${
+            className={`flex w-full space-x-2 py-1 pl-3 pr-1 border rounded-2xl ${
               addressErr ? "border-red-500" : ""
             }`}
           >
@@ -131,7 +131,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             />
             <Input
               ref={inputRef}
-              className="placeholder:text-slate-400 rounded-3xl tracking-wide"
+              className="placeholder:text-slate-400 rounded-2xl tracking-wide"
               type="text"
               value={address}
               placeholder="Wallet address or ENS"
@@ -159,7 +159,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             <Link href={`/user/${address}/${activeRoute}`}>
               <Button
                 disabled={errorCheck}
-                className={`bg-[#F43F5E] text-white rounded-3xl w-36 font-hkGrotesk font-medium tracking-wide ${
+                className={`bg-[#F43F5E] text-white rounded-2xl py-4 px-8 font-hkGrotesk font-medium tracking-wide ${
                   !isHome && "hidden disabled:opacity-0"
                 }`}
               >
@@ -201,12 +201,12 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           }`}
         >
           <div
-            className={`flex border  rounded-3xl py-1 px-3 bg-white ${
+            className={`flex border  rounded-2xl py-1 px-3 bg-white ${
               addressErr ? "border-red-500" : ""
             }`}
           >
             <Input
-              className="placeholder:text-slate-400 rounded-3xl"
+              className="placeholder:text-slate-400 rounded-2xl"
               type="text"
               value={address}
               placeholder="Enter your wallet address"
@@ -252,7 +252,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 buttonDisabled ||
                 isFetchingDebtPositions
               }
-              className={`bg-[#F43F5E] text-white rounded-3xl w-full mt-2 ml-0 ${
+              className={`bg-[#F43F5E] text-white rounded-2xl py-4 px-8 w-full mt-2 ml-0 ${
                 !isHome && "disabled:opacity-0"
               }`}
             >

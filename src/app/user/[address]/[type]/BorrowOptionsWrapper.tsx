@@ -51,7 +51,7 @@ const BorrowOptionsWrapper = async ({
   const collaterals = await getSupportedUserCollaterals(userAddress as Address);
 
   return (
-    <div className="w-full mx-auto py-8">
+    <div className="w-full mx-auto">
       <BorrowRecommendationsWrapper
         columns={borrowTableColumns}
         collaterals={collaterals}

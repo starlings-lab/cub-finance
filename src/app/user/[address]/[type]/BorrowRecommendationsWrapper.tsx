@@ -92,7 +92,7 @@ const BorrowRecommendationsWrapper = ({
   return (
     <div>
       <div className="hidden sm:flex items-center mb-8 mx-auto justify-center">
-        <div>I want to borrow</div>
+        <div className="text-xl">I want to borrow</div>
         <DebtSelect
           activeDropDown={activeDropDown === "debt"}
           setActiveDropDown={setActiveDropDown}
@@ -100,7 +100,7 @@ const BorrowRecommendationsWrapper = ({
           currentList={selectedDebtTokens}
           setCurrentList={setSelectedDebtTokens}
         />
-        <div>against</div>
+        <div className="text-xl">against</div>
         <CollateralSelect
           activeDropDown={activeDropDown === "collateral"}
           setActiveDropDown={setActiveDropDown}

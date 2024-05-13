@@ -100,7 +100,7 @@ const DebtSelect = ({
           setActiveDropDown(activeDropDown ? "" : "debt");
         }}
       >
-        <span className="truncate">{displayValueOfDebt}</span>
+        <span className="text-xl truncate">{displayValueOfDebt}</span>
         <span className="pointer-events-none right-0 ml-3 flex items-center">
           {activeDropDown ? (
             <svg

@@ -28,7 +28,7 @@ export default async function DebtPage({
         <div className="text-center">
           Invalid address. Please enter a valid address.
         </div>
-        <Button className={`bg-[#F43F5E] text-white rounded-3xl w-36 mt-4`}>
+        <Button className={`bg-[#F43F5E] text-white rounded-2xl w-36 mt-4`}>
           <Link href={`/`}>Back to Home</Link>
         </Button>
       </div>
