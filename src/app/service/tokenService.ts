@@ -2,6 +2,8 @@ import { Address } from "abitype";
 import { ALCHEMY_API_URL } from "../constants";
 import { Token, TokenAmount } from "../type/type";
 import { ethers } from "ethers";
+import { getTokenPrice } from "./defiLlamaDataService";
+import { ETH } from "../contracts/ERC20Tokens";
 
 /**
  * Provides a list of tokens with non-zero balance owned by an address
@@ -29,8 +31,25 @@ export async function getTokenHoldings(
 
   const tokenAmounts = [];
 
+  // Get token prices
+  const tokenAddresses = tokenBalances.map(
+    (tokenData: any) => tokenData.contractAddress
+  );
+
+  // Add ETH address to get ETH price
+  tokenAddresses.push(ethers.ZeroAddress);
+
+  const tokenPriceMap: Map<Address, number> = await getTokenPrice(
+    tokenAddresses
+  );
+
   // get ETH balance
   const ethBalance = await getEthBalance(address);
+  ethBalance.amountInUSD = calculateAmountInUSD(
+    ethBalance.amount,
+    ETH,
+    tokenPriceMap
+  );
   tokenAmounts.push(ethBalance);
 
   // Loop through all tokens with non-zero balance
@@ -46,14 +65,28 @@ export async function getTokenHoldings(
     const token = await getTokenMetadata(tokenData.contractAddress);
     // console.log(metadata);
 
+    // calculate amount in USD
+    const amountInUSD = calculateAmountInUSD(balance, token, tokenPriceMap);
+
     tokenAmounts.push({
       token: token,
       amount: balance,
-      amountInUSD: 0
+      amountInUSD: amountInUSD
     });
   }
 
   return tokenAmounts;
+}
+
+function calculateAmountInUSD(
+  balance: bigint,
+  token: Token,
+  tokenPriceMap: Map<Address, number>
+) {
+  return (
+    Number(ethers.formatUnits(balance, token.decimals)) *
+    tokenPriceMap.get(token.address.toLowerCase() as Address)!
+  );
 }
 
 export async function getTokenMetadata(
@@ -101,12 +134,7 @@ export async function getEthBalance(address: string): Promise<TokenAmount> {
       let balance = BigInt(response.result);
 
       return {
-        token: {
-          address: ethers.ZeroAddress,
-          name: "Ethereum",
-          symbol: "ETH",
-          decimals: 18
-        },
+        token: ETH,
         amount: BigInt(response.result),
         amountInUSD: 0
       };

@@ -42,6 +42,7 @@ export const MORPHO_SUPPORTED_COLLATERAL_TOKEN_QUERY = gql`
 
 export const DEFILLAMA_YIELDS_API_URL = "https://yields.llama.fi";
 export const DEFILLAMA_YIELDS_POOLS_API_URL = `${DEFILLAMA_YIELDS_API_URL}/pools`;
+export const DEFILLAMA_TOKEN_PRICE_API_URL = `https://coins.llama.fi/prices/current/`;
 
 export const DEFILLAMA_AAVE_V3_PROJECT_SLUG = "aave-v3";
 

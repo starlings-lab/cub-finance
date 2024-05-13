@@ -1,5 +1,7 @@
+import { ethers } from "ethers";
 import { Token } from "../type/type";
 import { getUniqueTokens } from "../utils/utils";
+import { Address } from "abitype";
 
 export const USDC: Token = {
   address: `0x${"A0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"}`,
@@ -149,6 +151,13 @@ export const AAVE: Token = {
   decimals: 18
 };
 
+export const ETH: Token = {
+  address: ethers.ZeroAddress as Address,
+  name: "Ethereum",
+  symbol: "ETH",
+  decimals: 18
+};
+
 export const MORPHO_BLUE_DEBT_STABLECOINS = [USDC, DAI, USDT, PYUSD, USDA];
 export const AAVE_V3_DEBT_STABLECOINS = [
   GHO,
@@ -171,3 +180,22 @@ export const SUPPORTED_DEBT_STABLECOINS = getUniqueTokens([
 // this token seems like scam or test token in morpho blue market with same name as USDC
 export const USDC_DUPLICATE_OR_SCAM =
   "0xcbfb9B444d9735C345Df3A0F66cd89bD741692E9".toLowerCase();
+
+export const SUPPORTED_COLLATERAL_TOKENS: Token[] = [
+  USDC,
+  USDT,
+  DAI,
+  sDAI,
+  USDe,
+  sUSDe,
+  WETH,
+  WBTC,
+  wstETH,
+  rETH,
+  cbETH,
+  weETH,
+  LINK,
+  AAVE,
+  COMP,
+  UNI
+];
