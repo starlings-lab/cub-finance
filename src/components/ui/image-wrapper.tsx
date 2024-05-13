@@ -7,7 +7,7 @@ const ImageWrapper = (props: ImageProps) => {
   const [showText, setShowText] = useState(false);
 
   if(showText) {
-    return <div className="text-sm cursor-pointer">{alt}</div>
+    return <div className="text-sm cursor-pointer border p-1 rounded-md mx-1">{`${alt}`}</div>
   }
 
   return (
