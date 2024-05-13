@@ -3,6 +3,7 @@ import { TokenAmount } from "@/app/type/type";
 import { getFormattedTokenAmount } from "@/app/utils/utils";
 import Image from "next/image";
 import React, { useState } from "react";
+import { TickIconBox } from "./DebtSelect";
 
 const CollateralSelect = ({
   optionsList,
@@ -48,10 +49,10 @@ const CollateralSelect = ({
     ) > -1;
 
   return (
-    <div className="relative ml-4 cursor-pointer">
+    <div className="relative sm:ml-4 cursor-pointer">
       <button
         type="button"
-        className="relative flex items-center w-full cursor-default bg-white py-0.5 text-left text-gray-900 sm:text-sm sm:leading-6 border-b border-black"
+        className="relative flex items-center justify-between sm:justify-start w-full cursor-default bg-white py-0.5 text-left text-gray-900 sm:text-sm sm:leading-6 border-b border-black"
         aria-haspopup="listbox"
         aria-expanded="false"
         aria-labelledby="listbox-label"
@@ -59,7 +60,7 @@ const CollateralSelect = ({
           setActiveDropDown(activeDropDown ? "" : "collateral");
         }}
       >
-        <span className="text-xl truncate">{displayValueOfCollateral}</span>
+        <span className="text-xl truncate min-w-32">{displayValueOfCollateral}</span>
         <span className="pointer-events-none right-0 ml-3 flex items-center">
           {activeDropDown ? (
             <svg
@@ -102,7 +103,7 @@ const CollateralSelect = ({
           aria-activedescendant="listbox-option-3"
         >
           <li
-            className="text-gray-900 relative select-none py-2 pl-3 pr-9"
+            className="text-gray-900 relative select-none py-2 px-3 flex items-center justify-between"
             id="listbox-option-0"
             role="option"
             onClick={() =>
@@ -116,28 +117,14 @@ const CollateralSelect = ({
                 All Collaterals
               </span>
             </div>
-
-            {currentList?.length === optionsList?.length && (
-              <span className="text-green absolute inset-y-0 right-0 flex items-center pr-4">
-                <svg
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </span>
-            )}
+            <TickIconBox
+              isSelected={currentList?.length === optionsList?.length}
+            />
           </li>
           {optionsList?.map((selectedCollateral) => (
             <li
               key={`${selectedCollateral.amountInUSD}${selectedCollateral.token.symbol}`}
-              className="text-gray-900 relative select-none py-2 pl-3 pr-9"
+              className="text-gray-900 relative select-none py-2 px-3 flex items-center justify-between"
               id="listbox-option-0"
               role="option"
               onClick={() => handleOptionClick(selectedCollateral)}
@@ -159,23 +146,7 @@ const CollateralSelect = ({
                   {selectedCollateral.token.symbol}
                 </span>
               </div>
-
-              {isTokenSelected(selectedCollateral) && (
-                <span className="text-green absolute inset-y-0 right-0 flex items-center pr-4">
-                  <svg
-                    className="h-5 w-5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </span>
-              )}
+              <TickIconBox isSelected={isTokenSelected(selectedCollateral)} />
             </li>
           ))}
         </ul>

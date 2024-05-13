@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import favicon from "/public/favicon2.ico";
@@ -15,7 +15,16 @@ dotenv.config();
 export const metadata: Metadata = {
   title: "Cub Finance",
   description: "Borrowing Simplified.",
-  icons: [{rel: 'icon', url: favicon.src}]
+  icons: [{ rel: "icon", url: favicon.src }]
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false
+  // Also supported by less commonly used
+  // interactiveWidget: 'resizes-visual',
 };
 
 export default function RootLayout({
@@ -32,7 +41,7 @@ export default function RootLayout({
         <Suspense fallback={<div className="font-notoSerif">Loading...</div>}>
           <Navbar />
         </Suspense>
-        <main className="bg-hero-pattern">
+        <main className="bg-hero-pattern bg-white">
           <div className="flex min-h-screen max-w-screen-xl sm:max-w-4/5 mx-auto flex-col px-4">
             {children}
           </div>
