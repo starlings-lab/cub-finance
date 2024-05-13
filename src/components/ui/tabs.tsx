@@ -54,7 +54,7 @@ const TabsWrapper = ({
           </Link>
         ))}
       </div>
-      <div className="mt-1 sm:mt-4 text-md sm:text-xl text-gray-500 font-notoSerif text-center">
+      <div className="mt-1 sm:mt-4 text-sm sm:text-lg text-gray-500 font-notoSerif text-center">
         {optionsSubHeading[selected]}
       </div>
     </div>

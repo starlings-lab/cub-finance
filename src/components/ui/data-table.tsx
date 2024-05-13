@@ -158,7 +158,7 @@ export function DataTable<TData, TValue>({
                   ? "hover:bg-muted/50 cursor-pointer"
                   : "";
                 return (
-                  <TableHead key={header.id} className={classNameForSort}>
+                  <TableHead key={header.id} className={`${classNameForSort} font-bold`}>
                     {header.isPlaceholder
                       ? null
                       : flexRender(

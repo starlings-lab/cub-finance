@@ -126,8 +126,8 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             <Image
               src={"/search_black.svg"}
               alt="icon"
-              width="32"
-              height="32"
+              width="24"
+              height="24"
             />
             <Input
               ref={inputRef}
@@ -146,7 +146,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                   if (!errorCheck) {
                     router.push(`/user/${address}/${activeRoute}`);
                   } else {
-                    if(!isLoading){
+                    if (!isLoading) {
                       toast({
                         title: "Enter a valid address",
                         variant: "destructive"
@@ -159,7 +159,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             <Link href={`/user/${address}/${activeRoute}`}>
               <Button
                 disabled={errorCheck}
-                className={`bg-[#F43F5E] text-white rounded-2xl py-4 px-8 font-hkGrotesk font-medium tracking-wide ${
+                className={`bg-[#F43F5E] text-white rounded-2xl py-4 px-8 font-hkGrotesk font-medium tracking-wide transition-opacity hover:bg-[#F43F5E] hover:opacity-80 ${
                   !isHome && "hidden disabled:opacity-0"
                 }`}
               >
@@ -237,13 +237,11 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             <Spinner />
             <span className="ml-2">Scanning address</span>
           </div>
-          <div
-            className={`text-red-500 text-sm pl-3 pt-1 ${
-              addressErr ? "visible" : "invisible"
-            }`}
-          >
-            Enter a valid address
-          </div>
+          {addressErr && (
+            <div className="text-red-500 text-sm pl-3 pt-1 visible">
+              Enter a valid address
+            </div>
+          )}
           <Link href={`/user/${address}/${activeRoute}`}>
             <Button
               disabled={
@@ -252,7 +250,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 buttonDisabled ||
                 isFetchingDebtPositions
               }
-              className={`bg-[#F43F5E] text-white rounded-2xl py-4 px-8 w-full mt-2 ml-0 ${
+              className={`bg-[#F43F5E] text-white rounded-2xl py-4 px-8 w-full mt-2 ml-0 hover:bg-[#F43F5E] hover:opacity-80 ${
                 !isHome && "disabled:opacity-0"
               }`}
             >

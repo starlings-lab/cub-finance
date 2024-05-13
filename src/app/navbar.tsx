@@ -12,7 +12,7 @@ export default function Navbar() {
             <Image src="/cub_logo.png" width={64} height={64} alt="" />
           </Link>
           <div className="flex items-center">
-            <Button className="bg-[#009DC4] hover:bg-[#009dc4d6] text-white hover:text-white rounded-2xl py-4 px-8 transition-colors">
+            <Button className="bg-[#009DC4] text-white rounded-2xl py-4 px-8 transition-opacity hover:bg-[#009DC4] hover:opacity-80">
               <Link
                 target="_blank"
                 href="https://t.me/+pL8nGAh5P5k4MWZh"
