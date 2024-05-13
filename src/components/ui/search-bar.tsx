@@ -10,9 +10,7 @@ import { isValidEnsAddress, EOAFromENS } from "../../app/service/ensService";
 import { useRouter } from "next/navigation";
 import { isAddress } from "ethers";
 import { useToast } from "./use-toast";
-import { getUserDebtPositions } from "@/app/service/userDebtPositions";
-import { Address } from "abitype";
-import { ROUTE_BORROW, ROUTE_REFINANCE } from "@/app/constants";
+import { ROUTE_BORROW } from "@/app/constants";
 
 export interface SearchBarProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -31,8 +29,6 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     const [eoaAddress, setEoaAddress] = useState<string>(defaultUserAddress);
     const [addressErr, setAddressErr] = useState<boolean>(false);
     const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
-    const [isFetchingDebtPositions, setIsFetchingDebtPositions] =
-      useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const preValidationStateUpdate = (inputValue: string) => {
@@ -96,35 +92,18 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       };
     }, []); // Run this effect only once on component mount
 
-    const verifyAndFetchDebtPositions = React.useCallback(async () => {
+    const verifyAndRefreshRoute = React.useCallback(async () => {
       // it should not refetch for same address
       if (address !== defaultUserAddress || isHome) {
-        setIsFetchingDebtPositions(true);
-        try {
-          if (routeType) {
-            router.push(`/user/${address}/${routeType}`);
-          } else {
-            const debtPositions = await getUserDebtPositions(
-              eoaAddress as Address
-            );
-            if (debtPositions?.length > 0) {
-              router.push(`/user/${address}/${ROUTE_REFINANCE}`);
-            } else {
-              router.push(`/user/${address}/${ROUTE_BORROW}`);
-            }
-          }
-        } catch (e) {
-          console.error("Failed to scan debt positions:", e);
-        } finally {
-          setTimeout(() => {
-            setIsFetchingDebtPositions(false);
-          }, 1000);
+        if (routeType) {
+          router.push(`/user/${address}/${routeType}`);
+        } else {
+          router.push(`/user/${address}/${ROUTE_BORROW}`);
         }
       }
-    }, [eoaAddress, address, router, isHome, defaultUserAddress, routeType]);
+    }, [address, router, isHome, defaultUserAddress, routeType]);
 
-    const errorCheck =
-      addressErr || address === "" || buttonDisabled || isFetchingDebtPositions;
+    const errorCheck = addressErr || address === "" || buttonDisabled;
 
     return (
       <div
@@ -160,13 +139,13 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               onChange={handleChange}
               onBlur={async () => {
                 if (!errorCheck && !isHome) {
-                  await verifyAndFetchDebtPositions();
+                  await verifyAndRefreshRoute();
                 }
               }}
               onKeyDown={async (e) => {
                 if (e.key === "Enter") {
                   if (!errorCheck) {
-                    await verifyAndFetchDebtPositions();
+                    await verifyAndRefreshRoute();
                   } else {
                     if (!isLoading) {
                       toast({
@@ -183,24 +162,9 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               className={`bg-[#F43F5E] text-white rounded-2xl sm:py-4 sm:px-8 font-hkGrotesk font-medium tracking-wide transition-opacity hover:bg-[#F43F5E] hover:opacity-80 ${
                 isHome ? "w-36" : "w-12 sm:w-24"
               }`}
-              onClick={verifyAndFetchDebtPositions}
+              onClick={verifyAndRefreshRoute}
             >
-              {isFetchingDebtPositions ? (
-                <Spinner color={"#fff"} />
-              ) : (
-                <div>
-                  {isHome ? (
-                    "Find Now"
-                  ) : (
-                    <Image
-                      src={"/search_white.svg"}
-                      alt="icon"
-                      width="20"
-                      height="20"
-                    />
-                  )}
-                </div>
-              )}
+              {getSearchButtonOrImage(isHome, isLoading)}
             </Button>
           </div>
           <div
@@ -239,7 +203,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               onChange={handleChange}
               onBlur={async () => {
                 if (!isHome && address && eoaAddress) {
-                  await verifyAndFetchDebtPositions();
+                  await verifyAndRefreshRoute();
                 }
               }}
             />
@@ -264,22 +228,9 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             className={`bg-[#F43F5E] text-white rounded-2xl py-4 px-8 w-full mt-2 ml-0 hover:bg-[#F43F5E] hover:opacity-80 ${
               !isHome && "disabled:opacity-0"
             }`}
-            onClick={verifyAndFetchDebtPositions}
+            onClick={verifyAndRefreshRoute}
           >
-            {isFetchingDebtPositions ? (
-              <Spinner color={"#fff"} />
-            ) : (
-              <div className="flex">
-                Find Now
-                <Image
-                  src={"/search_white.svg"}
-                  alt="icon"
-                  width="24"
-                  height="24"
-                  className="ml-2"
-                />
-              </div>
-            )}
+            {getSearchButtonOrImage(isHome, isLoading)}
           </Button>
         </div>
       </div>
@@ -289,3 +240,17 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
 SearchBar.displayName = "SearchBar";
 
 export { SearchBar };
+
+function getSearchButtonOrImage(isHome: boolean, isLoading: boolean) {
+  return isLoading ? (
+    <Spinner color={"#fff"} />
+  ) : (
+    <div>
+      {isHome ? (
+        "Find Now"
+      ) : (
+        <Image src={"/search_white.svg"} alt="icon" width="20" height="20" />
+      )}
+    </div>
+  );
+}
