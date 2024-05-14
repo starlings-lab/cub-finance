@@ -1,8 +1,6 @@
 "use client";
 import {
   BorrowRecommendationTableRow,
-  DebtPositionTableRow,
-  Token,
   TokenAmount,
   TokenDetail
 } from "@/app/type/type";
@@ -12,6 +10,7 @@ import { getBorrowRecommendations } from "@/app/service/borrowRecommendationServ
 import BorrowRecommendations from "./BorrowRecommendations";
 import CollateralSelect from "./CollateralSelect";
 import DebtSelect from "./DebtSelect";
+import { useToast } from "../../../../components/ui/use-toast";
 
 const BorrowRecommendationsWrapper = ({
   columns,
@@ -31,7 +30,6 @@ const BorrowRecommendationsWrapper = ({
   const [borrowRecommendations, setBorrowRecommendations] = useState<
     BorrowRecommendationTableRow[]
   >([]);
-
   const [filteredBorrowRecommendations, setFilteredBorrowRecommendations] =
     useState<BorrowRecommendationTableRow[]>([]);
 
@@ -39,6 +37,10 @@ const BorrowRecommendationsWrapper = ({
     useState<TokenDetail[]>(supportedDebtTokens);
   const [selectedCollaterals, setSelectedCollaterals] =
     useState<TokenAmount[]>(collaterals);
+
+  // add error state
+  const [error, setError] = useState<string | undefined>(undefined);
+  const { toast } = useToast();
 
   useEffect(() => {
     setSelectedDebtTokens(supportedDebtTokens);
@@ -58,36 +60,50 @@ const BorrowRecommendationsWrapper = ({
 
   useEffect(() => {
     const fetchBorrowRecommendations = async () => {
-      setIsLoading(true);
-      const debtTokens = supportedDebtTokens?.map(
-        (debtToken) => debtToken.token
-      );
-
-      const startTime = Date.now();
-      let borrowRecommendations: BorrowRecommendationTableRow[] = [];
-
-      if (
-        debtTokens &&
-        debtTokens.length > 0 &&
-        selectedCollaterals &&
-        selectedCollaterals.length > 0
-      ) {
-        borrowRecommendations = await getBorrowRecommendations(
-          debtTokens,
-          selectedCollaterals
+      try {
+        setError(undefined);
+        setIsLoading(true);
+        const debtTokens = supportedDebtTokens?.map(
+          (debtToken) => debtToken.token
         );
-      }
-      console.log(
-        "Time taken to fetch borrow recommendations: ",
-        Date.now() - startTime
-      );
 
-      setBorrowRecommendations(borrowRecommendations);
-      setFilteredBorrowRecommendations(borrowRecommendations);
-      setIsLoading(false);
+        const startTime = Date.now();
+        let borrowRecommendations: BorrowRecommendationTableRow[] = [];
+
+        if (
+          debtTokens &&
+          debtTokens.length > 0 &&
+          selectedCollaterals &&
+          selectedCollaterals.length > 0
+        ) {
+          borrowRecommendations = await getBorrowRecommendations(
+            debtTokens,
+            selectedCollaterals
+          );
+        }
+        console.log(
+          "Time taken to fetch borrow recommendations: ",
+          Date.now() - startTime
+        );
+
+        setBorrowRecommendations(borrowRecommendations);
+        setFilteredBorrowRecommendations(borrowRecommendations);
+        setIsLoading(false);
+      } catch (error) {
+        const errorMessage =
+          "Failed to retrieve borrow recommendations. Please try again using browser refresh button.";
+        toast({
+          title: "Data Fetching Error",
+          description: errorMessage,
+          variant: "destructive"
+        });
+        setIsLoading(false);
+        setError(errorMessage);
+      }
     };
+
     fetchBorrowRecommendations();
-  }, [selectedCollaterals, supportedDebtTokens]);
+  }, [selectedCollaterals, supportedDebtTokens, toast]);
 
   return (
     <div>
@@ -111,27 +127,28 @@ const BorrowRecommendationsWrapper = ({
       </div>
       <div className="flex sm:hidden flex-col mb-8 mx-auto justify-center">
         <div className="mb-2">I want to borrow</div>
-          <DebtSelect
-            activeDropDown={activeDropDown === "debt"}
-            setActiveDropDown={setActiveDropDown}
-            optionsList={supportedDebtTokens}
-            currentList={selectedDebtTokens}
-            setCurrentList={setSelectedDebtTokens}
-          />
-          <div className="my-2">against</div>
-          <CollateralSelect
-            activeDropDown={activeDropDown === "collateral"}
-            setActiveDropDown={setActiveDropDown}
-            optionsList={collaterals}
-            currentList={selectedCollaterals}
-            setCurrentList={setSelectedCollaterals}
-          />
+        <DebtSelect
+          activeDropDown={activeDropDown === "debt"}
+          setActiveDropDown={setActiveDropDown}
+          optionsList={supportedDebtTokens}
+          currentList={selectedDebtTokens}
+          setCurrentList={setSelectedDebtTokens}
+        />
+        <div className="my-2">against</div>
+        <CollateralSelect
+          activeDropDown={activeDropDown === "collateral"}
+          setActiveDropDown={setActiveDropDown}
+          optionsList={collaterals}
+          currentList={selectedCollaterals}
+          setCurrentList={setSelectedCollaterals}
+        />
       </div>
       <BorrowRecommendations
         isLoading={isLoading}
         columns={columns}
         borrowOptions={filteredBorrowRecommendations}
         initialSortedColumns={initialSortedColumns}
+        error={error}
       />
     </div>
   );

@@ -23,12 +23,14 @@ const BorrowRecommendations = ({
   isLoading,
   columns,
   borrowOptions,
-  initialSortedColumns
+  initialSortedColumns,
+  error
 }: {
   isLoading: boolean;
   columns: ColumnDef<BorrowRecommendationTableRow>[];
   borrowOptions: BorrowRecommendationTableRow[];
   initialSortedColumns: ColumnSort[];
+  error?: string;
 }) => {
   const borrowTable = useReactTable({
     data: borrowOptions,
@@ -54,7 +56,10 @@ const BorrowRecommendations = ({
                 ? "hover:bg-muted/50 cursor-pointer"
                 : "";
               return (
-                <TableHead key={header.id} className={`${classNameForSort} font-bold`}>
+                <TableHead
+                  key={header.id}
+                  className={`${classNameForSort} font-bold`}
+                >
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -99,7 +104,8 @@ const BorrowRecommendations = ({
               colSpan={columns.length}
               className="h-16 text-left sm:text-center"
             >
-              You don&apos;t have borrow options because you have no supported collaterals.
+              {error ??
+                "You don&apos;t have borrow options because you have no supported collaterals."}
             </TableCell>
           </TableRow>
         )}

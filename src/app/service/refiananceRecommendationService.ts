@@ -103,8 +103,8 @@ export async function getRefinanceRecommendations(
       return allRecommendationsConverted;
     })
     .catch((error) => {
-      console.error("Error fetching recommendations: ", error);
-      return [];
+      console.error("Error fetching refinance recommendations: ", error);
+      throw error;
     });
 }
 
