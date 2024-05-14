@@ -50,9 +50,11 @@ const initialSortedColumns: ColumnSort[] = [
 ];
 
 const RecommendationsWrapper = ({
-  activeRecommendation
+  activeRecommendation,
+  error
 }: {
   activeRecommendation: RecommendedDebtDetailTableRow[];
+  error?: string;
 }) => {
   const recommendationTable = useReactTable({
     data: activeRecommendation,
@@ -98,8 +100,8 @@ const RecommendationsWrapper = ({
             colSpan={recommendedTableColumns.length}
             className="h-16 text-left sm:text-center"
           >
-            Your existing positions look good! Try choosing another debt
-            position.
+            {error ??
+              "Your existing positions look good! Try choosing another debt position."}
           </TableCell>
         </TableRow>
       )}

@@ -1,8 +1,6 @@
 "use client";
 import {
   BorrowRecommendationTableRow,
-  DebtPositionTableRow,
-  Token,
   TokenAmount,
   TokenDetail
 } from "@/app/type/type";
@@ -95,7 +93,7 @@ const BorrowRecommendationsWrapper = ({
         const errorMessage =
           "Failed to retrieve borrow recommendations. Please try again using browser refresh button.";
         toast({
-          title: "Error",
+          title: "Data Fetching Error",
           description: errorMessage,
           variant: "destructive"
         });
