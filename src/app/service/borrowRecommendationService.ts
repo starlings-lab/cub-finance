@@ -82,8 +82,8 @@ export async function getBorrowRecommendations(
       return allRecommendationsConverted;
     })
     .catch((error) => {
-      console.error("Error fetching recommendations: ", error);
-      return [];
+      console.error("Error fetching borrow recommendations: ", error);
+      throw error;
     });
 }
 
