@@ -401,8 +401,47 @@ export class BaseAaveService {
     // get market reserve data
     const { reservesMap, baseCurrencyData } = await this.getReservesData();
 
-    // create a recommended position for each debt token
     const recommendations: RecommendedDebtDetail[] = [];
+
+    const collateralMarkets = await this.fetchCollateralMarkets(
+      collaterals.map((collateral) => collateral.token),
+      reservesMap
+    );
+
+    if (!collateralMarkets || collateralMarkets.size === 0) {
+      // console.log("No matching debt or collateral market exist for protocol: ", this.protocol);
+      return recommendations;
+    }
+
+    // Filter out collateral markets where borrowing is not enabled
+    const supportedCollaterals = collaterals.filter((collateral) => {
+      const collateralMarket = collateralMarkets.get(
+        collateral.token.address.toLowerCase()
+      );
+      return collateralMarket;
+    });
+
+    // Calculate total collateral amount in USD
+    const totalCollateralAmountInUSD = supportedCollaterals.reduce(
+      (total, collateral) => {
+        const amountInUSD = calculateAmountInBaseCurrency(
+          collateral.amount,
+          reservesMap.get(collateral.token.address.toLowerCase()),
+          baseCurrencyData.marketReferenceCurrencyUnit
+        );
+
+        // Update collateral amount in USD as caller doesn't have this info
+        collateral.amountInUSD = amountInUSD;
+        return total + amountInUSD;
+      },
+      0
+    );
+
+    // Calculate recommended debt amount using max LTV
+    const maxLTV = calculateMaxLtv(supportedCollaterals, reservesMap);
+    const debtAmountInUSD = maxLTV * totalCollateralAmountInUSD;
+
+    // create a recommended position for each debt token
     for (let i = 0; i < debtTokens.length; i++) {
       const debtToken = debtTokens[i];
       const debtReserve = reservesMap.get(debtToken!.address.toLowerCase());
@@ -417,44 +456,6 @@ export class BaseAaveService {
       if (!debtMarket) {
         continue;
       }
-
-      const collateralMarkets = await this.fetchCollateralMarkets(
-        collaterals.map((collateral) => collateral.token),
-        reservesMap
-      );
-
-      if (!collateralMarkets || collateralMarkets.size === 0) {
-        // console.log("No matching debt or collateral market exist for protocol: ", this.protocol);
-        continue;
-      }
-
-      // Filter out collateral markets where borrowing is not enabled
-      const supportedCollaterals = collaterals.filter((collateral) => {
-        const collateralMarket = collateralMarkets.get(
-          collateral.token.address.toLowerCase()
-        );
-        return collateralMarket;
-      });
-
-      // Calculate total collateral amount in USD
-      const totalCollateralAmountInUSD = supportedCollaterals.reduce(
-        (total, collateral) => {
-          const amountInUSD = calculateAmountInBaseCurrency(
-            collateral.amount,
-            reservesMap.get(collateral.token.address.toLowerCase()),
-            baseCurrencyData.marketReferenceCurrencyUnit
-          );
-
-          // Update collateral amount in USD as caller doesn't have this info
-          collateral.amountInUSD = amountInUSD;
-          return total + amountInUSD;
-        },
-        0
-      );
-
-      // Calculate recommended debt amount using max LTV
-      const maxLTV = calculateMaxLtv(supportedCollaterals, reservesMap);
-      const debtAmountInUSD = maxLTV * totalCollateralAmountInUSD;
 
       const recommendedDebt = {
         token: debtToken,
