@@ -9,6 +9,7 @@ import {
 import { APYInfo } from "../type/type";
 import { ethers } from "ethers";
 import { ETH } from "../contracts/ERC20Tokens";
+import { kv } from "@vercel/kv";
 
 /**
  * Calculate the 30 day trailing borrowing and lending APYs for given lending pool.
@@ -100,13 +101,21 @@ export async function getHistoricalLendBorrowRewardAPY(
 export async function getProtocolPoolsMap(
   projectSlug: string
 ): Promise<Map<string, string>> {
+  // check if data is already stored in vercel KV
+  const cachedData = await kv.hgetall(`pools-${projectSlug}`);
+  if (cachedData) {
+    const typedCachedData = cachedData as { [key: string]: string };
+    return Promise.resolve(new Map(Object.entries(typedCachedData)));
+  }
+
+  console.log(`Fetching pools data from DefiLlama API for ${projectSlug}`);
   return fetch(DEFILLAMA_YIELDS_POOLS_API_URL, { cache: "no-store" })
     .then((responseRaw) => responseRaw.json())
     .then((response) => {
       // console.dir(response, { depth: null });
 
       // filter pools by protocol and create a map of pool token symbol to pool id
-      const pools = new Map<string, string>();
+      const pools: { [key: string]: string } = {};
       response.data
         .filter(
           (pool: any) =>
@@ -114,12 +123,15 @@ export async function getProtocolPoolsMap(
             pool.project.toLowerCase() === projectSlug.toLowerCase()
         )
         .forEach((poolData: any) => {
-          pools.set(poolData.symbol.toUpperCase(), poolData.pool);
+          pools[poolData.symbol.toUpperCase()] = poolData.pool;
         });
 
       // console.dir(pools, { depth: null });
+      // store data in vercel KV
+      kv.hset(`pools-${projectSlug}`, pools);
 
-      return pools;
+      // convert pools to map and return
+      return new Map(Object.entries(pools));
     })
     .catch((error) => {
       console.error(error);

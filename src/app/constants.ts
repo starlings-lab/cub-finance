@@ -46,6 +46,11 @@ export const DEFILLAMA_TOKEN_PRICE_API_URL = `https://coins.llama.fi/prices/curr
 
 export const DEFILLAMA_AAVE_V3_PROJECT_SLUG = "aave-v3";
 
+export const DEFILLAMA_AAVE_V3_PROJECT_SLUGS = [
+  DEFILLAMA_AAVE_V3_PROJECT_SLUG,
+  "compound-v3",
+  "spark"
+];
 // App: https://defillama.com/yields/pool/85c57261-b75b-4447-a115-d79b1a7de8ed
 // API: https://yields.llama.fi/chartLendBorrow/85c57261-b75b-4447-a115-d79b1a7de8ed
 export const DEFILLAMA_COMPOUND_ETH_POOL_ID =
