@@ -37,7 +37,7 @@ import {
   isZeroOrPositive,
   isZeroOrNegative
 } from "../utils/utils";
-import { calculate30DayTrailingBorrowingAndLendingAPYs } from "./defiLlamaDataService";
+import { get30DayTrailingAPYInfo } from "./defiLlamaDataService";
 
 const USD_SCALE = BigInt(10 ** 8);
 const MAX_UTILIZATION_RATIO = 0.98;
@@ -252,12 +252,8 @@ function getMarketByDebtTokenAddress(debtTokenAddress: Address): any {
 // Fetches 30 days trailing borrowing APYs for Compound ETH and USDC pools
 async function getBorrowingAPYsByTokenAddress(): Promise<Map<string, APYInfo>> {
   return Promise.all([
-    calculate30DayTrailingBorrowingAndLendingAPYs(
-      DEFILLAMA_COMPOUND_ETH_POOL_ID
-    ),
-    calculate30DayTrailingBorrowingAndLendingAPYs(
-      DEFILLAMA_COMPOUND_USDC_POOL_ID
-    )
+    get30DayTrailingAPYInfo(Protocol.CompoundV3, WETH.symbol),
+    get30DayTrailingAPYInfo(Protocol.CompoundV3, USDC.symbol)
   ]).then((apyData) => {
     const borrowingAPYs = new Map<string, APYInfo>();
     borrowingAPYs.set(WETH.address, apyData[0]);

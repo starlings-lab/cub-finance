@@ -15,14 +15,8 @@ import {
 } from "../type/type";
 import { calculateAPYFromAPR } from "../utils/utils";
 import { request, gql } from "graphql-request";
-import {
-  DEFILLAMA_AAVE_V3_PROJECT_SLUG,
-  MESSARI_AAVE_V3_GRAPHQL_URL
-} from "../constants";
-import {
-  calculate30DayTrailingBorrowingAndLendingAPYs,
-  getProtocolPoolsMap
-} from "./defiLlamaDataService";
+import { MESSARI_AAVE_V3_GRAPHQL_URL } from "../constants";
+import { get30DayTrailingAPYInfo } from "./defiLlamaDataService";
 
 // implement APYProvider interface for Spark protocol
 class AaveV3APYProvider implements APYProvider {
@@ -167,19 +161,5 @@ export async function getBorrowRecommendations(
 async function calculateRewardAPYs(
   tokenSymbol: string
 ): Promise<{ lendingRewardAPY: number; borrowingRewardAPY: number }> {
-  const poolIdMap = await getProtocolPoolsMap(DEFILLAMA_AAVE_V3_PROJECT_SLUG);
-  const tokenPoolId = poolIdMap.get(tokenSymbol.toUpperCase());
-
-  if (!tokenPoolId) {
-    console.error(
-      `DefiLlama AAVE v3 pool id not found for token: ${tokenSymbol}`
-    );
-    return Promise.resolve({
-      borrowingRewardAPY: 0,
-      lendingRewardAPY: 0
-    });
-  }
-
-  // console.log(`Token pool id: ${tokenPoolId} for token: ${tokenSymbol}`);
-  return calculate30DayTrailingBorrowingAndLendingAPYs(tokenPoolId);
+  return get30DayTrailingAPYInfo(Protocol.AaveV3, tokenSymbol);
 }

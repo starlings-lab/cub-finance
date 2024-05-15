@@ -11,7 +11,7 @@ import {
   Token,
   TokenAmount
 } from "../type/type";
-import { calculate30DayTrailingBorrowingAndLendingAPYs } from "./defiLlamaDataService";
+import { get30DayTrailingAPYInfo } from "./defiLlamaDataService";
 import { DEFILLAMA_SPARK_POOL_IDS } from "../constants";
 
 // implement APYProvider interface for Spark protocol
@@ -20,21 +20,7 @@ class SparkAPYProvider implements APYProvider {
     tokenSymbol: string,
     aTokenAddress: Address
   ): Promise<APYInfo> {
-    const tokenPoolId = DEFILLAMA_SPARK_POOL_IDS[
-      tokenSymbol.toUpperCase() as keyof typeof DEFILLAMA_SPARK_POOL_IDS
-    ] as string;
-    if (!tokenPoolId) {
-      // TODO: DefiLlama doesn't have data for sDAI and GNO(Gnosis Token)
-      console.log(`DefiLlama pool id not found for token: ${tokenSymbol}`);
-      return Promise.resolve({
-        borrowingAPY: 0,
-        lendingAPY: 0,
-        borrowingRewardAPY: 0,
-        lendingRewardAPY: 0
-      });
-    }
-
-    return calculate30DayTrailingBorrowingAndLendingAPYs(tokenPoolId);
+    return get30DayTrailingAPYInfo(Protocol.Spark, tokenSymbol);
   }
 }
 

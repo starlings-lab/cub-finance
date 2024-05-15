@@ -2,14 +2,39 @@
 
 import { Address } from "abitype";
 import {
+  DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL,
   DEFILLAMA_TOKEN_PRICE_API_URL,
   DEFILLAMA_YIELDS_POOLS_API_URL,
   getDefiLlamaLendBorrowDataApi
 } from "../constants";
-import { APYInfo } from "../type/type";
-import { ethers } from "ethers";
+import { APYInfo, Protocol } from "../type/type";
 import { ETH } from "../contracts/ERC20Tokens";
 import { kv } from "@vercel/kv";
+
+export async function get30DayTrailingAPYInfo(
+  protocol: Protocol,
+  tokenSymbol: string
+): Promise<APYInfo> {
+  // check if data is already stored in vercel KV
+  const poolKey = `${DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL.get(
+    protocol
+  )}-${tokenSymbol}`.toUpperCase();
+  const cachedData = await kv.hgetall(poolKey);
+
+  if (!cachedData) {
+    console.error(`APY data not found in cache for ${poolKey}`);
+    return Promise.resolve({
+      lendingAPY: 0,
+      lendingRewardAPY: 0,
+      borrowingAPY: 0,
+      borrowingRewardAPY: 0
+    });
+  }
+
+  return Promise.resolve(cachedData as APYInfo);
+
+  // TODO: trigger cache refresh if data is not available?
+}
 
 /**
  * Calculate the 30 day trailing borrowing and lending APYs for given lending pool.
@@ -17,6 +42,9 @@ import { kv } from "@vercel/kv";
  * and calculates the trailing APYs.
  * @param poolId DefiLlama pool id of the lending pool
  * @returns
+ * @throws Error if there is an issue fetching data from DefiLlama API
+ * Note: This function should only be used in the API route to calculate
+ * and cache APYs for all pools of supported protocols.
  */
 export async function calculate30DayTrailingBorrowingAndLendingAPYs(
   poolId: string
@@ -61,7 +89,7 @@ export async function calculate30DayTrailingBorrowingAndLendingAPYs(
 }
 
 // function to fetch historical lend, borrow & reward apy for lending pool
-export async function getHistoricalLendBorrowRewardAPY(
+async function getHistoricalLendBorrowRewardAPY(
   poolId: string,
   days: number = 30
 ): Promise<any[]> {
