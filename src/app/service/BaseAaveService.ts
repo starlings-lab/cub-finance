@@ -388,27 +388,14 @@ export class BaseAaveService {
     debtTokens: Token[],
     collaterals: TokenAmount[]
   ): Promise<RecommendedDebtDetail[]> {
-    const start = Date.now();
-
     // get market reserve data
     const { reservesMap, baseCurrencyData } = await this.getReservesData();
-    console.log(
-      `Time taken to get reserves data for protocol: ${this.protocol}: ${
-        Date.now() - start
-      } ms`
-    );
 
     const recommendations: RecommendedDebtDetail[] = [];
 
-    const start1 = Date.now();
     const collateralMarkets = await this.fetchCollateralMarkets(
       collaterals.map((collateral) => collateral.token),
       reservesMap
-    );
-    console.log(
-      `Time taken to fetch collateral markets for protocol: ${this.protocol}: ${
-        Date.now() - start1
-      } ms`
     );
 
     if (!collateralMarkets || collateralMarkets.size === 0) {

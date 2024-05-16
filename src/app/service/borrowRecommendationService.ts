@@ -66,6 +66,11 @@ export async function getBorrowRecommendations(
     })
   ])
     .then((recommendationResults) => {
+      console.log(
+        `Time taken to get all borrow recommendations for user ${userAddress}: ${
+          Date.now() - start
+        } ms`
+      );
       const allRecommendations: (
         | RecommendedDebtDetail
         | MorphoBlueRecommendedDebtDetail
