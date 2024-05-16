@@ -389,10 +389,6 @@ export class BaseAaveService {
     collaterals: TokenAmount[]
   ): Promise<RecommendedDebtDetail[]> {
     const start = Date.now();
-    console.log(
-      "Generating borrow recommendations from protocol: ",
-      this.protocol
-    );
 
     // get market reserve data
     const { reservesMap, baseCurrencyData } = await this.getReservesData();

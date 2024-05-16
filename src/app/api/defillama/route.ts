@@ -26,6 +26,7 @@ export async function GET() {
             PROJECT_SLUGS.includes(pool.project.toLowerCase())
         )
         .map((poolData: any) => {
+          // console.log("Fetched pool data", poolData);
           return {
             project: poolData.project,
             poolId: poolData.pool,

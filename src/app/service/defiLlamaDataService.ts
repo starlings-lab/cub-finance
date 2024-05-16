@@ -31,7 +31,13 @@ export async function get30DayTrailingAPYInfo(
     });
   }
 
-  return Promise.resolve(cachedData as unknown as APYInfo);
+  // console.log(`APY data from cache for ${poolKey}: `, cachedData);
+  return Promise.resolve({
+    lendingAPY: Number(cachedData.lendingAPY),
+    lendingRewardAPY: Number(cachedData.lendingRewardAPY),
+    borrowingAPY: Number(cachedData.borrowingAPY),
+    borrowingRewardAPY: Number(cachedData.borrowingRewardAPY)
+  });
 
   // TODO: trigger cache refresh if data is not available?
 }
@@ -51,22 +57,24 @@ export async function calculate30DayTrailingBorrowingAndLendingAPYs(
 ): Promise<APYInfo> {
   return getHistoricalLendBorrowRewardAPY(poolId, 30)
     .then((data) => {
-      let cumulativeBorrowAPY = 0;
-      let cumulativeLendAPY = 0;
-      let cumulativeLendingRewardAPY = 0;
-      let cumulativeBorrowingRewardAPY = 0;
+      let cumulativeBorrowAPY: number = 0;
+      let cumulativeLendAPY: number = 0;
+      let cumulativeLendingRewardAPY: number = 0;
+      let cumulativeBorrowingRewardAPY: number = 0;
       for (let i = 0; i < data.length; i++) {
         // expected shape of data:
         // { apyBase: number, apyReward: number, apyBaseBorrow: number, apyRewardBorrow: number }
         const datum: any = data[i];
-        cumulativeBorrowAPY += datum.apyBaseBorrow;
-        cumulativeLendAPY += datum.apyBase;
-        cumulativeLendingRewardAPY += datum.apyReward;
-        cumulativeBorrowingRewardAPY += datum.apyRewardBorrow;
+        cumulativeBorrowAPY += Number(datum.apyBaseBorrow);
+        cumulativeLendAPY += Number(datum.apyBase);
+        cumulativeLendingRewardAPY += Number(datum.apyReward);
+        cumulativeBorrowingRewardAPY += Number(datum.apyRewardBorrow);
       }
 
-      const trailingDayBorrowingAPY = cumulativeBorrowAPY / data.length / 100;
-      const trailingDayLendingAPY = cumulativeLendAPY / data.length / 100;
+      const trailingDayBorrowingAPY: number =
+        cumulativeBorrowAPY / data.length / 100;
+      const trailingDayLendingAPY: number =
+        cumulativeLendAPY / data.length / 100;
 
       // console.log(
       //   `Cumulative borrow rate: ${cumulativeBorrowRate}, Cumulative lend rate: ${cumulativeLendRate}`
