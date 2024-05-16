@@ -6,7 +6,6 @@ import favicon from "/public/favicon2.ico";
 import "./globals.css";
 import Navbar from "./navbar";
 import Fathom from "../components/fathom";
-import { Analytics } from "@vercel/analytics/react";
 
 import dotenv from "dotenv";
 import { hkGrotesk, notoSerif } from "./fonts";
@@ -47,7 +46,6 @@ export default function RootLayout({
           </div>
         </main>
         <Toaster />
-        <Analytics />
       </body>
     </html>
   );
