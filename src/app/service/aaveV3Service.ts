@@ -32,77 +32,17 @@ class AaveV3APYProvider implements APYProvider {
     tokenSymbol: string,
     aTokenAddress: Address
   ): Promise<APYInfo> {
-    const query = gql`
-    query {
-      marketHourlySnapshots(
-        where: { market: "${aTokenAddress}" }
-        orderBy: blockNumber
-        orderDirection: desc
-        first: 720
-      ) {
-        rates(where: {type: VARIABLE}) {
-          rate
-          side
-          type
-        }
-        blockNumber
-      }
-    }
-  `;
-    try {
-      return Promise.all([
-        request(MESSARI_AAVE_V3_GRAPHQL_URL, query),
-        calculateRewardAPYs(tokenSymbol)
-      ]).then((values) => {
-        // console.log(
-        //   "Query result count: ",
-        //   queryResult.marketHourlySnapshots.length
-        // );
-        const queryResult: any = values[0];
-        let cumulativeBorrowRate = 0;
-        let cumulativeLendRate = 0;
-        for (let i = 0; i < queryResult.marketHourlySnapshots.length; i++) {
-          const snapshot = queryResult.marketHourlySnapshots[i];
-          const rateMapBySide = new Map<string, number>();
-          snapshot.rates.forEach((rate: any) => {
-            rateMapBySide.set(rate.side, parseFloat(rate.rate) / 100);
-          });
-          const borrowerRate = rateMapBySide.get("BORROWER") || 0;
-          cumulativeBorrowRate += borrowerRate;
-          const lenderRate = rateMapBySide.get("LENDER") || 0;
-          cumulativeLendRate += lenderRate;
-        }
-
-        const trailingDayBorrowRate =
-          cumulativeBorrowRate / queryResult.marketHourlySnapshots.length;
-        const trailingDayLendRate =
-          cumulativeLendRate / queryResult.marketHourlySnapshots.length;
-
-        // console.log(
-        //   `Cumulative borrow rate: ${cumulativeBorrowRate}, Cumulative lend rate: ${cumulativeLendRate}`
-        // );
-        // console.log(
-        //   `Trailing day borrow rate: ${trailingDayBorrowRate}, Trailing day lend rate: ${trailingDayLendRate}`
-        // );
-        const trailingDayBorrowingAPY = calculateAPYFromAPR(
-          trailingDayBorrowRate
+    const start = Date.now();
+    return get30DayTrailingAPYInfo(Protocol.AaveV3, tokenSymbol).then(
+      (result) => {
+        console.log(
+          `Time taken to fetch APY info AAVE token: ${tokenSymbol}: ${
+            Date.now() - start
+          } ms`
         );
-        const trailingDayLendingAPY = calculateAPYFromAPR(trailingDayLendRate);
-
-        const apyInfo = {
-          borrowingAPY: trailingDayBorrowingAPY,
-          lendingAPY: trailingDayLendingAPY,
-          borrowingRewardAPY: values[1].borrowingRewardAPY,
-          lendingRewardAPY: values[1].lendingRewardAPY
-        };
-
-        // console.log("APY Info: ", apyInfo);
-        return apyInfo;
-      });
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
+        return result;
+      }
+    );
   }
 }
 
@@ -155,11 +95,31 @@ export async function getBorrowRecommendations(
   debtTokens: Token[],
   collaterals: TokenAmount[]
 ): Promise<RecommendedDebtDetail[]> {
-  return baseAaveService.getBorrowRecommendations(debtTokens, collaterals);
+  const start = Date.now();
+  return baseAaveService
+    .getBorrowRecommendations(debtTokens, collaterals)
+    .then((results) => {
+      console.log(
+        `Time taken to get AAVE v3 borrow recommendations: ${
+          Date.now() - start
+        } ms`
+      );
+      return results;
+    });
 }
 
 async function calculateRewardAPYs(
   tokenSymbol: string
 ): Promise<{ lendingRewardAPY: number; borrowingRewardAPY: number }> {
-  return get30DayTrailingAPYInfo(Protocol.AaveV3, tokenSymbol);
+  const start = Date.now();
+  return get30DayTrailingAPYInfo(Protocol.AaveV3, tokenSymbol).then(
+    (result) => {
+      console.log(
+        `Time taken to fetch 30 day trailing APY info using DefiLlama for token: ${tokenSymbol}: ${
+          Date.now() - start
+        } ms`
+      );
+      return result;
+    }
+  );
 }

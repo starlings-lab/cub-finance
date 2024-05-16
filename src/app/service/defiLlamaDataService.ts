@@ -31,7 +31,7 @@ export async function get30DayTrailingAPYInfo(
     });
   }
 
-  return Promise.resolve(cachedData as APYInfo);
+  return Promise.resolve(cachedData as unknown as APYInfo);
 
   // TODO: trigger cache refresh if data is not available?
 }

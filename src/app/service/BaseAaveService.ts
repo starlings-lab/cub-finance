@@ -393,6 +393,7 @@ export class BaseAaveService {
     debtTokens: Token[],
     collaterals: TokenAmount[]
   ): Promise<RecommendedDebtDetail[]> {
+    const start = Date.now();
     console.log(
       "Generating borrow recommendations from protocol: ",
       this.protocol
@@ -400,12 +401,18 @@ export class BaseAaveService {
 
     // get market reserve data
     const { reservesMap, baseCurrencyData } = await this.getReservesData();
+    console.log("Time taken to get reserves data: ", Date.now() - start);
 
     const recommendations: RecommendedDebtDetail[] = [];
 
+    const start1 = Date.now();
     const collateralMarkets = await this.fetchCollateralMarkets(
       collaterals.map((collateral) => collateral.token),
       reservesMap
+    );
+    console.log(
+      "Time taken to fetch collateral markets: ",
+      Date.now() - start1
     );
 
     if (!collateralMarkets || collateralMarkets.size === 0) {
@@ -678,7 +685,7 @@ export class BaseAaveService {
     const tokenReserve = reservesMap.get(
       underlyingAssetToken.address.toLowerCase()
     );
-
+    const start = Date.now();
     if (
       !tokenReserve ||
       (!isReserveBorrowingEnabled(tokenReserve) &&
@@ -693,7 +700,11 @@ export class BaseAaveService {
         underlyingAssetToken.symbol,
         tokenReserve.aTokenAddress
       );
-
+    console.log(
+      `Time taken to get AAVE market for token ${
+        underlyingAssetToken.symbol
+      }: ${Date.now() - start} ms`
+    );
     return {
       underlyingAsset: underlyingAssetToken,
       trailing30DaysLendingAPY: apyInfo.borrowingAPY,
