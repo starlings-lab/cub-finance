@@ -1,8 +1,6 @@
 import { BaseAaveService } from "./BaseAaveService";
 import { Address } from "abitype";
 import {
-  APYInfo,
-  APYProvider,
   CompoundV3DebtPosition,
   DebtPosition,
   MorphoBlueDebtPosition,
@@ -11,25 +9,12 @@ import {
   Token,
   TokenAmount
 } from "../type/type";
-import { get30DayTrailingAPYInfo } from "./defiLlamaDataService";
-import { DEFILLAMA_SPARK_POOL_IDS } from "../constants";
-
-// implement APYProvider interface for Spark protocol
-class SparkAPYProvider implements APYProvider {
-  public async calculateTrailing30DaysBorrowingAndLendingAPYs(
-    tokenSymbol: string,
-    aTokenAddress: Address
-  ): Promise<APYInfo> {
-    return get30DayTrailingAPYInfo(Protocol.Spark, tokenSymbol);
-  }
-}
 
 // Contract addresses are used from https://docs.sparkprotocol.io/developers/deployed-contracts/mainnet-addresses
 export const baseSparkService = new BaseAaveService(
   Protocol.Spark,
   "0x02C3eA4e34C0cBd694D2adFa2c690EECbC1793eE", //POOL_ADDRESSES_PROVIDER,
-  "0xF028c2F4b19898718fD0F77b9b881CbfdAa5e8Bb", //UI_POOL_DATA_PROVIDER
-  new SparkAPYProvider()
+  "0xF028c2F4b19898718fD0F77b9b881CbfdAa5e8Bb" //UI_POOL_DATA_PROVIDER
 );
 
 export async function getUserDebtDetails(userAddress: Address) {

@@ -1,7 +1,9 @@
+import { ethers } from "ethers";
 import { USDC, WETH, cbETH, wstETH } from "../contracts/ERC20Tokens";
 import { getBorrowRecommendations } from "../service/borrowRecommendationService";
 import { BorrowRecommendationTableRow, Protocol } from "../type/type";
 import { verifyBorrowRecommendationTableRow } from "./testHelper";
+import { Address } from "abitype";
 
 describe("borrowRecommendationService", () => {
   describe("getBorrowRecommendations", () => {
@@ -13,6 +15,7 @@ describe("borrowRecommendationService", () => {
       };
 
       const borrowRecommendations = await getBorrowRecommendations(
+        ethers.ZeroAddress as Address,
         [USDC],
         [wethCollateralAmount]
       );
@@ -40,6 +43,7 @@ describe("borrowRecommendationService", () => {
       };
 
       const borrowRecommendations = await getBorrowRecommendations(
+        ethers.ZeroAddress as Address,
         [WETH],
         [wstEthCollateralAmount]
       );

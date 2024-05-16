@@ -1,7 +1,5 @@
 import { AlchemyProvider, Contract } from "ethers";
 import {
-  APYInfo,
-  APYProvider,
   CompoundV3DebtPosition,
   DebtPosition,
   Market,
@@ -33,6 +31,7 @@ import {
   calculateTokenAmount,
   calculateAmountInBaseCurrency
 } from "./baseAaveServiceHelper";
+import { get30DayTrailingAPYInfo } from "./defiLlamaDataService";
 
 export interface AaveMarket extends Market {
   priceInMarketReferenceCurrency: number;
@@ -49,13 +48,11 @@ export class BaseAaveService {
   private provider: AlchemyProvider;
   private poolDataProviderContract: Contract;
   private poolAddressProviderContract: Contract;
-  private apyProvider: APYProvider;
 
   constructor(
     protocol: Protocol,
     poolAddressProvider: Address,
-    uiPoolDataProvider: Address,
-    apyProvider: APYProvider
+    uiPoolDataProvider: Address
   ) {
     this.protocol = protocol;
     this.poolAddressProvider = poolAddressProvider;
@@ -77,8 +74,6 @@ export class BaseAaveService {
       POOL_ADDRESS_PROVIDER_ABI,
       this.provider
     );
-
-    this.apyProvider = apyProvider;
   }
 
   /**
@@ -401,7 +396,11 @@ export class BaseAaveService {
 
     // get market reserve data
     const { reservesMap, baseCurrencyData } = await this.getReservesData();
-    console.log("Time taken to get reserves data: ", Date.now() - start);
+    console.log(
+      `Time taken to get reserves data for protocol: ${this.protocol}: ${
+        Date.now() - start
+      } ms`
+    );
 
     const recommendations: RecommendedDebtDetail[] = [];
 
@@ -411,8 +410,9 @@ export class BaseAaveService {
       reservesMap
     );
     console.log(
-      "Time taken to fetch collateral markets: ",
-      Date.now() - start1
+      `Time taken to fetch collateral markets for protocol: ${this.protocol}: ${
+        Date.now() - start1
+      } ms`
     );
 
     if (!collateralMarkets || collateralMarkets.size === 0) {
@@ -685,7 +685,6 @@ export class BaseAaveService {
     const tokenReserve = reservesMap.get(
       underlyingAssetToken.address.toLowerCase()
     );
-    const start = Date.now();
     if (
       !tokenReserve ||
       (!isReserveBorrowingEnabled(tokenReserve) &&
@@ -695,25 +694,20 @@ export class BaseAaveService {
       return null;
     }
 
-    const apyInfo =
-      await this.apyProvider.calculateTrailing30DaysBorrowingAndLendingAPYs(
-        underlyingAssetToken.symbol,
-        tokenReserve.aTokenAddress
-      );
-    console.log(
-      `Time taken to get AAVE market for token ${
-        underlyingAssetToken.symbol
-      }: ${Date.now() - start} ms`
-    );
-    return {
-      underlyingAsset: underlyingAssetToken,
-      trailing30DaysLendingAPY: apyInfo.borrowingAPY,
-      trailing30DaysBorrowingAPY: apyInfo.lendingAPY,
-      trailing30DaysLendingRewardAPY: apyInfo.lendingRewardAPY,
-      trailing30DaysBorrowingRewardAPY: apyInfo.borrowingRewardAPY,
-      priceInMarketReferenceCurrency:
-        tokenReserve.priceInMarketReferenceCurrency
-    };
+    return get30DayTrailingAPYInfo(
+      this.protocol,
+      underlyingAssetToken.symbol
+    ).then((apyInfo) => {
+      return {
+        underlyingAsset: underlyingAssetToken,
+        trailing30DaysLendingAPY: apyInfo.borrowingAPY,
+        trailing30DaysBorrowingAPY: apyInfo.lendingAPY,
+        trailing30DaysLendingRewardAPY: apyInfo.lendingRewardAPY,
+        trailing30DaysBorrowingRewardAPY: apyInfo.borrowingRewardAPY,
+        priceInMarketReferenceCurrency:
+          tokenReserve.priceInMarketReferenceCurrency
+      };
+    });
   }
 }
 

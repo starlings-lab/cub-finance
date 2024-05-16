@@ -48,11 +48,13 @@ const BorrowOptionsWrapper = async ({
 }) => {
   const allSupportedDebtTokens: TokenDetail[] =
     await getAllSupportedDebtTokens();
-  const collaterals = await getSupportedUserCollaterals(userAddress as Address);
+  const typedUserAddress = userAddress as Address;
+  const collaterals = await getSupportedUserCollaterals(typedUserAddress);
 
   return (
     <div className="w-full mx-auto">
       <BorrowRecommendationsWrapper
+        userAddress={typedUserAddress}
         columns={borrowTableColumns}
         collaterals={collaterals}
         supportedDebtTokens={allSupportedDebtTokens}

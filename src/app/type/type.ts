@@ -159,13 +159,6 @@ export interface APYInfo {
   borrowingRewardAPY: number;
 }
 
-export interface APYProvider {
-  calculateTrailing30DaysBorrowingAndLendingAPYs(
-    tokenSymbol: string,
-    aTokenAddress: Address
-  ): Promise<APYInfo>;
-}
-
 export interface BorrowRecommendationTableRow {
   protocol: Protocol;
   debtToken: Token;
