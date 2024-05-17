@@ -6,6 +6,9 @@ import { calculate30DayTrailingBorrowingAndLendingAPYs } from "@/app/service/def
 import { kv } from "@vercel/kv";
 import { NextResponse } from "next/server";
 
+// This function can run for a maximum of 60 seconds
+export const maxDuration = 60;
+
 const PROJECT_SLUGS = Array.from(DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL.values());
 
 export async function GET() {
