@@ -11,6 +11,8 @@ const PROJECT_SLUGS = Array.from(DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL.values());
 export async function GET() {
   console.log("Refreshing APY cache...");
   const start = Date.now();
+  const poolKeys = [];
+
   const pools = await fetch(DEFILLAMA_YIELDS_POOLS_API_URL, {
     cache: "no-store"
   })
@@ -46,13 +48,15 @@ export async function GET() {
       poolData.poolId
     );
 
+    const poolKey = `${poolData.project}-${poolData.symbol}`.toUpperCase();
+    poolKeys.push(poolKey);
+
     // store data in vercel KV
-    await kv.hset(
-      `${poolData.project}-${poolData.symbol}`.toUpperCase(),
-      apyInfo
-    );
+    await kv.hset(poolKey, apyInfo);
   }
   const timeTaken = `${Date.now() - start}ms`;
-  console.log("Time taken refresh APY cache: " + timeTaken);
+  console.log(
+    `Time taken to refresh APY cache: ${timeTaken}, pool data cached for keys: ${poolKeys}`
+  );
   return NextResponse.json({ success: true, timeTaken: timeTaken });
 }
