@@ -11,6 +11,11 @@ export const maxDuration = 60;
 
 const PROJECT_SLUGS = Array.from(DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL.values());
 
+/**
+ * This api refreshes the APY cache for all the pools from supported protocols.
+ * Vercel cron job will run every day at 10 am UST (4AM CST) to invoke this api.
+ * See vercel.json for configuration.
+ */
 export async function GET() {
   console.log("Refreshing APY cache...");
   const start = Date.now();

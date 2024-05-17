@@ -1,7 +1,6 @@
 {
   "crons": [
     {
-      "_comment": "Comment: following cron job will run every day at 10 am UST (4AM CST) and will refresh cached data from defillama",
       "path": "/src/app/api/defillama/route.js",
       "schedule": "0 10 * * *"
     }
