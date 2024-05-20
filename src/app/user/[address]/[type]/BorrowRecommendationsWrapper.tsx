@@ -11,17 +11,20 @@ import BorrowRecommendations from "./BorrowRecommendations";
 import CollateralSelect from "./CollateralSelect";
 import DebtSelect from "./DebtSelect";
 import { useToast } from "../../../../components/ui/use-toast";
+import { Address } from "abitype";
 
 const BorrowRecommendationsWrapper = ({
   columns,
   collaterals,
   supportedDebtTokens,
-  initialSortedColumns
+  initialSortedColumns,
+  userAddress
 }: {
   columns: ColumnDef<BorrowRecommendationTableRow>[];
   supportedDebtTokens: TokenDetail[];
   collaterals: TokenAmount[];
   initialSortedColumns: ColumnSort[];
+  userAddress: Address;
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeDropDown, setActiveDropDown] = useState<
@@ -77,12 +80,13 @@ const BorrowRecommendationsWrapper = ({
           selectedCollaterals.length > 0
         ) {
           borrowRecommendations = await getBorrowRecommendations(
+            userAddress,
             debtTokens,
             selectedCollaterals
           );
         }
         console.log(
-          "Time taken to fetch borrow recommendations: ",
+          "Time taken to fetch all borrow recommendations: ",
           Date.now() - startTime
         );
 

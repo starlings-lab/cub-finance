@@ -1,13 +1,26 @@
 import {
-  DEFILLAMA_AAVE_V3_PROJECT_SLUGS,
+  DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL,
   DEFILLAMA_YIELDS_POOLS_API_URL
 } from "@/app/constants";
 import { calculate30DayTrailingBorrowingAndLendingAPYs } from "@/app/service/defiLlamaDataService";
 import { kv } from "@vercel/kv";
 import { NextResponse } from "next/server";
 
+// This function can run for a maximum of 60 seconds
+export const maxDuration = 60;
+
+const PROJECT_SLUGS = Array.from(DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL.values());
+
+/**
+ * This api refreshes the APY cache for all the pools from supported protocols.
+ * Vercel cron job will run every day at 10 am UST (4AM CST) to invoke this api.
+ * See vercel.json for configuration.
+ */
 export async function GET() {
+  console.log("Refreshing APY cache...");
   const start = Date.now();
+  const poolKeys = [];
+
   const pools = await fetch(DEFILLAMA_YIELDS_POOLS_API_URL, {
     cache: "no-store"
   })
@@ -20,10 +33,16 @@ export async function GET() {
         .filter(
           (pool: any) =>
             pool.chain === "Ethereum" &&
-            DEFILLAMA_AAVE_V3_PROJECT_SLUGS.includes(pool.project.toLowerCase())
+            PROJECT_SLUGS.includes(pool.project.toLowerCase())
         )
-        .map((poolData: any) => poolData.pool);
-      // console.dir(pools, { depth: null });
+        .map((poolData: any) => {
+          // console.log("Fetched pool data", poolData);
+          return {
+            project: poolData.project,
+            poolId: poolData.pool,
+            symbol: poolData.symbol.toUpperCase()
+          };
+        });
     })
     .catch((error) => {
       console.error(error);
@@ -31,15 +50,21 @@ export async function GET() {
     });
 
   for (let i = 0; i < pools.length; i++) {
-    const poolId = pools[i];
+    const poolData = pools[i];
     // calculate APY for each pool
     const apyInfo: any = await calculate30DayTrailingBorrowingAndLendingAPYs(
-      poolId
+      poolData.poolId
     );
+
+    const poolKey = `${poolData.project}-${poolData.symbol}`.toUpperCase();
+    poolKeys.push(poolKey);
+
     // store data in vercel KV
-    await kv.hset(`${poolId}`, apyInfo);
+    await kv.hset(poolKey, apyInfo);
   }
   const timeTaken = `${Date.now() - start}ms`;
-  console.log("Time taken refresh APY cache: " + timeTaken);
+  console.log(
+    `Time taken to refresh APY cache: ${timeTaken}, pool data cached for keys: ${poolKeys}`
+  );
   return NextResponse.json({ success: true, timeTaken: timeTaken });
 }

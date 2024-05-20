@@ -13,6 +13,7 @@ import { getBorrowRecommendations as getAaveBorrowRecommendations } from "./aave
 import { getBorrowRecommendations as getSparkBorrowRecommendations } from "./sparkService";
 import { getBorrowRecommendations as getCompoundBorrowRecommendations } from "./compoundV3Service";
 import { getBorrowRecommendations as getMorphoBorrowRecommendations } from "./morphoBlueService";
+import { Address } from "abitype";
 
 /**
  * Provides borrow recommendations by aggregating all borrow recommendations from supported protocols
@@ -21,17 +22,55 @@ import { getBorrowRecommendations as getMorphoBorrowRecommendations } from "./mo
  * @returns
  */
 export async function getBorrowRecommendations(
+  userAddress: Address,
   debtTokens: Token[],
   collaterals: TokenAmount[]
 ): Promise<BorrowRecommendationTableRow[]> {
+  const start = Date.now();
+
   // Call all protocol services to get debt recommendations
   return await Promise.all([
-    getAaveBorrowRecommendations(debtTokens, collaterals),
-    getSparkBorrowRecommendations(debtTokens, collaterals),
-    getCompoundBorrowRecommendations(debtTokens, collaterals),
-    getMorphoBorrowRecommendations(debtTokens, collaterals)
+    getAaveBorrowRecommendations(debtTokens, collaterals).then((results) => {
+      console.log(
+        `Time taken to get AAVE v3 borrow recommendations for user ${userAddress}: ${
+          Date.now() - start
+        } ms`
+      );
+      return results;
+    }),
+    getCompoundBorrowRecommendations(debtTokens, collaterals).then(
+      (results) => {
+        console.log(
+          `Time taken to get Compound borrow recommendations for user ${userAddress}: ${
+            Date.now() - start
+          } ms`
+        );
+        return results;
+      }
+    ),
+    getSparkBorrowRecommendations(debtTokens, collaterals).then((results) => {
+      console.log(
+        `Time taken to get Spark borrow recommendations for user ${userAddress}: ${
+          Date.now() - start
+        } ms`
+      );
+      return results;
+    }),
+    getMorphoBorrowRecommendations(debtTokens, collaterals).then((results) => {
+      console.log(
+        `Time taken to get Morpho borrow recommendations for user ${userAddress}: ${
+          Date.now() - start
+        } ms`
+      );
+      return results;
+    })
   ])
     .then((recommendationResults) => {
+      console.log(
+        `Time taken to get all borrow recommendations for user ${userAddress}: ${
+          Date.now() - start
+        } ms`
+      );
       const allRecommendations: (
         | RecommendedDebtDetail
         | MorphoBlueRecommendedDebtDetail

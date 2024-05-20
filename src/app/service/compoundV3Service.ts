@@ -18,7 +18,8 @@ import {
 import {
   USDC,
   WETH,
-  COMPOUND_V3_DEBT_STABLECOINS
+  COMPOUND_V3_DEBT_STABLECOINS,
+  ETH
 } from "../contracts/ERC20Tokens";
 import {
   Token,
@@ -37,7 +38,7 @@ import {
   isZeroOrPositive,
   isZeroOrNegative
 } from "../utils/utils";
-import { calculate30DayTrailingBorrowingAndLendingAPYs } from "./defiLlamaDataService";
+import { get30DayTrailingAPYInfo } from "./defiLlamaDataService";
 
 const USD_SCALE = BigInt(10 ** 8);
 const MAX_UTILIZATION_RATIO = 0.98;
@@ -171,7 +172,7 @@ async function getCompoundV3Markets(
   debtPositions: CompoundV3DebtPosition[]
 ): Promise<CompoundV3Market[]> {
   // Fetch borrowing APYs for Compound ETH and USDC pools
-  return getBorrowingAPYsByTokenAddress().then(async (apyInfoMap) => {
+  return getBorrowingAPYsByTokenSymbol().then(async (apyInfoMap) => {
     const markets: CompoundV3Market[] = [];
 
     for (let i = 0; i < debtPositions.length; i++) {
@@ -195,13 +196,13 @@ async function getCompoundV3Markets(
 
 async function getAllCompoundV3Markets(): Promise<CompoundV3Market[]> {
   return Promise.all([
-    getBorrowingAPYsByTokenAddress(),
+    getBorrowingAPYsByTokenSymbol(),
     getUtilizationRatio(USDC.address),
     getUtilizationRatio(WETH.address)
   ]).then((data) => {
     const apyInfoMap = data[0];
     const usdcAPYInfo = apyInfoMap.get(USDC.address)!;
-    const wethAPYInfo = apyInfoMap.get(WETH.address)!;
+    const wethAPYInfo = apyInfoMap.get(ETH.address)!; // ETH is used in DefiLlama
 
     const markets: CompoundV3Market[] = [
       {
@@ -250,17 +251,13 @@ function getMarketByDebtTokenAddress(debtTokenAddress: Address): any {
 }
 
 // Fetches 30 days trailing borrowing APYs for Compound ETH and USDC pools
-async function getBorrowingAPYsByTokenAddress(): Promise<Map<string, APYInfo>> {
+async function getBorrowingAPYsByTokenSymbol(): Promise<Map<string, APYInfo>> {
   return Promise.all([
-    calculate30DayTrailingBorrowingAndLendingAPYs(
-      DEFILLAMA_COMPOUND_ETH_POOL_ID
-    ),
-    calculate30DayTrailingBorrowingAndLendingAPYs(
-      DEFILLAMA_COMPOUND_USDC_POOL_ID
-    )
+    get30DayTrailingAPYInfo(Protocol.CompoundV3, ETH.symbol), // ETH is used in DefiLlama
+    get30DayTrailingAPYInfo(Protocol.CompoundV3, USDC.symbol)
   ]).then((apyData) => {
     const borrowingAPYs = new Map<string, APYInfo>();
-    borrowingAPYs.set(WETH.address, apyData[0]);
+    borrowingAPYs.set(ETH.address, apyData[0]);
     borrowingAPYs.set(USDC.address, apyData[1]);
     return borrowingAPYs;
   });
@@ -758,11 +755,6 @@ export async function getBorrowRecommendations(
   userDebtTokens: Token[],
   userCollaterals: TokenAmount[]
 ): Promise<CompoundV3RecommendedDebtDetail[]> {
-  console.log(
-    "Generating borrow recommendation from protocol: ",
-    Protocol.CompoundV3
-  );
-
   const recommendations: CompoundV3RecommendedDebtDetail[] = [];
 
   // check if the debt token and its required collaterals are supported
@@ -803,6 +795,7 @@ export async function getBorrowRecommendations(
       market
     ])
   );
+  // console.log("Markets map: ", marketsMap);
 
   // create a recommended position for each matched debt token
   const matchedDebtTokens = Array.from(

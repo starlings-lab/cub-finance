@@ -1,7 +1,5 @@
 import { AlchemyProvider, Contract } from "ethers";
 import {
-  APYInfo,
-  APYProvider,
   CompoundV3DebtPosition,
   DebtPosition,
   Market,
@@ -33,6 +31,7 @@ import {
   calculateTokenAmount,
   calculateAmountInBaseCurrency
 } from "./baseAaveServiceHelper";
+import { get30DayTrailingAPYInfo } from "./defiLlamaDataService";
 
 export interface AaveMarket extends Market {
   priceInMarketReferenceCurrency: number;
@@ -49,13 +48,11 @@ export class BaseAaveService {
   private provider: AlchemyProvider;
   private poolDataProviderContract: Contract;
   private poolAddressProviderContract: Contract;
-  private apyProvider: APYProvider;
 
   constructor(
     protocol: Protocol,
     poolAddressProvider: Address,
-    uiPoolDataProvider: Address,
-    apyProvider: APYProvider
+    uiPoolDataProvider: Address
   ) {
     this.protocol = protocol;
     this.poolAddressProvider = poolAddressProvider;
@@ -77,8 +74,6 @@ export class BaseAaveService {
       POOL_ADDRESS_PROVIDER_ABI,
       this.provider
     );
-
-    this.apyProvider = apyProvider;
   }
 
   /**
@@ -393,11 +388,6 @@ export class BaseAaveService {
     debtTokens: Token[],
     collaterals: TokenAmount[]
   ): Promise<RecommendedDebtDetail[]> {
-    console.log(
-      "Generating borrow recommendations from protocol: ",
-      this.protocol
-    );
-
     // get market reserve data
     const { reservesMap, baseCurrencyData } = await this.getReservesData();
 
@@ -678,7 +668,6 @@ export class BaseAaveService {
     const tokenReserve = reservesMap.get(
       underlyingAssetToken.address.toLowerCase()
     );
-
     if (
       !tokenReserve ||
       (!isReserveBorrowingEnabled(tokenReserve) &&
@@ -688,21 +677,20 @@ export class BaseAaveService {
       return null;
     }
 
-    const apyInfo =
-      await this.apyProvider.calculateTrailing30DaysBorrowingAndLendingAPYs(
-        underlyingAssetToken.symbol,
-        tokenReserve.aTokenAddress
-      );
-
-    return {
-      underlyingAsset: underlyingAssetToken,
-      trailing30DaysLendingAPY: apyInfo.borrowingAPY,
-      trailing30DaysBorrowingAPY: apyInfo.lendingAPY,
-      trailing30DaysLendingRewardAPY: apyInfo.lendingRewardAPY,
-      trailing30DaysBorrowingRewardAPY: apyInfo.borrowingRewardAPY,
-      priceInMarketReferenceCurrency:
-        tokenReserve.priceInMarketReferenceCurrency
-    };
+    return get30DayTrailingAPYInfo(
+      this.protocol,
+      underlyingAssetToken.symbol
+    ).then((apyInfo) => {
+      return {
+        underlyingAsset: underlyingAssetToken,
+        trailing30DaysLendingAPY: apyInfo.borrowingAPY,
+        trailing30DaysBorrowingAPY: apyInfo.lendingAPY,
+        trailing30DaysLendingRewardAPY: apyInfo.lendingRewardAPY,
+        trailing30DaysBorrowingRewardAPY: apyInfo.borrowingRewardAPY,
+        priceInMarketReferenceCurrency:
+          tokenReserve.priceInMarketReferenceCurrency
+      };
+    });
   }
 }
 
