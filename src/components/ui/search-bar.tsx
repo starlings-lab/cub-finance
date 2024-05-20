@@ -1,4 +1,5 @@
 "use client";
+import { trackEvent } from "fathom-client";
 import * as React from "react";
 import { useState, forwardRef, useRef, useEffect } from "react";
 import Image from "next/image";
@@ -95,6 +96,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     const verifyAndRefreshRoute = React.useCallback(async () => {
       // it should not refetch for same address
       if (address !== defaultUserAddress || isHome) {
+        trackEvent("Find Now"); // this event triggered both in the home page and user page 
         if (routeType) {
           router.push(`/user/${address}/${routeType}`);
         } else {

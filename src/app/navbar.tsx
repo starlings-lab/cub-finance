@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { trackEvent } from "fathom-client";
 
 export default function Navbar() {
   return (
@@ -12,7 +13,10 @@ export default function Navbar() {
             <Image src="/cub_logo.png" width={64} height={64} alt="" />
           </Link>
           <div className="flex items-center">
-            <Button className="bg-[#009DC4] text-white rounded-2xl py-4 px-8 transition-opacity hover:bg-[#009DC4] hover:opacity-80">
+            <Button
+              className="bg-[#009DC4] text-white rounded-2xl py-4 px-8 transition-opacity hover:bg-[#009DC4] hover:opacity-80"
+              onClick={() => trackEvent("Talk to Us")}
+            >
               <Link
                 target="_blank"
                 href="https://t.me/+pL8nGAh5P5k4MWZh"
