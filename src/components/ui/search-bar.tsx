@@ -96,7 +96,9 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     const verifyAndRefreshRoute = React.useCallback(async () => {
       // it should not refetch for same address
       if (address !== defaultUserAddress || isHome) {
-        trackEvent("Find Now"); // this event triggered both in the home page and user page 
+        setIsLoading(true);
+
+        trackEvent("Find Now"); // this event triggered both in the home page and user page
         if (routeType) {
           router.push(`/user/${address}/${routeType}`);
         } else {
