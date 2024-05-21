@@ -199,3 +199,9 @@ export const SUPPORTED_COLLATERAL_TOKENS: Token[] = [
   COMP,
   UNI
 ];
+
+export const SUPPORTED_COLLATERAL_TOKENS_MAP =
+  SUPPORTED_COLLATERAL_TOKENS.reduce((map, obj) => {
+    map.set(obj.address.toLowerCase(), obj);
+    return map;
+  }, new Map<string, Token>());

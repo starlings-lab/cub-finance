@@ -8,7 +8,7 @@ import {
   getDefiLlamaLendBorrowDataApi
 } from "../constants";
 import { APYInfo, Protocol } from "../type/type";
-import { ETH } from "../contracts/ERC20Tokens";
+import { ETH, WETH } from "../contracts/ERC20Tokens";
 import { kv } from "@vercel/kv";
 
 export async function get30DayTrailingAPYInfo(
@@ -16,9 +16,11 @@ export async function get30DayTrailingAPYInfo(
   tokenSymbol: string
 ): Promise<APYInfo> {
   // check if data is already stored in vercel KV
-  const poolKey = `${DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL.get(
-    protocol
-  )}-${tokenSymbol}`.toUpperCase();
+  // poolKey is in the format: <protocol_slug>-<token_symbol>
+  // if tokenSymbol is ETH, we need to use WETH as the key
+  const poolKey = `${DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL.get(protocol)}-${
+    tokenSymbol === ETH.symbol ? WETH.symbol : tokenSymbol
+  }`.toUpperCase();
   const cachedData = await kv.hgetall(poolKey);
 
   if (!cachedData) {

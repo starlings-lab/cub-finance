@@ -86,8 +86,9 @@ const BorrowRecommendationsWrapper = ({
           );
         }
         console.log(
-          "Time taken to fetch all borrow recommendations: ",
-          Date.now() - startTime
+          `Time taken to fetch all borrow recommendations: ${
+            Date.now() - startTime
+          }`
         );
 
         setBorrowRecommendations(borrowRecommendations);

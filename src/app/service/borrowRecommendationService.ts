@@ -14,6 +14,7 @@ import { getBorrowRecommendations as getSparkBorrowRecommendations } from "./spa
 import { getBorrowRecommendations as getCompoundBorrowRecommendations } from "./compoundV3Service";
 import { getBorrowRecommendations as getMorphoBorrowRecommendations } from "./morphoBlueService";
 import { Address } from "abitype";
+import { ETH, WETH } from "../contracts/ERC20Tokens";
 
 /**
  * Provides borrow recommendations by aggregating all borrow recommendations from supported protocols
@@ -27,6 +28,17 @@ export async function getBorrowRecommendations(
   collaterals: TokenAmount[]
 ): Promise<BorrowRecommendationTableRow[]> {
   const start = Date.now();
+
+  // If the user has ETH as a collateral, we need to get borrow recommendations as WETH
+  const ethCollateral = collaterals.find(
+    (collateral) => collateral.token.address === ETH.address
+  );
+  if (ethCollateral) {
+    ethCollateral.token = {
+      ...ETH,
+      address: WETH.address
+    };
+  }
 
   // Call all protocol services to get debt recommendations
   return await Promise.all([

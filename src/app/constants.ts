@@ -102,7 +102,8 @@ export const TEST_DEBT_POSITION_ADDRESSES = {
   sparkUser3: `0x035dd15ca9621a448c7e47ce49e2525aa0bf14d0` as Address, // has morpho position too
   ensAddress1: "zloy.eth",
   ensAddress2: "juanvilla.eth",
-  ensAddress3: "lozben.eth"
+  ensAddress3: "lozben.eth",
+  ethAndWethHolder: "0xcA518c4DB97ECCe85cC82DE3C2B93D8f8b536ca5"
 };
 
 export const ROUTE_BORROW = "borrow";

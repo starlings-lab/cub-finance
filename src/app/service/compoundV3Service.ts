@@ -370,6 +370,7 @@ export function getPriceFeedFromTokenSymbol(tokenSymbol: string): Address {
   const supportedTokens = {
     USDC: COMPOUND_V3_PRICEFEEDS.USDC,
     WETH: COMPOUND_V3_PRICEFEEDS.WETH,
+    ETH: COMPOUND_V3_PRICEFEEDS.WETH,
     COMP: COMPOUND_V3_PRICEFEEDS.COMP,
     WBTC: COMPOUND_V3_PRICEFEEDS.WBTC,
     UNI: COMPOUND_V3_PRICEFEEDS.UNI,
