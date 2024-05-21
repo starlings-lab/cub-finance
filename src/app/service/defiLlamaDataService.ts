@@ -17,10 +17,20 @@ export async function get30DayTrailingAPYInfo(
 ): Promise<APYInfo> {
   // check if data is already stored in vercel KV
   // poolKey is in the format: <protocol_slug>-<token_symbol>
-  // if tokenSymbol is ETH, we need to use WETH as the key
-  const poolKey = `${DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL.get(protocol)}-${
-    tokenSymbol === ETH.symbol ? WETH.symbol : tokenSymbol
-  }`.toUpperCase();
+  let tokenSymbolToUse = tokenSymbol;
+  if (protocol === Protocol.CompoundV3) {
+    // if tokenSymbol is ETH or WETH, we need to use ETH as the key for Compound protocol
+    tokenSymbolToUse =
+      tokenSymbol === ETH.symbol || tokenSymbol === WETH.symbol
+        ? ETH.symbol
+        : tokenSymbol;
+  } else {
+    // if tokenSymbol is ETH, we need to use WETH as the key for all non-compound protocols
+    tokenSymbolToUse = tokenSymbol === ETH.symbol ? WETH.symbol : tokenSymbol;
+  }
+  const poolKey = `${DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL.get(
+    protocol
+  )}-${tokenSymbolToUse}`.toUpperCase();
   const cachedData = await kv.hgetall(poolKey);
 
   if (!cachedData) {
@@ -33,7 +43,6 @@ export async function get30DayTrailingAPYInfo(
     });
   }
 
-  // console.log(`APY data from cache for ${poolKey}: `, cachedData);
   return Promise.resolve({
     lendingAPY: Number(cachedData.lendingAPY),
     lendingRewardAPY: Number(cachedData.lendingRewardAPY),

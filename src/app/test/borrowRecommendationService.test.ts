@@ -56,6 +56,7 @@ describe("borrowRecommendationService", () => {
       verifyEachProtocolHasRecommendation(borrowRecommendations);
 
       borrowRecommendations.forEach((recommendation) => {
+        // console.dir(recommendation, { depth: null });
         verifyBorrowRecommendationTableRow(recommendation, WETH, [
           wstEthCollateralAmount
         ]);

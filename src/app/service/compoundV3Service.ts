@@ -1,10 +1,6 @@
 import type { Address } from "abitype";
 import { Contract } from "ethers";
 import {
-  DEFILLAMA_COMPOUND_ETH_POOL_ID,
-  DEFILLAMA_COMPOUND_USDC_POOL_ID
-} from "../constants";
-import {
   COMPOUND_V3_CUSDC_ADDRESS,
   COMPOUND_V3_CWETH_ADDRESS,
   COMPOUND_V3_DEBTS,

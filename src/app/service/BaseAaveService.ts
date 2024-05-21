@@ -404,12 +404,15 @@ export class BaseAaveService {
     }
 
     // Filter out collateral markets where borrowing is not enabled
-    const supportedCollaterals = collaterals.filter((collateral) => {
-      const collateralMarket = collateralMarkets.get(
-        collateral.token.address.toLowerCase()
-      );
-      return collateralMarket;
-    });
+    const supportedCollateralMap = collaterals
+      .filter((collateral) =>
+        collateralMarkets.has(collateral.token.address.toLowerCase())
+      )
+      .reduce((map, collateral) => {
+        map.set(collateral.token.address.toLowerCase(), collateral);
+        return map;
+      }, new Map<string, TokenAmount>());
+    const supportedCollaterals = Array.from(supportedCollateralMap.values());
 
     // Calculate total collateral amount in USD
     const totalCollateralAmountInUSD = supportedCollaterals.reduce(
@@ -434,6 +437,18 @@ export class BaseAaveService {
     // create a recommended position for each debt token
     for (let i = 0; i < debtTokens.length; i++) {
       const debtToken = debtTokens[i];
+
+      // filter out debt tokens when it's same as single collateral token
+      if (
+        supportedCollateralMap.has(debtToken.address.toLowerCase()) &&
+        supportedCollaterals.length === 1
+      ) {
+        // console.log(
+        //   `Debt token is same as collateral token, skipping: ${debtToken.symbol} for protocol: ${this.protocol}`
+        // );
+        continue;
+      }
+
       const debtReserve = reservesMap.get(debtToken!.address.toLowerCase());
       // console.log("Debt reserve", debtReserve);
 
@@ -645,21 +660,6 @@ export class BaseAaveService {
 
     return { reservesMap, baseCurrencyData };
   }
-
-  // private async getAssetPrice(
-  //   assetAddress: Address
-  // ): Promise<{ price: bigint; currencyUnit: bigint }> {
-  //   // get asset price which is in base currency & its unit
-  //   const pricePromise = this.aaveOracleContract.getAssetPrice(assetAddress);
-  //   const currencyUnitPromise = this.aaveOracleContract.BASE_CURRENCY_UNIT();
-
-  //   return Promise.all([pricePromise, currencyUnitPromise]).then((values) => {
-  //     console.log("Currency unit: ", values[0]);
-  //     console.log("Asset price: ", values[1]);
-
-  //     return { price: values[0], currencyUnit: values[1] };
-  //   });
-  // }
 
   private async getAaveMarket(
     reservesMap: Map<string, any>,
