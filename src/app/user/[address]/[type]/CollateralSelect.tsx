@@ -18,7 +18,7 @@ const CollateralSelect = ({
   setActiveDropDown: React.Dispatch<
     React.SetStateAction<"debt" | "collateral" | "">
   >;
-  setCurrentList: React.Dispatch<React.SetStateAction<TokenAmount[]>>;
+  setCurrentList: (list: TokenAmount[]) => void;
 }) => {
   const displayValueOfCollateral =
     currentList?.length === optionsList?.length
@@ -60,7 +60,9 @@ const CollateralSelect = ({
           setActiveDropDown(activeDropDown ? "" : "collateral");
         }}
       >
-        <span className="text-xl truncate min-w-32">{displayValueOfCollateral}</span>
+        <span className="text-lg sm:text-xl truncate min-w-32">
+          {displayValueOfCollateral}
+        </span>
         <span className="pointer-events-none right-0 ml-3 flex items-center">
           {activeDropDown ? (
             <svg
@@ -131,7 +133,7 @@ const CollateralSelect = ({
             >
               <div className="flex items-center">
                 <Image
-                  src={`/${selectedCollateral.token.symbol}.png`}
+                  src={`/${selectedCollateral.token.symbol.toLowerCase()}.png`}
                   alt=""
                   width={20}
                   height={20}

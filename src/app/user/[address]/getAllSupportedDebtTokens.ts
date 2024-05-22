@@ -12,7 +12,10 @@ import {
   USDC_DUPLICATE_OR_SCAM,
   USDT,
   WBTC,
-  WETH
+  WETH,
+  weETH,
+  rETH,
+  LINK
 } from "@/app/contracts/ERC20Tokens";
 
 export async function getAllSupportedDebtTokens(): Promise<TokenDetail[]> {
@@ -36,6 +39,18 @@ export async function getAllSupportedDebtTokens(): Promise<TokenDetail[]> {
     },
     {
       token: WBTC,
+      stable: false
+    },
+    {
+      token: weETH,
+      stable: false
+    },
+    {
+      token: rETH,
+      stable: false
+    },
+    {
+      token: LINK,
       stable: false
     }
   ];

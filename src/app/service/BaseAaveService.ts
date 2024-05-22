@@ -1,7 +1,5 @@
 import { AlchemyProvider, Contract } from "ethers";
 import {
-  APYInfo,
-  APYProvider,
   CompoundV3DebtPosition,
   DebtPosition,
   Market,
@@ -33,6 +31,7 @@ import {
   calculateTokenAmount,
   calculateAmountInBaseCurrency
 } from "./baseAaveServiceHelper";
+import { get30DayTrailingAPYInfo } from "./defiLlamaDataService";
 
 export interface AaveMarket extends Market {
   priceInMarketReferenceCurrency: number;
@@ -49,13 +48,11 @@ export class BaseAaveService {
   private provider: AlchemyProvider;
   private poolDataProviderContract: Contract;
   private poolAddressProviderContract: Contract;
-  private apyProvider: APYProvider;
 
   constructor(
     protocol: Protocol,
     poolAddressProvider: Address,
-    uiPoolDataProvider: Address,
-    apyProvider: APYProvider
+    uiPoolDataProvider: Address
   ) {
     this.protocol = protocol;
     this.poolAddressProvider = poolAddressProvider;
@@ -77,8 +74,6 @@ export class BaseAaveService {
       POOL_ADDRESS_PROVIDER_ABI,
       this.provider
     );
-
-    this.apyProvider = apyProvider;
   }
 
   /**
@@ -393,18 +388,67 @@ export class BaseAaveService {
     debtTokens: Token[],
     collaterals: TokenAmount[]
   ): Promise<RecommendedDebtDetail[]> {
-    console.log(
-      "Generating borrow recommendations from protocol: ",
-      this.protocol
-    );
-
     // get market reserve data
     const { reservesMap, baseCurrencyData } = await this.getReservesData();
 
-    // create a recommended position for each debt token
     const recommendations: RecommendedDebtDetail[] = [];
+
+    const collateralMarkets = await this.fetchCollateralMarkets(
+      collaterals.map((collateral) => collateral.token),
+      reservesMap
+    );
+
+    if (!collateralMarkets || collateralMarkets.size === 0) {
+      // console.log("No matching debt or collateral market exist for protocol: ", this.protocol);
+      return recommendations;
+    }
+
+    // Filter out collateral markets where borrowing is not enabled
+    const supportedCollateralMap = collaterals
+      .filter((collateral) =>
+        collateralMarkets.has(collateral.token.address.toLowerCase())
+      )
+      .reduce((map, collateral) => {
+        map.set(collateral.token.address.toLowerCase(), collateral);
+        return map;
+      }, new Map<string, TokenAmount>());
+    const supportedCollaterals = Array.from(supportedCollateralMap.values());
+
+    // Calculate total collateral amount in USD
+    const totalCollateralAmountInUSD = supportedCollaterals.reduce(
+      (total, collateral) => {
+        const amountInUSD = calculateAmountInBaseCurrency(
+          collateral.amount,
+          reservesMap.get(collateral.token.address.toLowerCase()),
+          baseCurrencyData.marketReferenceCurrencyUnit
+        );
+
+        // Update collateral amount in USD as caller doesn't have this info
+        collateral.amountInUSD = amountInUSD;
+        return total + amountInUSD;
+      },
+      0
+    );
+
+    // Calculate recommended debt amount using max LTV
+    const maxLTV = calculateMaxLtv(supportedCollaterals, reservesMap);
+    const debtAmountInUSD = maxLTV * totalCollateralAmountInUSD;
+
+    // create a recommended position for each debt token
     for (let i = 0; i < debtTokens.length; i++) {
       const debtToken = debtTokens[i];
+
+      // filter out debt tokens when it's same as single collateral token
+      if (
+        supportedCollateralMap.has(debtToken.address.toLowerCase()) &&
+        supportedCollaterals.length === 1
+      ) {
+        // console.log(
+        //   `Debt token is same as collateral token, skipping: ${debtToken.symbol} for protocol: ${this.protocol}`
+        // );
+        continue;
+      }
+
       const debtReserve = reservesMap.get(debtToken!.address.toLowerCase());
       // console.log("Debt reserve", debtReserve);
 
@@ -417,44 +461,6 @@ export class BaseAaveService {
       if (!debtMarket) {
         continue;
       }
-
-      const collateralMarkets = await this.fetchCollateralMarkets(
-        collaterals.map((collateral) => collateral.token),
-        reservesMap
-      );
-
-      if (!collateralMarkets || collateralMarkets.size === 0) {
-        // console.log("No matching debt or collateral market exist for protocol: ", this.protocol);
-        continue;
-      }
-
-      // Filter out collateral markets where borrowing is not enabled
-      const supportedCollaterals = collaterals.filter((collateral) => {
-        const collateralMarket = collateralMarkets.get(
-          collateral.token.address.toLowerCase()
-        );
-        return collateralMarket;
-      });
-
-      // Calculate total collateral amount in USD
-      const totalCollateralAmountInUSD = supportedCollaterals.reduce(
-        (total, collateral) => {
-          const amountInUSD = calculateAmountInBaseCurrency(
-            collateral.amount,
-            reservesMap.get(collateral.token.address.toLowerCase()),
-            baseCurrencyData.marketReferenceCurrencyUnit
-          );
-
-          // Update collateral amount in USD as caller doesn't have this info
-          collateral.amountInUSD = amountInUSD;
-          return total + amountInUSD;
-        },
-        0
-      );
-
-      // Calculate recommended debt amount using max LTV
-      const maxLTV = calculateMaxLtv(supportedCollaterals, reservesMap);
-      const debtAmountInUSD = maxLTV * totalCollateralAmountInUSD;
 
       const recommendedDebt = {
         token: debtToken,
@@ -655,21 +661,6 @@ export class BaseAaveService {
     return { reservesMap, baseCurrencyData };
   }
 
-  // private async getAssetPrice(
-  //   assetAddress: Address
-  // ): Promise<{ price: bigint; currencyUnit: bigint }> {
-  //   // get asset price which is in base currency & its unit
-  //   const pricePromise = this.aaveOracleContract.getAssetPrice(assetAddress);
-  //   const currencyUnitPromise = this.aaveOracleContract.BASE_CURRENCY_UNIT();
-
-  //   return Promise.all([pricePromise, currencyUnitPromise]).then((values) => {
-  //     console.log("Currency unit: ", values[0]);
-  //     console.log("Asset price: ", values[1]);
-
-  //     return { price: values[0], currencyUnit: values[1] };
-  //   });
-  // }
-
   private async getAaveMarket(
     reservesMap: Map<string, any>,
     underlyingAssetToken: Token
@@ -677,7 +668,6 @@ export class BaseAaveService {
     const tokenReserve = reservesMap.get(
       underlyingAssetToken.address.toLowerCase()
     );
-
     if (
       !tokenReserve ||
       (!isReserveBorrowingEnabled(tokenReserve) &&
@@ -687,21 +677,20 @@ export class BaseAaveService {
       return null;
     }
 
-    const apyInfo =
-      await this.apyProvider.calculateTrailing30DaysBorrowingAndLendingAPYs(
-        underlyingAssetToken.symbol,
-        tokenReserve.aTokenAddress
-      );
-
-    return {
-      underlyingAsset: underlyingAssetToken,
-      trailing30DaysLendingAPY: apyInfo.borrowingAPY,
-      trailing30DaysBorrowingAPY: apyInfo.lendingAPY,
-      trailing30DaysLendingRewardAPY: apyInfo.lendingRewardAPY,
-      trailing30DaysBorrowingRewardAPY: apyInfo.borrowingRewardAPY,
-      priceInMarketReferenceCurrency:
-        tokenReserve.priceInMarketReferenceCurrency
-    };
+    return get30DayTrailingAPYInfo(
+      this.protocol,
+      underlyingAssetToken.symbol
+    ).then((apyInfo) => {
+      return {
+        underlyingAsset: underlyingAssetToken,
+        trailing30DaysLendingAPY: apyInfo.borrowingAPY,
+        trailing30DaysBorrowingAPY: apyInfo.lendingAPY,
+        trailing30DaysLendingRewardAPY: apyInfo.lendingRewardAPY,
+        trailing30DaysBorrowingRewardAPY: apyInfo.borrowingRewardAPY,
+        priceInMarketReferenceCurrency:
+          tokenReserve.priceInMarketReferenceCurrency
+      };
+    });
   }
 }
 

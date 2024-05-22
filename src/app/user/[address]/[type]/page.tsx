@@ -51,13 +51,13 @@ export default async function DebtPage({
         />
         <TabsWrapper selected={selectedValue} userAddress={params.address} />
         {params?.type === ROUTE_BORROW ? (
-          <div className="pt-2 sm:pt-5">
+          <div className="mt-4">
             <Suspense fallback={<Loading />}>
               <BorrowOptionsWrapper userAddress={userAddress} />
             </Suspense>
           </div>
         ) : (
-          <div className="pt-2 sm:pt-5">
+          <div className="mt-4">
             <Suspense fallback={<Loading />}>
               <DebtTableWrapper userAddress={userAddress} />
             </Suspense>

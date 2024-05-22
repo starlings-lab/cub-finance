@@ -4,6 +4,7 @@ import {
   DebtPositionTableRow,
   RecommendedDebtDetailTableRow
 } from "@/app/type/type";
+import { getFormattedTokenAmount } from "@/app/utils/utils";
 import ImageWrapper from "@/components/ui/image-wrapper";
 import PopoverWrapper from "@/components/ui/popover";
 import { ColumnDef, ColumnSort } from "@tanstack/react-table";
@@ -137,7 +138,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           ""
         )}{" "}
         <Image
-          src={`/${row.original.protocol}.png`}
+          src={`/${row.original.protocol.toLowerCase()}.png`}
           alt={row.original.protocol}
           width={20}
           height={20}
@@ -150,7 +151,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
   },
   {
     header: "Debt Tokens",
-    accessorKey: "debtToken",
+    accessorKey: "debts",
     cell: ({ row, getValue }) => (
       <div
         className="flex w-max"
@@ -158,21 +159,24 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           paddingLeft: `${row.depth * 1}rem`
         }}
       >
-        {row.original.debtToken.map((debtToken) => (
+        {row.original.debts.map((debt) => (
           <PopoverWrapper
-            key={debtToken.name}
+            key={debt.token.name}
             title={
               <ImageWrapper
-                key={debtToken.name}
-                src={`/${debtToken.symbol}.png`}
-                alt={debtToken.symbol}
+                key={debt.token.name}
+                src={`/${debt.token.symbol.toLowerCase()}.png`}
+                alt={debt.token.symbol}
                 width={"20"}
                 height={"20"}
                 className="mr-1 rounded-full"
               />
             }
             content={
-              <div className="text-sm text-slate-800">{debtToken.symbol}</div>
+              <div className="text-sm text-slate-800">
+                {getFormattedTokenAmount(debt.token, debt.amount)}{" "}
+                {debt.token.symbol}
+              </div>
             }
           />
         ))}
@@ -182,7 +186,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
   },
   {
     header: "Collateral Tokens",
-    accessorKey: "collateralTokens",
+    accessorKey: "collaterals",
     cell: ({ row, getValue }) => (
       <div
         className="flex w-max"
@@ -190,14 +194,14 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           paddingLeft: `${row.depth * 1}rem`
         }}
       >
-        {row.original.collateralTokens.map((collateralToken) => (
+        {row.original.collaterals.map((collateral) => (
           <PopoverWrapper
-            key={collateralToken.name}
+            key={collateral.token.name}
             title={
               <ImageWrapper
-                key={collateralToken.name}
-                src={`/${collateralToken.symbol}.png`}
-                alt={collateralToken.symbol}
+                key={collateral.token.name}
+                src={`/${collateral.token.symbol.toLowerCase()}.png`}
+                alt={collateral.token.symbol}
                 width={"20"}
                 height={"20"}
                 className="mr-1 rounded-full"
@@ -205,7 +209,8 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
             }
             content={
               <div className="text-sm text-slate-800">
-                {collateralToken.symbol}
+                {getFormattedTokenAmount(collateral.token, collateral.amount)}{" "}
+                {collateral.token.symbol}
               </div>
             }
           />
@@ -396,7 +401,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
           }}
         >
           <Image
-            src={`/${row.original.protocol}.png`}
+            src={`/${row.original.protocol.toLowerCase()}.png`}
             alt={row.original.protocol}
             width={20}
             height={20}
@@ -409,7 +414,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
     },
     {
       header: "Debt Tokens",
-      accessorKey: "debtToken",
+      accessorKey: "debts",
       cell: ({ row, getValue }) => (
         <div
           className="flex w-max"
@@ -417,21 +422,24 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
             paddingLeft: `${row.depth * 1}rem`
           }}
         >
-          {row.original.debtToken.map((debtToken) => (
+          {row.original.debts.map((debt) => (
             <PopoverWrapper
-              key={debtToken.name}
+              key={debt.token.name}
               title={
                 <ImageWrapper
-                  key={debtToken.name}
-                  src={`/${debtToken.symbol}.png`}
-                  alt={debtToken.symbol}
+                  key={debt.token.name}
+                  src={`/${debt.token.symbol.toLowerCase()}.png`}
+                  alt={debt.token.symbol}
                   width={"20"}
                   height={"20"}
                   className="mr-1 rounded-full"
                 />
               }
               content={
-                <div className="text-sm text-slate-800">{debtToken.symbol}</div>
+                <div className="text-sm text-slate-800">
+                  {getFormattedTokenAmount(debt.token, debt.amount)}{" "}
+                  {debt.token.symbol}
+                </div>
               }
             />
           ))}
@@ -441,7 +449,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
     },
     {
       header: "Collateral Tokens",
-      accessorKey: "collateralTokens",
+      accessorKey: "collaterals",
       cell: ({ row, getValue }) => (
         <div
           className="flex w-max"
@@ -449,14 +457,14 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
             paddingLeft: `${row.depth * 1}rem`
           }}
         >
-          {row.original.collateralTokens.map((collateralToken) => (
+          {row.original.collaterals.map((collateral) => (
             <PopoverWrapper
-              key={collateralToken.name}
+              key={collateral.token.name}
               title={
                 <ImageWrapper
-                  key={collateralToken.name}
-                  src={`/${collateralToken.symbol}.png`}
-                  alt={collateralToken.symbol}
+                  key={collateral.token.name}
+                  src={`/${collateral.token.symbol.toLowerCase()}.png`}
+                  alt={collateral.token.symbol}
                   width={"20"}
                   height={"20"}
                   className="mr-1 rounded-full"
@@ -464,7 +472,8 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
               }
               content={
                 <div className="text-sm text-slate-800">
-                  {collateralToken.symbol}
+                  {getFormattedTokenAmount(collateral.token, collateral.amount)}{" "}
+                  {collateral.token.symbol}
                 </div>
               }
             />
@@ -603,10 +612,10 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
             }
             content={
               <div className="text-sm text-slate-800">
-              {
-                "Trailing 30 Days Reward APY For Reward, Weighted Avg In Case of Multiple Reward"
-              }
-            </div>
+                {
+                  "Trailing 30 Days Reward APY For Reward, Weighted Avg In Case of Multiple Reward"
+                }
+              </div>
             }
           />
           <SortIcon row={row} />
@@ -656,7 +665,7 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
         }}
       >
         <Image
-          src={`/${row.original.protocol}.png`}
+          src={`/${row.original.protocol.toLowerCase()}.png`}
           alt={row.original.protocol}
           width={20}
           height={20}
@@ -669,7 +678,7 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
   },
   {
     header: "Debt Tokens",
-    accessorKey: "debtToken",
+    accessorKey: "debt",
     cell: ({ row, getValue }) => (
       <div
         className="flex w-max"
@@ -678,12 +687,12 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
         }}
       >
         <PopoverWrapper
-          key={row.original.debtToken.name}
+          key={row.original.debt.token.name}
           title={
             <ImageWrapper
-              key={row.original.debtToken.name}
-              src={`/${row.original.debtToken.symbol}.png`}
-              alt={row.original.debtToken.symbol}
+              key={row.original.debt.token.name}
+              src={`/${row.original.debt.token.symbol.toLowerCase()}.png`}
+              alt={row.original.debt.token.symbol}
               width={"20"}
               height={"20"}
               className="mr-1 rounded-full"
@@ -691,7 +700,8 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
           }
           content={
             <div className="text-sm text-slate-800">
-              {row.original.debtToken.symbol}
+              {getFormattedTokenAmount(row.original.debt.token, row.original.debt.amount)}{" "}
+              {row.original.debt.token.symbol}
             </div>
           }
         />
@@ -701,7 +711,7 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
   },
   {
     header: "Collateral Tokens",
-    accessorKey: "collateralTokens",
+    accessorKey: "collaterals",
     cell: ({ row, getValue }) => (
       <div
         className="flex w-max"
@@ -709,14 +719,14 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
           paddingLeft: `${row.depth * 1}rem`
         }}
       >
-        {row.original.collateralTokens.map((collateralToken) => (
+        {row.original.collaterals.map((collateral) => (
           <PopoverWrapper
-            key={collateralToken.name}
+            key={collateral.token.name}
             title={
               <ImageWrapper
-                key={collateralToken.name}
-                src={`/${collateralToken.symbol}.png`}
-                alt={collateralToken.symbol}
+                key={collateral.token.name}
+                src={`/${collateral.token.symbol.toLowerCase()}.png`}
+                alt={collateral.token.symbol}
                 width={"20"}
                 height={"20"}
                 className="mr-1 rounded-full"
@@ -724,7 +734,8 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
             }
             content={
               <div className="text-sm text-slate-800">
-                {collateralToken.symbol}
+                {getFormattedTokenAmount(collateral.token, collateral.amount)}{" "}
+                {collateral.token.symbol}
               </div>
             }
           />

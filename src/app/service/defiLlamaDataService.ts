@@ -2,13 +2,56 @@
 
 import { Address } from "abitype";
 import {
+  DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL,
   DEFILLAMA_TOKEN_PRICE_API_URL,
   DEFILLAMA_YIELDS_POOLS_API_URL,
   getDefiLlamaLendBorrowDataApi
 } from "../constants";
-import { APYInfo } from "../type/type";
-import { ethers } from "ethers";
-import { ETH } from "../contracts/ERC20Tokens";
+import { APYInfo, Protocol } from "../type/type";
+import { ETH, WETH } from "../contracts/ERC20Tokens";
+import { kv } from "@vercel/kv";
+
+export async function get30DayTrailingAPYInfo(
+  protocol: Protocol,
+  tokenSymbol: string
+): Promise<APYInfo> {
+  // check if data is already stored in vercel KV
+  // poolKey is in the format: <protocol_slug>-<token_symbol>
+  let tokenSymbolToUse = tokenSymbol;
+  if (protocol === Protocol.CompoundV3) {
+    // if tokenSymbol is ETH or WETH, we need to use ETH as the key for Compound protocol
+    tokenSymbolToUse =
+      tokenSymbol === ETH.symbol || tokenSymbol === WETH.symbol
+        ? ETH.symbol
+        : tokenSymbol;
+  } else {
+    // if tokenSymbol is ETH, we need to use WETH as the key for all non-compound protocols
+    tokenSymbolToUse = tokenSymbol === ETH.symbol ? WETH.symbol : tokenSymbol;
+  }
+  const poolKey = `${DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL.get(
+    protocol
+  )}-${tokenSymbolToUse}`.toUpperCase();
+  const cachedData = await kv.hgetall(poolKey);
+
+  if (!cachedData) {
+    console.error(`APY data not found in cache for ${poolKey}`);
+    return Promise.resolve({
+      lendingAPY: 0,
+      lendingRewardAPY: 0,
+      borrowingAPY: 0,
+      borrowingRewardAPY: 0
+    });
+  }
+
+  return Promise.resolve({
+    lendingAPY: Number(cachedData.lendingAPY),
+    lendingRewardAPY: Number(cachedData.lendingRewardAPY),
+    borrowingAPY: Number(cachedData.borrowingAPY),
+    borrowingRewardAPY: Number(cachedData.borrowingRewardAPY)
+  });
+
+  // TODO: trigger cache refresh if data is not available?
+}
 
 /**
  * Calculate the 30 day trailing borrowing and lending APYs for given lending pool.
@@ -16,28 +59,33 @@ import { ETH } from "../contracts/ERC20Tokens";
  * and calculates the trailing APYs.
  * @param poolId DefiLlama pool id of the lending pool
  * @returns
+ * @throws Error if there is an issue fetching data from DefiLlama API
+ * Note: This function should only be used in the API route to calculate
+ * and cache APYs for all pools of supported protocols.
  */
 export async function calculate30DayTrailingBorrowingAndLendingAPYs(
   poolId: string
 ): Promise<APYInfo> {
   return getHistoricalLendBorrowRewardAPY(poolId, 30)
     .then((data) => {
-      let cumulativeBorrowAPY = 0;
-      let cumulativeLendAPY = 0;
-      let cumulativeLendingRewardAPY = 0;
-      let cumulativeBorrowingRewardAPY = 0;
+      let cumulativeBorrowAPY: number = 0;
+      let cumulativeLendAPY: number = 0;
+      let cumulativeLendingRewardAPY: number = 0;
+      let cumulativeBorrowingRewardAPY: number = 0;
       for (let i = 0; i < data.length; i++) {
         // expected shape of data:
         // { apyBase: number, apyReward: number, apyBaseBorrow: number, apyRewardBorrow: number }
         const datum: any = data[i];
-        cumulativeBorrowAPY += datum.apyBaseBorrow;
-        cumulativeLendAPY += datum.apyBase;
-        cumulativeLendingRewardAPY += datum.apyReward;
-        cumulativeBorrowingRewardAPY += datum.apyRewardBorrow;
+        cumulativeBorrowAPY += Number(datum.apyBaseBorrow);
+        cumulativeLendAPY += Number(datum.apyBase);
+        cumulativeLendingRewardAPY += Number(datum.apyReward);
+        cumulativeBorrowingRewardAPY += Number(datum.apyRewardBorrow);
       }
 
-      const trailingDayBorrowingAPY = cumulativeBorrowAPY / data.length / 100;
-      const trailingDayLendingAPY = cumulativeLendAPY / data.length / 100;
+      const trailingDayBorrowingAPY: number =
+        cumulativeBorrowAPY / data.length / 100;
+      const trailingDayLendingAPY: number =
+        cumulativeLendAPY / data.length / 100;
 
       // console.log(
       //   `Cumulative borrow rate: ${cumulativeBorrowRate}, Cumulative lend rate: ${cumulativeLendRate}`
@@ -60,7 +108,7 @@ export async function calculate30DayTrailingBorrowingAndLendingAPYs(
 }
 
 // function to fetch historical lend, borrow & reward apy for lending pool
-export async function getHistoricalLendBorrowRewardAPY(
+async function getHistoricalLendBorrowRewardAPY(
   poolId: string,
   days: number = 30
 ): Promise<any[]> {
@@ -100,13 +148,21 @@ export async function getHistoricalLendBorrowRewardAPY(
 export async function getProtocolPoolsMap(
   projectSlug: string
 ): Promise<Map<string, string>> {
+  // check if data is already stored in vercel KV
+  const cachedData = await kv.hgetall(`pools-${projectSlug}`);
+  if (cachedData) {
+    const typedCachedData = cachedData as { [key: string]: string };
+    return Promise.resolve(new Map(Object.entries(typedCachedData)));
+  }
+
+  console.log(`Fetching pools data from DefiLlama API for ${projectSlug}`);
   return fetch(DEFILLAMA_YIELDS_POOLS_API_URL, { cache: "no-store" })
     .then((responseRaw) => responseRaw.json())
     .then((response) => {
       // console.dir(response, { depth: null });
 
       // filter pools by protocol and create a map of pool token symbol to pool id
-      const pools = new Map<string, string>();
+      const pools: { [key: string]: string } = {};
       response.data
         .filter(
           (pool: any) =>
@@ -114,12 +170,15 @@ export async function getProtocolPoolsMap(
             pool.project.toLowerCase() === projectSlug.toLowerCase()
         )
         .forEach((poolData: any) => {
-          pools.set(poolData.symbol.toUpperCase(), poolData.pool);
+          pools[poolData.symbol.toUpperCase()] = poolData.pool;
         });
 
       // console.dir(pools, { depth: null });
+      // store data in vercel KV
+      kv.hset(`pools-${projectSlug}`, pools);
 
-      return pools;
+      // convert pools to map and return
+      return new Map(Object.entries(pools));
     })
     .catch((error) => {
       console.error(error);

@@ -5,12 +5,9 @@ import { getSupportedCollateralTokens as getSparkSupportedCollateralTokens } fro
 import { getSupportedCollateralTokens as getCompoundV3SupportedCOllateralTokens } from "@/app/service/compoundV3Service";
 import { getSupportedCollateralTokens as getMorphoBlueSupportedCollateralTokens } from "@/app/service/morphoBlueService";
 import { Token, TokenAmount } from "@/app/type/type";
-import {
-  USDC_DUPLICATE_OR_SCAM,
-  SUPPORTED_COLLATERAL_TOKENS
-} from "@/app/contracts/ERC20Tokens";
+import { USDC_DUPLICATE_OR_SCAM } from "@/app/contracts/ERC20Tokens";
 import { Address } from "abitype";
-import { getTokenHoldings } from "@/app/service/tokenService";
+import { getSupportedTokenHoldings } from "@/app/service/tokenService";
 
 // This function should be used until we fix borrow recommendation performance
 export async function getSupportedUserCollaterals(
@@ -18,27 +15,23 @@ export async function getSupportedUserCollaterals(
 ): Promise<TokenAmount[]> {
   const MIN_TOKEN_AMOUNT_IN_USD = 100;
 
-  return getTokenHoldings(userAddress).then((userHoldings) => {
+  return getSupportedTokenHoldings(userAddress).then((userHoldings) => {
     if (!userHoldings || userHoldings.length === 0) {
       return [];
     }
 
-    // console.log("userHoldings", userHoldings);
-
     const allSupportedCollaterals: Map<string, TokenAmount> = new Map();
     userHoldings.forEach((userHolding) => {
       const address = userHolding.token.address.toLowerCase();
-      if (
-        userHolding.amountInUSD > MIN_TOKEN_AMOUNT_IN_USD &&
-        SUPPORTED_COLLATERAL_TOKENS.some(
-          (token) => token.address.toLowerCase() === address
-        )
-      ) {
+      if (userHolding.amountInUSD > MIN_TOKEN_AMOUNT_IN_USD) {
         allSupportedCollaterals.set(address, userHolding);
       }
     });
 
-    return Array.from(allSupportedCollaterals.values());
+    const supportedCollaterals = Array.from(allSupportedCollaterals.values());
+    // console.log("supportedCollaterals", supportedCollaterals);
+
+    return supportedCollaterals;
   });
 }
 
@@ -51,7 +44,7 @@ export async function getSupportedUserCollaterals(
 export async function getSupportedUserCollaterals_Old(
   userAddress: Address
 ): Promise<TokenAmount[]> {
-  return getTokenHoldings(userAddress).then((userHoldings) => {
+  return getSupportedTokenHoldings(userAddress).then((userHoldings) => {
     // console.log("userHoldings", userHoldings);
 
     if (!userHoldings || userHoldings.length === 0) {

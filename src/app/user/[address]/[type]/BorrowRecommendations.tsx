@@ -2,7 +2,6 @@
 import { BorrowRecommendationTableRow } from "@/app/type/type";
 import React from "react";
 import {
-  ColumnDef,
   ColumnSort,
   flexRender,
   getCoreRowModel,
@@ -18,23 +17,54 @@ import {
   TableRow
 } from "@/components/ui/table";
 import Loading from "./loadingTable";
+import {
+  borrowTableColumns,
+  maxLTVColumnId,
+  totalDebtAmountInUSDColumnId,
+  trailing30DaysBorrowingAPYColumnId,
+  trailing30DaysLendingAPYColumnId,
+  trailing30DaysNetBorrowingAPYColumnId
+} from "./debtTableColumns";
+
+// Sort debts by ascending order of trailing30DaysNetBorrowingAPY and descending order of totalDebtAmountInUSD
+const initialSortedColumns: ColumnSort[] = [
+  {
+    id: trailing30DaysNetBorrowingAPYColumnId,
+    // We want to display the lowest APY first,
+    // because negative APY means the user is paying interest.
+    desc: true
+  },
+  {
+    id: totalDebtAmountInUSDColumnId,
+    // We want to display the highest debt amount first.
+    desc: true
+  },
+  {
+    id: trailing30DaysBorrowingAPYColumnId,
+    desc: false
+  },
+  {
+    id: trailing30DaysLendingAPYColumnId,
+    desc: false
+  },
+  {
+    id: maxLTVColumnId,
+    desc: false
+  }
+];
 
 const BorrowRecommendations = ({
   isLoading,
-  columns,
   borrowOptions,
-  initialSortedColumns,
   error
 }: {
   isLoading: boolean;
-  columns: ColumnDef<BorrowRecommendationTableRow>[];
   borrowOptions: BorrowRecommendationTableRow[];
-  initialSortedColumns: ColumnSort[];
   error?: string;
 }) => {
   const borrowTable = useReactTable({
     data: borrowOptions,
-    columns: columns,
+    columns: borrowTableColumns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(), //provide a sorting row model
     initialState: {
@@ -76,7 +106,7 @@ const BorrowRecommendations = ({
         {isLoading ? (
           <TableRow className="hover:bg-white !border-b-0 !mt-2">
             <TableCell
-              colSpan={columns.length}
+              colSpan={borrowTableColumns.length}
               className="h-16 w-max p-0 pb-4 font-lg"
             >
               <Loading showHeader={false} />
@@ -101,11 +131,11 @@ const BorrowRecommendations = ({
         ) : (
           <TableRow className="!rounded !border bg-white hover:bg-white">
             <TableCell
-              colSpan={columns.length}
+              colSpan={borrowTableColumns.length}
               className="h-16 text-left sm:text-center"
             >
               {error ??
-                "You don&apos;t have borrow options because you have no supported collaterals."}
+                "You don't have borrow options because you have no supported collaterals."}
             </TableCell>
           </TableRow>
         )}

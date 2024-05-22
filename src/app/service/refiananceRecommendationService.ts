@@ -114,7 +114,9 @@ function convertAaveOrSparkRecommendedDebtDetail(
   return [
     {
       protocol: userRecommendedDebtDetail.protocol,
-      debtToken: userRecommendedDebtDetail.debt.debts.map((debt) => debt.token),
+      debts: userRecommendedDebtDetail.debt.debts,
+      debtTokens: userRecommendedDebtDetail.debt.debts.map((debt) => debt.token),
+      collaterals: userRecommendedDebtDetail.debt.collaterals,
       collateralTokens: userRecommendedDebtDetail.debt.collaterals.map(
         (collateral) => collateral.token
       ),
@@ -148,7 +150,9 @@ function convertCompoundRecommendedDebtDetail(
   return [
     {
       protocol: userRecommendedDebtDetail.protocol,
-      debtToken: [userRecommendedDebtDetail.debt.debt.token],
+      debts: [userRecommendedDebtDetail.debt.debt],
+      debtTokens: [userRecommendedDebtDetail.debt.debt.token],
+      collaterals: userRecommendedDebtDetail.debt.collaterals,
       collateralTokens: userRecommendedDebtDetail.debt.collaterals.map(
         (collateral) => collateral.token
       ),
@@ -177,7 +181,9 @@ function convertMorphoRecommendedDebtDetail(
   return [
     {
       protocol: userRecommendedDebtDetail.protocol,
-      debtToken: [userRecommendedDebtDetail.debt.debt.token],
+      debts: [userRecommendedDebtDetail.debt.debt],
+      debtTokens: [userRecommendedDebtDetail.debt.debt.token],
+      collaterals: [userRecommendedDebtDetail.debt.collateral],
       collateralTokens: [userRecommendedDebtDetail.debt.collateral.token],
       totalDebtAmountInUSD: userRecommendedDebtDetail.debt.debt.amountInUSD,
       totalCollateralAmountInUSD:

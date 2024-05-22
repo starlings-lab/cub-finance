@@ -1,5 +1,6 @@
 import { gql } from "graphql-request";
 import { Address } from "abitype";
+import { Protocol } from "./type/type";
 
 export const ALCHEMY_API_URL = `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY_ETH_MAINNET}`;
 export const ALCHEMY_RPC_URL = `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_ETH_MAINNET}`;
@@ -44,7 +45,11 @@ export const DEFILLAMA_YIELDS_API_URL = "https://yields.llama.fi";
 export const DEFILLAMA_YIELDS_POOLS_API_URL = `${DEFILLAMA_YIELDS_API_URL}/pools`;
 export const DEFILLAMA_TOKEN_PRICE_API_URL = `https://coins.llama.fi/prices/current/`;
 
-export const DEFILLAMA_AAVE_V3_PROJECT_SLUG = "aave-v3";
+export const DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL = new Map<Protocol, string>([
+  [Protocol.AaveV3, "aave-v3"],
+  [Protocol.CompoundV3, "compound-v3"],
+  [Protocol.Spark, "spark"]
+]);
 
 // App: https://defillama.com/yields/pool/85c57261-b75b-4447-a115-d79b1a7de8ed
 // API: https://yields.llama.fi/chartLendBorrow/85c57261-b75b-4447-a115-d79b1a7de8ed
@@ -97,7 +102,8 @@ export const TEST_DEBT_POSITION_ADDRESSES = {
   sparkUser3: `0x035dd15ca9621a448c7e47ce49e2525aa0bf14d0` as Address, // has morpho position too
   ensAddress1: "zloy.eth",
   ensAddress2: "juanvilla.eth",
-  ensAddress3: "lozben.eth"
+  ensAddress3: "lozben.eth",
+  ethAndWethHolder: "0xcA518c4DB97ECCe85cC82DE3C2B93D8f8b536ca5"
 };
 
 export const ROUTE_BORROW = "borrow";
