@@ -138,7 +138,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
           ""
         )}{" "}
         <Image
-          src={`/${row.original.protocol}.png`}
+          src={`/${row.original.protocol.toLowerCase()}.png`}
           alt={row.original.protocol}
           width={20}
           height={20}
@@ -165,7 +165,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
             title={
               <ImageWrapper
                 key={debt.token.name}
-                src={`/${debt.token.symbol}.png`}
+                src={`/${debt.token.symbol.toLowerCase()}.png`}
                 alt={debt.token.symbol}
                 width={"20"}
                 height={"20"}
@@ -200,7 +200,7 @@ export const debtTableColumns: ColumnDef<DebtPositionTableRow>[] = [
             title={
               <ImageWrapper
                 key={collateral.token.name}
-                src={`/${collateral.token.symbol}.png`}
+                src={`/${collateral.token.symbol.toLowerCase()}.png`}
                 alt={collateral.token.symbol}
                 width={"20"}
                 height={"20"}
@@ -401,7 +401,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
           }}
         >
           <Image
-            src={`/${row.original.protocol}.png`}
+            src={`/${row.original.protocol.toLowerCase()}.png`}
             alt={row.original.protocol}
             width={20}
             height={20}
@@ -428,7 +428,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
               title={
                 <ImageWrapper
                   key={debt.token.name}
-                  src={`/${debt.token.symbol}.png`}
+                  src={`/${debt.token.symbol.toLowerCase()}.png`}
                   alt={debt.token.symbol}
                   width={"20"}
                   height={"20"}
@@ -463,7 +463,7 @@ export const recommendedTableColumns: ColumnDef<RecommendedDebtDetailTableRow>[]
               title={
                 <ImageWrapper
                   key={collateral.token.name}
-                  src={`/${collateral.token.symbol}.png`}
+                  src={`/${collateral.token.symbol.toLowerCase()}.png`}
                   alt={collateral.token.symbol}
                   width={"20"}
                   height={"20"}
@@ -665,7 +665,7 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
         }}
       >
         <Image
-          src={`/${row.original.protocol}.png`}
+          src={`/${row.original.protocol.toLowerCase()}.png`}
           alt={row.original.protocol}
           width={20}
           height={20}
@@ -691,7 +691,7 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
           title={
             <ImageWrapper
               key={row.original.debt.token.name}
-              src={`/${row.original.debt.token.symbol}.png`}
+              src={`/${row.original.debt.token.symbol.toLowerCase()}.png`}
               alt={row.original.debt.token.symbol}
               width={"20"}
               height={"20"}
@@ -725,7 +725,7 @@ export const borrowTableColumns: ColumnDef<BorrowRecommendationTableRow>[] = [
             title={
               <ImageWrapper
                 key={collateral.token.name}
-                src={`/${collateral.token.symbol}.png`}
+                src={`/${collateral.token.symbol.toLowerCase()}.png`}
                 alt={collateral.token.symbol}
                 width={"20"}
                 height={"20"}

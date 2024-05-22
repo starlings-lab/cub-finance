@@ -189,7 +189,7 @@ const DebtSelect = ({
             >
               <div className="flex items-center">
                 <Image
-                  src={`/${selectedDebt.token?.symbol}.png`}
+                  src={`/${selectedDebt.token?.symbol.toLowerCase()}.png`}
                   alt=""
                   width={20}
                   height={20}
