@@ -23,6 +23,7 @@ export interface TokenAmount {
 export interface DebtPositionTableRow {
   id: number;
   protocol: Protocol;
+  debts: TokenAmount[];
   debtToken: Token[];
   collaterals: TokenAmount[];
   collateralTokens: Token[];
@@ -140,7 +141,9 @@ export interface CompoundV3RecommendedDebtDetail
 
 export interface RecommendedDebtDetailTableRow {
   protocol: Protocol;
-  debtToken: Token[];
+  debts: TokenAmount[];
+  debtTokens: Token[];
+  collaterals: TokenAmount[];
   collateralTokens: Token[];
   totalDebtAmountInUSD: number;
   totalCollateralAmountInUSD: number;
@@ -161,7 +164,9 @@ export interface APYInfo {
 
 export interface BorrowRecommendationTableRow {
   protocol: Protocol;
+  debt: TokenAmount;
   debtToken: Token;
+  collaterals: TokenAmount[];
   collateralTokens: Token[];
   // negative, 0 or positive
   trailing30DaysNetBorrowingAPY: number;

@@ -143,7 +143,9 @@ function convertAaveOrSparkBorrowRecommendation(
 ): BorrowRecommendationTableRow {
   const tableRow: BorrowRecommendationTableRow = {
     protocol: borrowRecommendation.protocol,
+    debt: borrowRecommendation.debt.debts[0],
     debtToken: borrowRecommendation.debt.debts[0].token,
+    collaterals: borrowRecommendation.debt.collaterals,
     collateralTokens: borrowRecommendation.debt.collaterals.map(
       (collateral) => collateral.token
     ),
@@ -175,7 +177,9 @@ function convertCompoundBorrowRecommendation(
 ): BorrowRecommendationTableRow {
   const tableRow: BorrowRecommendationTableRow = {
     protocol: borrowRecommendation.protocol,
+    debt: borrowRecommendation.debt.debt,
     debtToken: borrowRecommendation.debt.debt.token,
+    collaterals: borrowRecommendation.debt.collaterals,
     collateralTokens: borrowRecommendation.debt.collaterals.map(
       (collateral) => collateral.token
     ),
@@ -202,7 +206,9 @@ function convertMorphoRecommendedDebtDetail(
 ): BorrowRecommendationTableRow {
   const tableRow: BorrowRecommendationTableRow = {
     protocol: borrowRecommendation.protocol,
+    debt: borrowRecommendation.debt.debt,
     debtToken: borrowRecommendation.debt.debt.token,
+    collaterals: [borrowRecommendation.debt.collateral],
     collateralTokens: [borrowRecommendation.debt.collateral.token],
     maxDebtAmountInUSD: borrowRecommendation.debt.debt.amountInUSD,
     totalCollateralAmountInUSD:

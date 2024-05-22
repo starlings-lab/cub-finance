@@ -19,7 +19,6 @@
     "@radix-ui/react-tooltip": "^1.0.7",
     "@tanstack/react-table": "^8.16.0",
     "@types/jest": "^29.5.12",
-    "@vercel/analytics": "^1.2.2",
     "abitype": "^1.0.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",

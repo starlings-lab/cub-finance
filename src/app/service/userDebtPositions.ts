@@ -102,6 +102,7 @@ function convertAaveOrSparkDebtPositions(
         id: generateId(),
         protocol: userDebtDetails.protocol,
         debtPosition: debtPosition,
+        debts: debtPosition.debts,
         debtToken: debtPosition.debts.map((debt) => debt.token),
         collaterals: debtPosition.collaterals,
         collateralTokens: debtPosition.collaterals.map(
@@ -157,6 +158,7 @@ function convertCompoundDebtPositions(
       id: generateId(),
       protocol: userDebtDetails.protocol,
       debtPosition: debtPosition,
+      debts: [debtPosition.debt],
       debtToken: [debtPosition.debt.token],
       collaterals: debtPosition.collaterals,
       collateralTokens: debtPosition.collaterals.map(
@@ -198,6 +200,7 @@ function convertMorphoDebtPositions(
       id: generateId(),
       protocol: userDebtDetails.protocol,
       debtPosition: debtPosition,
+      debts: [debtPosition.debt],
       debtToken: [debtPosition.debt.token],
       collaterals: [debtPosition.collateral],
       collateralTokens: [debtPosition.collateral.token],

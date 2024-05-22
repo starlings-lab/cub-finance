@@ -10,12 +10,12 @@ export default function StoreProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [activeDebtPosition, setActiveDebtPosition] = useState<DebtPositionTableRow| null>(null);
+  const [activeDebtId, setActiveDebtId] = useState<number| null>(null);
   const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Refinance);
 
   return (
     <StoreContext.Provider
-      value={{ activeDebtPosition, activeTab, setActiveDebtPosition, setActiveTab }}
+      value={{ activeDebtId, activeTab, setActiveDebtId, setActiveTab }}
     >
       {children}
     </StoreContext.Provider>

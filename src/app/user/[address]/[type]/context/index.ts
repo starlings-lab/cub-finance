@@ -3,11 +3,16 @@ import { Tabs } from "@/components/ui/tabs";
 import { Dispatch, SetStateAction, createContext } from "react";
 
 interface IContext {
-  activeDebtPosition: DebtPositionTableRow | null;
+  activeDebtId: number | null;
   activeTab: Tabs;
 
-  setActiveDebtPosition: Dispatch<SetStateAction<DebtPositionTableRow | null>>;
+  setActiveDebtId: Dispatch<SetStateAction<number | null>>;
   setActiveTab: Dispatch<SetStateAction<Tabs>>;
 };
 
-export const StoreContext = createContext<IContext | null>(null);
+export const StoreContext = createContext<IContext>({
+  activeDebtId: null,
+  activeTab: Tabs.Refinance,
+  setActiveDebtId: () => {},
+  setActiveTab: () => {},
+});

@@ -88,6 +88,7 @@ const DebtTableWrapper = async ({ userAddress }: { userAddress: string }) => {
         debtPositionsRefinanceOptions={debtPositionsRefinanceOptions}
         debtError={debtErrorMessage}
         refinanceError={refinanceErrorMessage}
+        userAddress={userAddress}
       />
     </div>
   );

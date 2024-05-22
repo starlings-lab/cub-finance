@@ -21,12 +21,13 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { Fragment, Suspense, useEffect, useState } from "react";
+import { Fragment, Suspense, useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import Loading from "@/app/user/[address]/[type]/loadingTable";
 import RecommendationsWrapper from "@/app/user/[address]/[type]/RecommendationsWrapper";
 import { RecommendedDebtDetailTableRow } from "@/app/type/type";
 import { useToast } from "./use-toast";
+import { StoreContext } from "@/app/user/[address]/[type]/context";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -38,6 +39,7 @@ interface DataTableProps<TData, TValue> {
   >;
   debtError?: string;
   refinanceError?: string;
+  userAddress: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -46,8 +48,10 @@ export function DataTable<TData, TValue>({
   initialSortedColumns,
   debtPositionsRefinanceOptions,
   debtError,
-  refinanceError
+  refinanceError,
+  userAddress
 }: DataTableProps<TData, TValue>) {
+  const {activeDebtId, setActiveDebtId} = useContext(StoreContext)
   const { toast } = useToast();
   const [expanded, setExpanded] = useState<ExpandedState>({
     0: false
@@ -61,6 +65,7 @@ export function DataTable<TData, TValue>({
   const [rowSelection, setRowSelected] = useState<RowSelectionState>({
     "0.0": true
   });
+
   const table = useReactTable({
     data,
     columns,
@@ -82,7 +87,20 @@ export function DataTable<TData, TValue>({
   });
 
   useEffect(() => {
-    if (data?.length > 0 && debtPositionsRefinanceOptions) {
+    const prevState = localStorage.getItem(`${userAddress}_activeDebtId`)
+    if(prevState){
+      const [activeDebtId, expanded, rowSelection] = prevState.split('_');
+      setExpanded(JSON.parse(expanded))
+      setRowSelected(JSON.parse(rowSelection))
+      setActiveDebtId(Number(activeDebtId))
+      setActiveRecommendations(debtPositionsRefinanceOptions[Number(activeDebtId)])
+    }
+  }, [userAddress, debtPositionsRefinanceOptions])
+  
+
+  useEffect(() => {
+    const prevState = localStorage.getItem(`${userAddress}_activeDebtId`)
+    if (data?.length > 0 && debtPositionsRefinanceOptions && !prevState) {
       const allRows = table.getRowModel().rows;
       const checkIfWeHaveAaveAggregatedPosition = allRows.find(
         (row) => row?.subRows?.length > 0
@@ -119,12 +137,12 @@ export function DataTable<TData, TValue>({
         ) {
           positionIfThereIsNoOptionHavingRefinanceOptions!?.toggleSelected();
         }
+        const debtId =
+          positionIfThereIsNoOptionHavingRefinanceOptions!?.original?.id;
+
+        setActiveDebtId(debtId)
         setActiveRecommendations(
-          positionIfThereIsNoOptionHavingRefinanceOptions!?.original?.id
-            ? debtPositionsRefinanceOptions[
-                positionIfThereIsNoOptionHavingRefinanceOptions!?.original?.id
-              ]
-            : []
+          debtId ? debtPositionsRefinanceOptions[debtId] : []
         );
       } else {
         const checkIfOtherPositionHasRefinanceOptions = allRows.find(
@@ -136,16 +154,14 @@ export function DataTable<TData, TValue>({
 
         positionIfThereIsNoOptionHavingRefinanceOptions?.toggleSelected();
 
+        const debtId = checkIfOtherPositionHasRefinanceOptions!?.original?.id;
+        setActiveDebtId(debtId)
         setActiveRecommendations(
-          checkIfOtherPositionHasRefinanceOptions!?.original?.id
-            ? debtPositionsRefinanceOptions[
-                checkIfOtherPositionHasRefinanceOptions!?.original?.id
-              ]
-            : []
+          debtId ? debtPositionsRefinanceOptions[debtId] : []
         );
       }
     }
-  }, [data, debtPositionsRefinanceOptions]);
+  }, [data, debtPositionsRefinanceOptions, userAddress]);
 
   const finalTable = showFullDebtTable
     ? table.getRowModel()
@@ -159,6 +175,18 @@ export function DataTable<TData, TValue>({
   //     variant: "destructive"
   //   });
   // }
+
+  useEffect(() => {
+    if(activeDebtId){
+      localStorage.setItem(
+        `${userAddress}_activeDebtId`,
+        `${activeDebtId}_${JSON.stringify(expanded)}_${JSON.stringify(
+          rowSelection
+        )}`
+      );
+    }
+  }, [expanded, rowSelection, activeDebtId, userAddress])
+  
 
   return (
     <Table>
@@ -232,20 +260,21 @@ export function DataTable<TData, TValue>({
                     });
                     if (!row.getCanExpand() && !row.getIsSelected()) {
                       row.toggleSelected();
+                      const debtId = row!?.original?.id;
+                      setActiveDebtId(debtId)
                       setActiveRecommendations(
-                        row!?.original?.id
-                          ? debtPositionsRefinanceOptions[row!?.original?.id]
-                          : []
+                        debtId ? debtPositionsRefinanceOptions[debtId] : []
                       );
                     }
                   }
                   if (row?.depth === 1) {
                     if (!row.getIsSelected()) {
                       row.toggleSelected();
+                      const debtId = row!?.original?.id;
+                      debtId &&
+                      setActiveDebtId(debtId)
                       setActiveRecommendations(
-                        row!?.original?.id
-                          ? debtPositionsRefinanceOptions[row!?.original?.id]
-                          : []
+                        debtId ? debtPositionsRefinanceOptions[debtId] : []
                       );
                     }
                   }
