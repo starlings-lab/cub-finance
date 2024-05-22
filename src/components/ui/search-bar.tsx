@@ -22,26 +22,23 @@ export interface SearchBarProps
 
 const TEST_ADDRESS_MAP = [
   {
-    address: TEST_DEBT_POSITION_ADDRESSES.aaveUser4,
-    protocol: "AaveV3"
+    address: TEST_DEBT_POSITION_ADDRESSES.ensAddress3,
+    protocol: "aavev3"
   },
   {
     address: TEST_DEBT_POSITION_ADDRESSES.compoundUser3,
-    protocol: "CompoundV3"
+    protocol: "compoundv3"
   },
   {
     address: TEST_DEBT_POSITION_ADDRESSES.morphoUser2,
-    protocol: "MorphoBlue"
+    protocol: "morphoblue"
   },
   {
     address: TEST_DEBT_POSITION_ADDRESSES.sparkUser2,
-    protocol: "Spark"
+    protocol: "spark"
   },
-  {
-    address: TEST_DEBT_POSITION_ADDRESSES.ensAddress3,
-    protocol: "eth"
-  }
 ];
+
 
 const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
   ({ className, routeType, defaultUserAddress, isHome, ...props }, ref) => {
