@@ -139,7 +139,7 @@ const BorrowRecommendationsWrapper = ({
           currentList={selectedDebtTokens}
           setCurrentList={setSelectedDebtTokens}
         />
-        <div className="my-2">against</div>
+        <div className="mt-4 my-2">against</div>
         <CollateralSelect
           activeDropDown={activeDropDown === "collateral"}
           setActiveDropDown={setActiveDropDown}

@@ -43,7 +43,7 @@ const TabsWrapper = ({
             passHref
           >
             <div
-              className={`transition-colors ease-linear text-xl sm:text-3xl min-w-32 sm:min-w-36 mx-2 ${
+              className={`transition-colors ease-linear text-3xl min-w-32 sm:min-w-36 mx-2 ${
                 selected === option.value
                   ? selectedClassNames
                   : unSelectedClassNames
@@ -54,7 +54,7 @@ const TabsWrapper = ({
           </Link>
         ))}
       </div>
-      <div className="mt-1 sm:mt-4 text-sm sm:text-lg text-gray-500 font-notoSerif text-center">
+      <div className="mt-1 sm:mt-4 text-base sm:text-lg text-gray-500 font-notoSerif text-center">
         {optionsSubHeading[selected]}
       </div>
     </div>

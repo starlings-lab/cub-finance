@@ -60,7 +60,9 @@ const CollateralSelect = ({
           setActiveDropDown(activeDropDown ? "" : "collateral");
         }}
       >
-        <span className="text-xl truncate min-w-32">{displayValueOfCollateral}</span>
+        <span className="text-lg sm:text-xl truncate min-w-32">
+          {displayValueOfCollateral}
+        </span>
         <span className="pointer-events-none right-0 ml-3 flex items-center">
           {activeDropDown ? (
             <svg

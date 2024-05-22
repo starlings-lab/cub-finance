@@ -105,7 +105,7 @@ const DebtSelect = ({
           setActiveDropDown(activeDropDown ? "" : "debt");
         }}
       >
-        <span className="text-xl truncate min-w-32">{displayValueOfDebt}</span>
+        <span className="text-lg sm:text-xl truncate min-w-32">{displayValueOfDebt}</span>
         <span className="pointer-events-none right-0 ml-3 flex items-center">
           {activeDropDown ? (
             <svg
