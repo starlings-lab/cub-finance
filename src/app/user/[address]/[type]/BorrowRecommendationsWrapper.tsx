@@ -46,9 +46,28 @@ const BorrowRecommendationsWrapper = ({
   const { toast } = useToast();
 
   useEffect(() => {
-    setSelectedDebtTokens(supportedDebtTokens);
-    setSelectedCollaterals(collaterals);
-  }, [collaterals, supportedDebtTokens]);
+    const prevState = localStorage.getItem(
+      `${userAddress}_activeBorrowSelections`
+    );
+    if (prevState) {
+      const [selectedDebtTokens, selectedCollaterals] = prevState.split("_");
+      const parsedDebtTokens = JSON.parse(selectedDebtTokens) as string[];
+      const parsedCollateralTokens = JSON.parse(
+        selectedCollaterals
+      ) as string[];
+
+      setSelectedDebtTokens(
+        supportedDebtTokens.filter((debtTokens) =>
+          parsedDebtTokens.includes(debtTokens.token.symbol)
+        )
+      );
+      setSelectedCollaterals(
+        collaterals.filter((collateral) =>
+          parsedCollateralTokens.includes(collateral.token.symbol)
+        )
+      );
+    }
+  }, []);
 
   useEffect(() => {
     const debtTokenSymbolsMap = selectedDebtTokens.map(
@@ -108,7 +127,7 @@ const BorrowRecommendationsWrapper = ({
     };
 
     fetchBorrowRecommendations();
-  }, [selectedCollaterals, supportedDebtTokens, toast]);
+  }, [selectedCollaterals]);
 
   return (
     <div>
@@ -119,7 +138,17 @@ const BorrowRecommendationsWrapper = ({
           setActiveDropDown={setActiveDropDown}
           optionsList={supportedDebtTokens}
           currentList={selectedDebtTokens}
-          setCurrentList={setSelectedDebtTokens}
+          setCurrentList={(list) => {
+            setSelectedDebtTokens(list);
+            localStorage.setItem(
+              `${userAddress}_activeBorrowSelections`,
+              `${JSON.stringify(
+                list.map((debtToken) => debtToken.token.symbol)
+              )}_${JSON.stringify(
+                selectedCollaterals.map((collateral) => collateral.token.symbol)
+              )}`
+            );
+          }}
         />
         <div className="text-xl">against</div>
         <CollateralSelect
@@ -127,7 +156,17 @@ const BorrowRecommendationsWrapper = ({
           setActiveDropDown={setActiveDropDown}
           optionsList={collaterals}
           currentList={selectedCollaterals}
-          setCurrentList={setSelectedCollaterals}
+          setCurrentList={(list) => {
+            setSelectedCollaterals(list);
+            localStorage.setItem(
+              `${userAddress}_activeBorrowSelections`,
+              `${JSON.stringify(
+                selectedDebtTokens.map((debtToken) => debtToken.token.symbol)
+              )}_${JSON.stringify(
+                list.map((collateral) => collateral.token.symbol)
+              )}`
+            );
+          }}
         />
       </div>
       <div className="flex sm:hidden flex-col mb-8 mx-auto justify-center">
@@ -137,7 +176,17 @@ const BorrowRecommendationsWrapper = ({
           setActiveDropDown={setActiveDropDown}
           optionsList={supportedDebtTokens}
           currentList={selectedDebtTokens}
-          setCurrentList={setSelectedDebtTokens}
+          setCurrentList={(list) => {
+            setSelectedDebtTokens(list);
+            localStorage.setItem(
+              `${userAddress}_activeBorrowSelections`,
+              `${JSON.stringify(
+                list.map((debtToken) => debtToken.token.symbol)
+              )}_${JSON.stringify(
+                selectedCollaterals.map((collateral) => collateral.token.symbol)
+              )}`
+            );
+          }}
         />
         <div className="my-2">against</div>
         <CollateralSelect
@@ -145,7 +194,17 @@ const BorrowRecommendationsWrapper = ({
           setActiveDropDown={setActiveDropDown}
           optionsList={collaterals}
           currentList={selectedCollaterals}
-          setCurrentList={setSelectedCollaterals}
+          setCurrentList={(list) => {
+            setSelectedCollaterals(list);
+            localStorage.setItem(
+              `${userAddress}_activeBorrowSelections`,
+              `${JSON.stringify(
+                selectedDebtTokens.map((debtToken) => debtToken.token.symbol)
+              )}_${JSON.stringify(
+                list.map((collateral) => collateral.token.symbol)
+              )}`
+            );
+          }}
         />
       </div>
       <BorrowRecommendations

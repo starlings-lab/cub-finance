@@ -37,7 +37,7 @@ const DebtSelect = ({
   setActiveDropDown: React.Dispatch<
     React.SetStateAction<"debt" | "collateral" | "">
   >;
-  setCurrentList: React.Dispatch<React.SetStateAction<TokenDetail[]>>;
+  setCurrentList: (list: TokenDetail[]) => void;
 }) => {
   const stableCoinList = optionsList
     .filter((option) => option.stable)
