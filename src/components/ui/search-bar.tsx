@@ -31,6 +31,8 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     const [addressErr, setAddressErr] = useState<boolean>(false);
     const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isInputHovered, setIsInputHovered] = useState<boolean>(false);
+    const [isInputFocused, setIsInputFocused] = useState<boolean>(false);
 
     const preValidationStateUpdate = (inputValue: string) => {
       setAddress(inputValue);
@@ -126,6 +128,8 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             className={`flex w-full space-x-2 py-1 pr-1 border rounded-2xl ${
               addressErr ? "border-red-500" : ""
             } ${isHome ? "pl-3" : "pl-1"}`}
+            onMouseEnter={() => setIsInputHovered(true)}
+            onMouseLeave={() => setIsInputHovered(false)}
           >
             <Image
               src={"/search_black.svg"}
@@ -141,10 +145,12 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               value={address}
               placeholder="Wallet address or ENS"
               onChange={handleChange}
+              onFocus={() => setIsInputFocused(true)}
               onBlur={async () => {
                 if (!errorCheck && !isHome) {
                   await verifyAndRefreshRoute();
                 }
+                setIsInputFocused(false);
               }}
               onKeyDown={async (e) => {
                 if (e.key === "Enter") {
@@ -161,6 +167,22 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 }
               }}
             ></Input>
+            <Button
+              variant={"ghost"}
+              className={`py-2 px-0 sm:py-2 sm:px-0 ${
+                (isInputFocused || isInputHovered) && address.length > 0
+                  ? "sm:visible"
+                  : "sm:invisible"
+              } ${address.length > 0 ? "visible" : "invisible"}`}
+              onClick={() => setAddress("")}
+            >
+              <Image
+                src={"/cross.svg"}
+                alt="clear input"
+                width={40}
+                height={40}
+              />
+            </Button>
             <Button
               disabled={errorCheck}
               className={`bg-[#F43F5E] text-white rounded-2xl sm:py-4 sm:px-8 font-hkGrotesk font-medium tracking-wide transition-opacity hover:bg-[#F43F5E] hover:opacity-80 ${
@@ -204,13 +226,29 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               type="text"
               value={address}
               placeholder="Enter your wallet address"
+              onFocus={() => setIsInputFocused(true)}
               onChange={handleChange}
               onBlur={async () => {
                 if (!isHome && address && eoaAddress) {
                   await verifyAndRefreshRoute();
                 }
+                setIsInputFocused(false);
               }}
             />
+            <Button
+              variant={"ghost"}
+              className={`py-2 px-0 ${
+                address.length > 0 ? "visible" : "invisible hidden"
+              }`}
+              onClick={() => setAddress("")}
+            >
+              <Image
+                src={"/cross.svg"}
+                alt="clear input"
+                width={40}
+                height={40}
+              />
+            </Button>
           </div>
           <div
             className={`items-center text-gray-500 text-sm pl-3 ${
