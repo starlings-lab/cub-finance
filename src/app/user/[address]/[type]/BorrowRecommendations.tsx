@@ -105,7 +105,7 @@ const BorrowRecommendations = ({
               className="h-16 text-left sm:text-center"
             >
               {error ??
-                "You don&apos;t have borrow options because you have no supported collaterals."}
+                "You don't have borrow options because you have no supported collaterals."}
             </TableCell>
           </TableRow>
         )}
