@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/src/app/api/defillama/route.js",
+      "path": "/api/defillama",
       "schedule": "0 10 * * *"
     }
   ]
