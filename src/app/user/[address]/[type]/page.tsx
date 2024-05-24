@@ -7,7 +7,7 @@ import { Suspense } from "react";
 import StoreProvider from "./provider";
 import Loading from "./loadingTable";
 import BorrowOptionsWrapper from "./BorrowOptionsWrapper";
-import { ROUTE_BORROW, ROUTE_REFINANCE } from "@/app/constants";
+import { ROUTE_BORROW } from "@/app/constants";
 
 export default async function DebtPage({
   params
