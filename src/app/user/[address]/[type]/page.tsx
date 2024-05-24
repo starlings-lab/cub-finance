@@ -3,17 +3,11 @@ import { isValidEnsAddress, EOAFromENS } from "../../../service/ensService";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { SearchBar } from "@/components/ui/search-bar";
-import { Tabs, TabsWrapper } from "@/components/ui/tabs";
 import { Suspense } from "react";
 import StoreProvider from "./provider";
 import Loading from "./loadingTable";
-import DebtTableWrapper from "./DebtTableWrapper";
 import BorrowOptionsWrapper from "./BorrowOptionsWrapper";
-import { ROUTE_BORROW } from "@/app/constants";
-
-// increased max duration to 60 seconds
-// see: https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#maxduration
-export const maxDuration = 60;
+import { ROUTE_BORROW, ROUTE_REFINANCE } from "@/app/constants";
 
 export default async function DebtPage({
   params
@@ -38,30 +32,25 @@ export default async function DebtPage({
     ? (await EOAFromENS(params.address)) || params.address
     : params.address;
 
-  const selectedValue =
-    params?.type === ROUTE_BORROW ? Tabs.Borrow : Tabs.Refinance;
-
   return (
     <StoreProvider>
+      {}
       <div className="mt-24 mb-32 sm:mt-28">
-        <SearchBar
-          isHome={false}
-          routeType={params.type as string}
-          defaultUserAddress={(params!.address as string) ?? ""}
-        />
-        <TabsWrapper selected={selectedValue} userAddress={params.address} />
-        {params?.type === ROUTE_BORROW ? (
-          <div className="mt-4">
-            <Suspense fallback={<Loading />}>
-              <BorrowOptionsWrapper userAddress={userAddress} />
-            </Suspense>
-          </div>
+        {params.type === ROUTE_BORROW ? (
+          <>
+            <SearchBar
+              isHome={false}
+              routeType={params.type as string}
+              defaultUserAddress={(params!.address as string) ?? ""}
+            />
+            <div className="pt-2 sm:pt-5">
+              <Suspense fallback={<Loading />}>
+                <BorrowOptionsWrapper userAddress={userAddress} />
+              </Suspense>
+            </div>
+          </>
         ) : (
-          <div className="mt-4">
-            <Suspense fallback={<Loading />}>
-              <DebtTableWrapper userAddress={userAddress} />
-            </Suspense>
-          </div>
+          <div>Sorry, Refinancing options are not supported anymore.</div>
         )}
       </div>
     </StoreProvider>

@@ -107,4 +107,3 @@ export const TEST_DEBT_POSITION_ADDRESSES = {
 };
 
 export const ROUTE_BORROW = "borrow";
-export const ROUTE_REFINANCE = "refinance";
