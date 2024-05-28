@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { StoreContext } from "../context";
-import { DebtPositionTableRow } from "@/app/type/type";
 import { Tabs } from "@/components/ui/tabs";
 
 export default function StoreProvider({
@@ -10,8 +9,8 @@ export default function StoreProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [activeDebtId, setActiveDebtId] = useState<number| null>(null);
-  const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Refinance);
+  const [activeDebtId, setActiveDebtId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Borrow);
 
   return (
     <StoreContext.Provider

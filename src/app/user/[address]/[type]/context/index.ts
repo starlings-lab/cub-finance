@@ -1,4 +1,3 @@
-import { DebtPositionTableRow } from "@/app/type/type";
 import { Tabs } from "@/components/ui/tabs";
 import { Dispatch, SetStateAction, createContext } from "react";
 
@@ -8,11 +7,11 @@ interface IContext {
 
   setActiveDebtId: Dispatch<SetStateAction<number | null>>;
   setActiveTab: Dispatch<SetStateAction<Tabs>>;
-};
+}
 
 export const StoreContext = createContext<IContext>({
   activeDebtId: null,
   activeTab: Tabs.Refinance,
   setActiveDebtId: () => {},
-  setActiveTab: () => {},
+  setActiveTab: () => {}
 });
