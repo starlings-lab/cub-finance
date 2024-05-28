@@ -20,46 +20,6 @@ export interface TokenAmount {
   amountInUSD: number;
 }
 
-export interface DebtPositionTableRow {
-  id: number;
-  protocol: Protocol;
-  debts: TokenAmount[];
-  debtToken: Token[];
-  collaterals: TokenAmount[];
-  collateralTokens: Token[];
-  totalDebtAmountInUSD: number;
-  totalCollateralAmountInUSD: number;
-  LTV: number; // debtAmountInUSD / sum of collateralAmountInUSD array
-  maxLTV: number;
-  trailing30DaysNetBorrowingAPY: number; // negative, 0 or positive
-  trailing30DaysLendingAPY: number; // Lending apy of collateral. weighted average for multiple collateral positions.
-  trailing30DaysBorrowingAPY: number; // Borrowing apy of debt token.
-  trailing30DaysRewardAPY: number;
-  subRows?: DebtPositionTableRow[] | undefined;
-  // Original debt position
-  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition;
-}
-
-export interface UserDebtDetailsBase {
-  protocol: Protocol;
-  userAddress: Address;
-}
-
-export interface UserDebtDetails extends UserDebtDetailsBase {
-  markets: Market[];
-  debtPositions: DebtPosition[];
-}
-
-export interface MorphoBlueUserDebtDetails extends UserDebtDetailsBase {
-  markets: MorphoBlueMarket[];
-  debtPositions: MorphoBlueDebtPosition[];
-}
-
-export interface CompoundV3UserDebtDetails extends UserDebtDetailsBase {
-  markets: CompoundV3Market[];
-  debtPositions: CompoundV3DebtPosition[];
-}
-
 export interface DebtPositionBase {
   maxLTV: number;
   LTV: number; // debtAmountInUSD / sum of collateralAmountInUSD array
