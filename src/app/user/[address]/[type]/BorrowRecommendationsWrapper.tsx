@@ -11,6 +11,7 @@ import CollateralSelect from "./CollateralSelect";
 import DebtSelect from "./DebtSelect";
 import { useToast } from "../../../../components/ui/use-toast";
 import { Address } from "abitype";
+import ClickAwayListener from "@/components/ui/click-away-listner";
 
 const BorrowRecommendationsWrapper = ({
   collaterals,
@@ -162,6 +163,10 @@ const BorrowRecommendationsWrapper = ({
     [selectedDebtTokens]
   );
 
+  const handleClickAway = () => {
+    setActiveDropDown("");
+  };
+
   return (
     <div>
       <div className="text-3xl hidden sm:flex items-center mb-12 mx-auto justify-center">
@@ -169,39 +174,56 @@ const BorrowRecommendationsWrapper = ({
       </div>
       <div className="hidden sm:flex items-center mb-12 mx-auto justify-center">
         <div className="text-xl">I want to borrow</div>
-        <DebtSelect
-          activeDropDown={activeDropDown === "debt"}
-          setActiveDropDown={setActiveDropDown}
-          optionsList={supportedDebtTokens}
-          currentList={selectedDebtTokens}
-          setCurrentList={handleDebtSelect}
-        />
+        <ClickAwayListener onClickAway={handleClickAway}>
+          <DebtSelect
+            activeDropDown={activeDropDown === "debt"}
+            setActiveDropDown={setActiveDropDown}
+            optionsList={supportedDebtTokens}
+            currentList={selectedDebtTokens}
+            setCurrentList={handleDebtSelect}
+          />
+        </ClickAwayListener>
         <div className="text-xl">against</div>
-        <CollateralSelect
-          activeDropDown={activeDropDown === "collateral"}
-          setActiveDropDown={setActiveDropDown}
-          optionsList={collaterals}
-          currentList={selectedCollaterals}
-          setCurrentList={handleCollateralSelect}
-        />
+        <ClickAwayListener onClickAway={handleClickAway}>
+          <CollateralSelect
+            activeDropDown={activeDropDown === "collateral"}
+            setActiveDropDown={setActiveDropDown}
+            optionsList={collaterals}
+            currentList={selectedCollaterals}
+            setCurrentList={handleCollateralSelect}
+          />
+        </ClickAwayListener>
       </div>
       <div className="flex sm:hidden flex-col mb-8 mx-auto justify-center">
-        <div className="mb-2">I want to borrow</div>
-        <DebtSelect
-          activeDropDown={activeDropDown === "debt"}
-          setActiveDropDown={setActiveDropDown}
-          optionsList={supportedDebtTokens}
-          currentList={selectedDebtTokens}
-          setCurrentList={handleDebtSelect}
-        />
-        <div className="mt-4 my-2">against</div>
-        <CollateralSelect
-          activeDropDown={activeDropDown === "collateral"}
-          setActiveDropDown={setActiveDropDown}
-          optionsList={collaterals}
-          currentList={selectedCollaterals}
-          setCurrentList={handleCollateralSelect}
-        />
+        <div className="flex items-center justify-between flex-1">
+          <div>I want to borrow</div>
+          <div className="border border-slate-300 p-1 rounded-lg bg-white w-3/5 ml-2">
+            <ClickAwayListener onClickAway={handleClickAway}>
+              <DebtSelect
+                activeDropDown={activeDropDown === "debt"}
+                setActiveDropDown={setActiveDropDown}
+                optionsList={supportedDebtTokens}
+                currentList={selectedDebtTokens}
+                setCurrentList={handleDebtSelect}
+              />
+            </ClickAwayListener>
+          </div>
+        </div>
+
+        <div className="  flex items-center justify-between flex-1 mt-4">
+          <div>against</div>
+          <div className="border border-slate-300 p-1 rounded-lg bg-white w-3/5 ml-2">
+            <ClickAwayListener onClickAway={handleClickAway}>
+              <CollateralSelect
+                activeDropDown={activeDropDown === "collateral"}
+                setActiveDropDown={setActiveDropDown}
+                optionsList={collaterals}
+                currentList={selectedCollaterals}
+                setCurrentList={handleCollateralSelect}
+              />
+            </ClickAwayListener>
+          </div>
+        </div>
       </div>
       <BorrowRecommendations
         isLoading={isLoading}

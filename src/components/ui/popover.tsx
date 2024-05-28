@@ -22,14 +22,14 @@ const PopoverWrapper = ({
     return (
       <Popover.Root>
         <Popover.Trigger
-          className="cursor-pointer"
+          className="cursor-pointer w-full"
           onClick={(e) => e.stopPropagation()}
         >
           {title}
         </Popover.Trigger>
         <Popover.Portal>
           <Popover.Content
-            className="bg-white rounded shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] select-none will-change-[transform,opacity] px-2 py-2.5 focus-visible:outline-0"
+            className="bg-white max-w-64 sm:max-w-64 rounded shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] select-none will-change-[transform,opacity] px-2 py-2.5 focus-visible:outline-0"
             sideOffset={5}
           >
             {content}
