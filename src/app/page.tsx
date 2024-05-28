@@ -23,8 +23,7 @@ export default function Home() {
         </CardHeader>
         <CardContent className="p-0 sm:p-6 w-full">
           <CardDescription className="home-desc text-lg font-notoSerif sm:text-center sm:mx-auto sm:-mt-8 tracking-wide sm:w-6/12">
-            We analyze your token holdings and existing debt positions to find
-            the best terms.
+            We analyze your token holdings to find the best terms.
           </CardDescription>
           <SearchBar
             className="mt-16"

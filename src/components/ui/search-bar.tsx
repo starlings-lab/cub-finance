@@ -34,11 +34,10 @@ const TEST_ADDRESS_MAP = [
     protocol: "morphoblue"
   },
   {
-    address: TEST_DEBT_POSITION_ADDRESSES.sparkUser2,
+    address: TEST_DEBT_POSITION_ADDRESSES.sparkUser3,
     protocol: "spark"
-  },
+  }
 ];
-
 
 const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
   ({ className, routeType, defaultUserAddress, isHome, ...props }, ref) => {
@@ -110,7 +109,9 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     ) => {
       console.log(resolvedAddress, isValidAddress);
       setEoaAddress(resolvedAddress);
-      isHome && isValidAddress && updateLocalStorageRecentSearches(resolvedAddress);
+      isHome &&
+        isValidAddress &&
+        updateLocalStorageRecentSearches(resolvedAddress);
       setAddressErr(!isValidAddress);
       setButtonDisabled(!isValidAddress);
       setIsLoading(false);
@@ -134,7 +135,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
         postValidationStateUpdate(resolvedAddress as string, isValidAddress);
       };
 
-      if(debouncedAddress.length>0){
+      if (debouncedAddress.length > 0) {
         validateAddress();
       }
     }, [debouncedAddress]);
