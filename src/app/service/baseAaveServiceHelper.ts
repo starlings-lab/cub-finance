@@ -94,43 +94,6 @@ function determineNewLTVAndDebtAmount(
   return { newLTV, newDebt };
 }
 
-export function validateMaxLTV(
-  existingMaxLTV: number,
-  newCollaterals: TokenAmount[],
-  reservesMap: Map<string, any>,
-  maxLTVTolerance: number
-) {
-  // Create a map of collateral amount by address
-  let totalCollateralAmountInUSD = 0;
-  const collateralAmountByAddress = new Map<string, TokenAmount>();
-  newCollaterals.forEach((collateral) => {
-    collateralAmountByAddress.set(
-      collateral.token.address.toLowerCase(),
-      collateral
-    );
-    totalCollateralAmountInUSD += collateral.amountInUSD;
-  });
-
-  // calculate weighted avg max LTV of collateral markets
-  const newMaxLTV = calculateMaxLtv(newCollaterals, reservesMap);
-
-  // new Max ltv should be >= current LTV - maxLTVTolerance
-  const tolerableMaxLTV = existingMaxLTV - maxLTVTolerance;
-  const isMaxLTVAcceptable = newMaxLTV >= tolerableMaxLTV;
-
-  if (isMaxLTVAcceptable) {
-    // console.log(
-    //   `New max LTV: ${newMaxLTV} is >= current max LTV: ${existingMaxLTV} - maxLTVTolerance: ${maxLTVTolerance}`
-    // );
-    // calculate borrowing cost
-  } else {
-    // console.log(
-    //   `New max LTV: ${newMaxLTV} is not >= current max LTV: ${existingMaxLTV} - maxLTVTolerance: ${maxLTVTolerance}`
-    // );
-  }
-  return { isMaxLTVAcceptable, newMaxLTV };
-}
-
 export function calculateMaxLtv(
   newCollaterals: TokenAmount[],
   reservesMap: Map<string, any>

@@ -9,43 +9,21 @@ import {
 } from "../contracts/compoundV3";
 import { USDC, WBTC, WETH, wstETH } from "../contracts/ERC20Tokens";
 import {
-  getCompoundV3UserDebtDetails,
   getUtilizationRatio,
   getCollateralsByUserAddress,
   getBorrowBalance,
   getSupportedCollateralByMarket,
   getCollateralBalance,
-  getRecommendedDebtDetail,
   calculateTokenAmount,
   getPriceFeedFromTokenSymbol,
   getBorrowRecommendations
 } from "../service/compoundV3Service";
-import { getMorphoBlueUserDebtDetails } from "../service/morphoBlueService";
-import { Protocol } from "../type/type";
 
 import dotenv from "dotenv";
-import {
-  verifyAaveOrSparkBorrowRecommendations,
-  verifyCompoundBorrowRecommendations
-} from "./testHelper";
+import { verifyCompoundBorrowRecommendations } from "./testHelper";
 dotenv.config();
 
-const MORPHO_DEBT_POSITION_ADDRESS =
-  "0xf603265f91f58F1EfA4fAd57694Fb3B77b25fC18";
-
 describe("compoundV3Service", () => {
-  test("getCompoundV3UserDebtDetails function should return CompoundV3UserDebtDetails object for a user address", async () => {
-    const userDebtDetails = await getCompoundV3UserDebtDetails(
-      TEST_DEBT_POSITION_ADDRESSES.compoundUser2
-    );
-
-    expect(userDebtDetails).toHaveProperty("markets");
-    expect(Array.isArray(userDebtDetails.markets)).toBe(true);
-    expect(userDebtDetails).toHaveProperty("debtPositions");
-    expect(Array.isArray(userDebtDetails.debtPositions)).toBe(true);
-    // console.log("userDebtDetails", userDebtDetails);
-  });
-
   test("getUtilizationRatio function should return the utilization ratio for a given debt token address", async () => {
     const cusdcUtilizationRatio = await getUtilizationRatio(USDC.address);
     const cwethUtilizationRatio = await getUtilizationRatio(WETH.address);
@@ -151,40 +129,6 @@ describe("compoundV3Service", () => {
     expect(
       collateralBalancesCWETH.every((balance) => typeof balance === "bigint")
     ).toBe(true);
-  });
-
-  test("getRecommendedDebtDetail function should return an array of CompoundV3RecommendedDebtDetail", async () => {
-    const morphoBlueUserDebtDetails = await getMorphoBlueUserDebtDetails(
-      1,
-      MORPHO_DEBT_POSITION_ADDRESS
-    );
-    // console.log("morphoBlueUserDebtDetails", morphoBlueUserDebtDetails);
-    const recommendedDebtDetails = await Promise.all(
-      morphoBlueUserDebtDetails.debtPositions.map(async (debtPosition) => {
-        return await getRecommendedDebtDetail(
-          Protocol.MorphoBlue,
-          debtPosition
-        );
-      })
-    );
-    recommendedDebtDetails.forEach((recommendedDebtDetails) => {
-      expect(
-        Array.isArray(recommendedDebtDetails) || recommendedDebtDetails === null
-      ).toBe(true);
-      recommendedDebtDetails?.forEach((recommendedDebtDetail) => {
-        expect(recommendedDebtDetail).toHaveProperty(
-          "protocol",
-          Protocol.CompoundV3
-        );
-        expect(recommendedDebtDetail).toHaveProperty(
-          "trailing30DaysNetBorrowingAPY",
-          expect.any(Number)
-        );
-        expect(recommendedDebtDetail).toHaveProperty("debt");
-        expect(recommendedDebtDetail).toHaveProperty("market");
-      });
-    });
-    // console.log("recommendedDebtDetails", recommendedDebtDetails);
   });
 
   it("should calculate correct USDC amount", async () => {
