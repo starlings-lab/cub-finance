@@ -148,12 +148,17 @@ const BorrowRecommendations = ({
         <div className="mt-4">
           {isLoading ? (
             <BorrowCardLoading />
-          ) : (
+          ) : borrowOptions.length > 0 ? (
             borrowOptions
               .sort(sortingFn)
               .map((borrowOption, index) => (
                 <BorrowCard key={index} optionDetails={borrowOption} />
               ))
+          ) : (
+            <div className="text-xs justify-center flex mt-20 text-center">
+              {error ??
+                "You don't have borrow options because you have no supported collaterals."}
+            </div>
           )}
         </div>
       </div>
