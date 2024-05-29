@@ -61,23 +61,28 @@ const initialSortedColumns: ColumnSort[] = [
 const sortOptions = [
   {
     title: "Net Borrowing APY",
-    value: "trailing30DaysNetBorrowingAPY"
+    value: "trailing30DaysNetBorrowingAPY",
+    desc: true
   },
   {
     title: "Borrowing APY",
-    value: "trailing30DaysBorrowingAPY"
+    value: "trailing30DaysBorrowingAPY",
+    desc: false
   },
   {
     title: "Collateral APY",
-    value: "trailing30DaysLendingAPY"
+    value: "trailing30DaysLendingAPY",
+    desc: false
   },
   {
     title: "Rewards APY",
-    value: "trailing30DaysRewardAPY"
+    value: "trailing30DaysRewardAPY",
+    desc: false
   },
   {
     title: "Max LTV",
-    value: "maxLTV"
+    value: "maxLTV",
+    desc: false
   }
 ];
 
@@ -102,13 +107,14 @@ const BorrowRecommendations = ({
 
   const [sortingOption, setSortingOption] = useState<IItem>({
     title: "Net Borrowing APY",
-    value: "trailing30DaysNetBorrowingAPY"
+    value: "trailing30DaysNetBorrowingAPY",
+    desc: true,
   });
-  const [sortingDir, setSortingDir] = useState("asc");
+  const [sortingDir, setSortingDir] = useState("desc");
   const [isOpen, setIsOpen] = useState(false);
 
   const sortingFn = (rowA: any, rowB: any) => {
-    return sortingDir === "asc"
+    return sortingDir === "desc"
       ? rowA[sortingOption.value] - rowB[sortingOption.value]
       : rowB[sortingOption.value] - rowA[sortingOption.value];
   };

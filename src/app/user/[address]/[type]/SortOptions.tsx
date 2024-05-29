@@ -5,6 +5,7 @@ import { ChevronDown, ChevronUp } from "./DebtSelect";
 export type IItem = {
   value: string;
   title: string | ReactNode;
+  desc: boolean;
 };
 
 const SortOptions = ({
@@ -64,7 +65,7 @@ const SortOptions = ({
                   setDir(dir === "asc" ? "desc" : "asc");
                 } else {
                   setValue(item);
-                  setDir("asc");
+                  setDir(item.desc ? 'desc' : 'asc');
                 }
               }}
             >
