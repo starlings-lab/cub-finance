@@ -11,7 +11,7 @@ import CollateralSelect from "./CollateralSelect";
 import DebtSelect from "./DebtSelect";
 import { useToast } from "../../../../components/ui/use-toast";
 import { Address } from "abitype";
-import ClickAwayListener from "@/components/ui/click-away-listner";
+import ClickAwayListener from "@/components/ui/click-away-listener";
 
 const BorrowRecommendationsWrapper = ({
   collaterals,
@@ -163,18 +163,14 @@ const BorrowRecommendationsWrapper = ({
     [selectedDebtTokens]
   );
 
-  const handleClickAway = () => {
-    setActiveDropDown("");
-  };
-
   return (
     <div>
       <div className="text-3xl hidden sm:flex items-center mb-12 mx-auto justify-center">
         Find the best borrowing terms
       </div>
-      <div className="hidden sm:flex items-center mb-12 mx-auto justify-center">
-        <div className="text-xl">I want to borrow</div>
-        <ClickAwayListener onClickAway={handleClickAway}>
+      <ClickAwayListener onClickAway={() => setActiveDropDown("")}>
+        <div className="hidden sm:flex items-center mb-8 mx-auto justify-center">
+          <div className="text-xl">I want to borrow</div>
           <DebtSelect
             activeDropDown={activeDropDown === "debt"}
             setActiveDropDown={setActiveDropDown}
@@ -182,9 +178,7 @@ const BorrowRecommendationsWrapper = ({
             currentList={selectedDebtTokens}
             setCurrentList={handleDebtSelect}
           />
-        </ClickAwayListener>
-        <div className="text-xl">against</div>
-        <ClickAwayListener onClickAway={handleClickAway}>
+          <div className="text-xl">against</div>
           <CollateralSelect
             activeDropDown={activeDropDown === "collateral"}
             setActiveDropDown={setActiveDropDown}
@@ -192,13 +186,11 @@ const BorrowRecommendationsWrapper = ({
             currentList={selectedCollaterals}
             setCurrentList={handleCollateralSelect}
           />
-        </ClickAwayListener>
-      </div>
-      <div className="flex sm:hidden flex-col mb-8 mx-auto justify-center">
-        <div className="flex items-center justify-between flex-1">
-          <div>I want to borrow</div>
-          <div className="border border-slate-300 p-1 rounded-lg bg-white w-3/5 ml-2">
-            <ClickAwayListener onClickAway={handleClickAway}>
+        </div>
+        <div className="flex sm:hidden flex-col mb-8 mx-auto justify-center">
+          <div className="flex items-center justify-between flex-1">
+            <div>I want to borrow</div>
+            <div className="border border-slate-300 p-1 rounded-lg bg-white w-3/5 ml-2">
               <DebtSelect
                 activeDropDown={activeDropDown === "debt"}
                 setActiveDropDown={setActiveDropDown}
@@ -206,14 +198,12 @@ const BorrowRecommendationsWrapper = ({
                 currentList={selectedDebtTokens}
                 setCurrentList={handleDebtSelect}
               />
-            </ClickAwayListener>
+            </div>
           </div>
-        </div>
 
-        <div className="  flex items-center justify-between flex-1 mt-4">
-          <div>against</div>
-          <div className="border border-slate-300 p-1 rounded-lg bg-white w-3/5 ml-2">
-            <ClickAwayListener onClickAway={handleClickAway}>
+          <div className="  flex items-center justify-between flex-1 mt-4">
+            <div>against</div>
+            <div className="border border-slate-300 p-1 rounded-lg bg-white w-3/5 ml-2">
               <CollateralSelect
                 activeDropDown={activeDropDown === "collateral"}
                 setActiveDropDown={setActiveDropDown}
@@ -221,10 +211,11 @@ const BorrowRecommendationsWrapper = ({
                 currentList={selectedCollaterals}
                 setCurrentList={handleCollateralSelect}
               />
-            </ClickAwayListener>
+            </div>
           </div>
         </div>
-      </div>
+      </ClickAwayListener>
+
       <BorrowRecommendations
         isLoading={isLoading}
         borrowOptions={filteredBorrowRecommendations}

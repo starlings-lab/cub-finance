@@ -29,7 +29,7 @@ import BorrowCard, {
   BorrowCardLoading
 } from "@/app/user/[address]/[type]/BorrowCard";
 import SortOptions, { IItem } from "./SortOptions";
-import ClickAwayListener from "@/components/ui/click-away-listner";
+import ClickAwayListener from "@/components/ui/click-away-listener";
 
 // Sort debts by ascending order of trailing30DaysNetBorrowingAPY and descending order of totalDebtAmountInUSD
 const initialSortedColumns: ColumnSort[] = [

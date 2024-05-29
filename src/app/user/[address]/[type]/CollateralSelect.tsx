@@ -2,7 +2,7 @@
 import { TokenAmount } from "@/app/type/type";
 import { getFormattedTokenAmount } from "@/app/utils/utils";
 import Image from "next/image";
-import React, { useState } from "react";
+import React from "react";
 import { TickIconBox, ChevronDown, ChevronUp } from "./DebtSelect";
 
 const CollateralSelect = ({
@@ -60,7 +60,7 @@ const CollateralSelect = ({
           setActiveDropDown(activeDropDown ? "" : "collateral");
         }}
       >
-        <span className="text-md sm:text-xl truncate min-w-32">
+        <span className="text-md sm:text-xl truncate min-w-32 sm:min-w-40">
           {displayValueOfCollateral}
         </span>
         <span className="pointer-events-none right-0 ml-3 flex items-center">
