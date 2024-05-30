@@ -67,7 +67,7 @@ const sortOptions = [
   {
     title: "Borrowing APY",
     value: "trailing30DaysBorrowingAPY",
-    desc: false
+    desc: true
   },
   {
     title: "Collateral APY",
