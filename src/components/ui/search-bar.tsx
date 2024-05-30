@@ -138,16 +138,22 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       isValidAddress: boolean
     ) => {
       setAddressErr(!isValidAddress);
-      setButtonDisabled(!isValidAddress);
-      if (isValidAddress && isHome) {
-        updateLocalStorageRecentSearches(resolvedAddress);
+      if (isValidAddress) {
+        if(isHome){
+          setButtonDisabled(true);
+          updateLocalStorageRecentSearches(resolvedAddress);
+        }
         await verifyAndRefreshRoute();
       } else {
         setIsLoading(false);
+        setButtonDisabled(!isValidAddress);
       }
     };
 
     const validateAddress = async () => {
+      if(address === defaultUserAddress){
+        return
+      }
       preValidationStateUpdate(debouncedAddress);
       const isValidEns = await isValidEnsAddress(debouncedAddress);
       const resolvedAddress = isValidEns
