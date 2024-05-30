@@ -209,7 +209,9 @@ export function getPriceFeedFromTokenSymbol(tokenSymbol: string): Address {
     UNI: COMPOUND_V3_PRICEFEEDS.UNI,
     LINK: COMPOUND_V3_PRICEFEEDS.LINK,
     CBETH: COMPOUND_V3_PRICEFEEDS.cbETH,
-    WSTETH: COMPOUND_V3_PRICEFEEDS.wstETH
+    WSTETH: COMPOUND_V3_PRICEFEEDS.wstETH,
+    RETH: COMPOUND_V3_PRICEFEEDS.rETH
+
   };
 
   const tokenSymbolUpper = tokenSymbol.toUpperCase();
