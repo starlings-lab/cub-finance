@@ -67,6 +67,7 @@ const SortOptions = ({
                   setValue(item);
                   setDir(item.desc ? 'desc' : 'asc');
                 }
+                setIsOpen(false)
               }}
             >
               <div className="flex items-center">

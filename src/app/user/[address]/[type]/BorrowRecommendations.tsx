@@ -72,17 +72,17 @@ const sortOptions = [
   {
     title: "Collateral APY",
     value: "trailing30DaysLendingAPY",
-    desc: false
+    desc: true
   },
   {
     title: "Rewards APY",
     value: "trailing30DaysRewardAPY",
-    desc: false
+    desc: true
   },
   {
     title: "Max LTV",
     value: "maxLTV",
-    desc: false
+    desc: true
   }
 ];
 
@@ -108,15 +108,15 @@ const BorrowRecommendations = ({
   const [sortingOption, setSortingOption] = useState<IItem>({
     title: "Net Borrowing APY",
     value: "trailing30DaysNetBorrowingAPY",
-    desc: true,
+    desc: true
   });
   const [sortingDir, setSortingDir] = useState("desc");
   const [isOpen, setIsOpen] = useState(false);
 
   const sortingFn = (rowA: any, rowB: any) => {
     return sortingDir === "desc"
-      ? rowA[sortingOption.value] - rowB[sortingOption.value]
-      : rowB[sortingOption.value] - rowA[sortingOption.value];
+      ? rowB[sortingOption.value] - rowA[sortingOption.value]
+      : rowA[sortingOption.value] - rowB[sortingOption.value];
   };
 
   return (
@@ -158,7 +158,11 @@ const BorrowRecommendations = ({
             borrowOptions
               .sort(sortingFn)
               .map((borrowOption, index) => (
-                <BorrowCard key={index} optionDetails={borrowOption} />
+                <BorrowCard
+                  key={index}
+                  optionDetails={borrowOption}
+                  activeKey={sortingOption.value}
+                />
               ))
           ) : (
             <div className="text-xs justify-center flex mt-20 text-center">

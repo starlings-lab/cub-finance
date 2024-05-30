@@ -103,10 +103,19 @@ export const BorrowCardLoading = () => {
 };
 
 const BorrowCard = ({
-  optionDetails
+  optionDetails,
+  activeKey
 }: {
   optionDetails: BorrowRecommendationTableRow;
+  activeKey: string;
 }) => {
+  const activeSortPillStyle = "text-sm border border-[#009DC42a] bg-[#009DC41a] px-2 rounded-full w-fit"
+  const inActiveSortPillStyle = "text-sm"
+  const isNetBorrowApy = activeKey === 'trailing30DaysNetBorrowingAPY' ? activeSortPillStyle : inActiveSortPillStyle
+  const isBorrowApy = activeKey === 'trailing30DaysBorrowingAPY' ? activeSortPillStyle : inActiveSortPillStyle
+  const isCollateralApy = activeKey === 'trailing30DaysLendingAPY' ? activeSortPillStyle : inActiveSortPillStyle
+  const isRewardApy = activeKey === 'trailing30DaysRewardAPY' ? activeSortPillStyle : inActiveSortPillStyle
+  const isMaxLTV = activeKey === 'maxLTV' ? activeSortPillStyle : inActiveSortPillStyle
   return (
     <div className="border border-slate-300 py-2 mb-8 rounded-lg bg-white">
       <div className="flex items-center justify-between border-b-[0.5px] border-b-slate-300 pb-2 px-2">
@@ -135,7 +144,7 @@ const BorrowCard = ({
               </div>
             }
           />
-          <div className="text-sm border border-[#009DC42a] bg-[#009DC41a] px-2 rounded-full">
+          <div className={isNetBorrowApy}>
           {(optionDetails.trailing30DaysNetBorrowingAPY * 100).toFixed(2)}%
           </div>
         </div>
@@ -184,7 +193,7 @@ const BorrowCard = ({
                 </div>
               }
             />
-            <div className="text-sm">
+            <div className={isBorrowApy}>
               {(optionDetails.trailing30DaysBorrowingAPY * 100).toFixed(2)}%
             </div>
           </div>
@@ -240,7 +249,7 @@ const BorrowCard = ({
                 </div>
               }
             />
-            <div className="text-sm">
+            <div className={isCollateralApy}>
               {(optionDetails.trailing30DaysLendingAPY * 100).toFixed(2)}%
             </div>
           </div>
@@ -249,7 +258,7 @@ const BorrowCard = ({
       <div className="px-2 pt-2 flex ">
         <div className="w-4/12">
           <Title title="Max LTV" />
-          <div className="text-sm">{(optionDetails.maxLTV * 100).toFixed(2)}</div>
+          <div className={isMaxLTV}>{(optionDetails.maxLTV * 100).toFixed(2)}</div>
         </div>
         <div className="flex flex-col w-8/12">
           <PopoverWrapper
@@ -264,7 +273,7 @@ const BorrowCard = ({
               </div>
             }
           />
-          <div className="text-sm">{(optionDetails.trailing30DaysRewardAPY * 100).toFixed(2)}%</div>
+          <div className={isRewardApy}>{(optionDetails.trailing30DaysRewardAPY * 100).toFixed(2)}%</div>
         </div>
       </div>
     </div>

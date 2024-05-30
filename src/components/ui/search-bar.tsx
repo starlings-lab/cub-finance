@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { isAddress } from "ethers";
 import { useToast } from "./use-toast";
 import { ROUTE_BORROW, TEST_DEBT_POSITION_ADDRESSES } from "@/app/constants";
+import ClickAwayListener from "./click-away-listener";
 
 export interface SearchBarProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -46,7 +47,6 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     const [address, setAddress] = useState<string>(defaultUserAddress);
     const [debouncedAddress, setDebouncedAddress] =
       useState<string>(defaultUserAddress);
-    const [eoaAddress, setEoaAddress] = useState<string>(defaultUserAddress);
     const [addressErr, setAddressErr] = useState<boolean>(false);
     const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -56,10 +56,34 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       useState<boolean>(false);
     const [userRecentSearches, setUserRecentSearches] = useState<string[]>([]);
 
-    const preValidationStateUpdate = (inputValue: string) => {
-      setAddress(inputValue);
-      setButtonDisabled(true);
-      setIsLoading(true);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    React.useEffect(() => {
+      const timeoutId = setTimeout(() => {
+        setDebouncedAddress(address);
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    }, [address]);
+
+    useEffect(() => {
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.metaKey && event.key === "k") {
+          // Check for Cmd + K
+          event.preventDefault(); // Prevent default behavior (like browser search)
+          inputRef.current?.focus(); // Focus on the input box
+        }
+      };
+
+      document.addEventListener("keydown", handleKeyDown);
+
+      return () => {
+        document.removeEventListener("keydown", handleKeyDown);
+      };
+    }, []); // Run this effect only once on component mount
+
+    const resetErrors = () => {
+      setAddressErr(false);
+      setButtonDisabled(false);
     };
 
     const updateLocalStorageRecentSearches = (address: string) => {
@@ -103,65 +127,52 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       }
     };
 
-    const postValidationStateUpdate = (
+    const preValidationStateUpdate = (inputValue: string) => {
+      setAddress(inputValue);
+      setButtonDisabled(true);
+      setIsLoading(true);
+    };
+
+    const postValidationStateUpdate = async (
       resolvedAddress: string,
       isValidAddress: boolean
     ) => {
-      console.log(resolvedAddress, isValidAddress);
-      setEoaAddress(resolvedAddress);
-      isHome &&
-        isValidAddress &&
-        updateLocalStorageRecentSearches(resolvedAddress);
       setAddressErr(!isValidAddress);
-      setButtonDisabled(!isValidAddress);
-      setIsLoading(false);
+      if (isValidAddress) {
+        if(isHome){
+          setButtonDisabled(true);
+          updateLocalStorageRecentSearches(resolvedAddress);
+        }
+        await verifyAndRefreshRoute();
+      } else {
+        setIsLoading(false);
+        setButtonDisabled(!isValidAddress);
+      }
     };
 
-    React.useEffect(() => {
-      const timeoutId = setTimeout(() => {
-        setDebouncedAddress(address);
-      }, 500);
-      return () => clearTimeout(timeoutId);
-    }, [address]);
-
-    useEffect(() => {
-      const validateAddress = async () => {
-        preValidationStateUpdate(debouncedAddress);
-        const isValidEns = await isValidEnsAddress(debouncedAddress);
-        const resolvedAddress = isValidEns
-          ? await EOAFromENS(debouncedAddress)
-          : debouncedAddress;
-        const isValidAddress = isAddress(resolvedAddress) || isValidEns;
-        postValidationStateUpdate(resolvedAddress as string, isValidAddress);
-      };
-
-      if (debouncedAddress.length > 0) {
-        validateAddress();
+    const validateAddress = async () => {
+      if(address === defaultUserAddress){
+        return
       }
-    }, [debouncedAddress]);
+      preValidationStateUpdate(debouncedAddress);
+      const isValidEns = await isValidEnsAddress(debouncedAddress);
+      const resolvedAddress = isValidEns
+        ? await EOAFromENS(debouncedAddress)
+        : debouncedAddress;
+      const isValidAddress = isAddress(resolvedAddress) || isValidEns;
+      await postValidationStateUpdate(
+        resolvedAddress as string,
+        isValidAddress
+      );
+    };
 
     const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (addressErr) {
+        resetErrors();
+      }
       const inputValue = event.target.value;
       setAddress(inputValue);
     };
-
-    const inputRef = useRef<HTMLInputElement>(null);
-
-    useEffect(() => {
-      const handleKeyDown = (event: KeyboardEvent) => {
-        if (event.metaKey && event.key === "k") {
-          // Check for Cmd + K
-          event.preventDefault(); // Prevent default behavior (like browser search)
-          inputRef.current?.focus(); // Focus on the input box
-        }
-      };
-
-      document.addEventListener("keydown", handleKeyDown);
-
-      return () => {
-        document.removeEventListener("keydown", handleKeyDown);
-      };
-    }, []); // Run this effect only once on component mount
 
     const verifyAndRefreshRoute = React.useCallback(async () => {
       // it should not refetch for same address
@@ -180,16 +191,53 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     const handleAddressSelect = (address: string) => {
       setAddress(address);
       setShowRecentSearches(false);
+      addressErr && resetErrors();
+    };
+
+    const handleRemoveAddress = () => {
+      setAddress("");
+      addressErr && resetErrors();
+    };
+
+    const handleInputFocus = () => {
+      setIsInputFocused(true);
+      setShowRecentSearches(true);
+    };
+
+    const handleInputBlur = async () => {
+      if (!isHome) {
+        await validateAddress();
+      }
+      setIsInputFocused(false);
+      setTimeout(() => {
+        setShowRecentSearches(false);
+      }, 500);
+    };
+
+    const handleKeyDownPress = async (e: any) => {
+      if (e.key === "Enter") {
+        if (!errorCheck) {
+          await validateAddress();
+        } else {
+          if (!isLoading) {
+            toast({
+              title: "Enter a valid address",
+              variant: "destructive"
+            });
+          }
+        }
+      }
     };
 
     const errorCheck = addressErr || address === "" || buttonDisabled;
 
     return (
-      <div
+      <ClickAwayListener
         className={cn(
           `flex w-full items-center justify-center sm:space-x-2`,
           className
         )}
+        onClickAway={() => setShowRecentSearches(false)}
       >
         {/* Desktop search */}
         <div
@@ -218,33 +266,9 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               value={address}
               placeholder="Wallet address or ENS"
               onChange={handleChange}
-              onFocus={() => {
-                setIsInputFocused(true);
-                setShowRecentSearches(true);
-              }}
-              onBlur={async () => {
-                if (!errorCheck && !isHome) {
-                  await verifyAndRefreshRoute();
-                }
-                setIsInputFocused(false);
-                setTimeout(() => {
-                  setShowRecentSearches(false);
-                }, 500);
-              }}
-              onKeyDown={async (e) => {
-                if (e.key === "Enter") {
-                  if (!errorCheck) {
-                    await verifyAndRefreshRoute();
-                  } else {
-                    if (!isLoading) {
-                      toast({
-                        title: "Enter a valid address",
-                        variant: "destructive"
-                      });
-                    }
-                  }
-                }
-              }}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
+              onKeyDown={handleKeyDownPress}
             ></Input>
             <Button
               variant={"ghost"}
@@ -253,7 +277,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                   ? "sm:visible"
                   : "sm:invisible"
               } ${address.length > 0 ? "visible" : "invisible"}`}
-              onClick={() => setAddress("")}
+              onClick={handleRemoveAddress}
             >
               <Image
                 src={"/cross.svg"}
@@ -267,7 +291,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               className={`bg-[#F43F5E] text-white rounded-2xl sm:py-4 sm:px-8 font-hkGrotesk font-medium tracking-wide transition-opacity hover:bg-[#F43F5E] hover:opacity-80 ${
                 isHome ? "w-36" : "w-12 sm:w-24"
               }`}
-              onClick={verifyAndRefreshRoute}
+              onClick={validateAddress}
             >
               {getSearchButtonOrImage(isHome, isLoading)}
             </Button>
@@ -278,21 +302,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               handleAddressSelect={handleAddressSelect}
             />
           )}
-          <div
-            className={`items-center text-gray-500 text-sm pl-3 mt-2 ${
-              isLoading ? "visible flex" : "invisible hidden"
-            }`}
-          >
-            <Spinner />
-            <span className="ml-2">Validating address</span>
-          </div>
-          <div
-            className={`text-red-500 pl-3 pt-1 sm:flex text-sm ${
-              isHome ? "hidden" : "flex"
-            } ${addressErr && !isLoading ? "visible" : "invisible"}`}
-          >
-            Enter a valid address
-          </div>
+          {getValidationMessage(addressErr, isLoading)}
         </div>
 
         {/* Mobile search */}
@@ -311,27 +321,16 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               type="text"
               value={address}
               placeholder="Enter your wallet address"
-              onFocus={() => {
-                setIsInputFocused(true);
-                setShowRecentSearches(true);
-              }}
+              onFocus={handleInputFocus}
               onChange={handleChange}
-              onBlur={async () => {
-                if (!isHome && address && eoaAddress) {
-                  await verifyAndRefreshRoute();
-                }
-                setIsInputFocused(false);
-                setTimeout(() => {
-                  setShowRecentSearches(false);
-                }, 500);
-              }}
+              onBlur={handleInputBlur}
             />
             <Button
               variant={"ghost"}
               className={`py-2 px-0 ${
                 address.length > 0 ? "visible" : "invisible hidden"
               }`}
-              onClick={() => setAddress("")}
+              onClick={handleRemoveAddress}
             >
               <Image
                 src={"/cross.svg"}
@@ -347,32 +346,18 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               handleAddressSelect={handleAddressSelect}
             />
           )}
-          <div
-            className={`items-center text-gray-500 text-sm pl-3 ${
-              isLoading ? "visible flex" : "invisible hidden"
-            }`}
-          >
-            <Spinner />
-            <span className="ml-2">Validating address</span>
-          </div>
-          <div
-            className={`text-red-500 text-sm pl-3 pt-1 ${
-              addressErr && !isLoading ? "visible" : "invisible"
-            }`}
-          >
-            Enter a valid address
-          </div>
+          {getValidationMessage(addressErr, isLoading)}
           <Button
             disabled={!isHome || errorCheck}
             className={`bg-[#F43F5E] text-white rounded-2xl py-4 px-8 w-full mt-2 ml-0 hover:bg-[#F43F5E] hover:opacity-80 ${
               !isHome && "disabled:opacity-0"
             }`}
-            onClick={verifyAndRefreshRoute}
+            onClick={validateAddress}
           >
             {getSearchButtonOrImage(isHome, isLoading)}
           </Button>
         </div>
-      </div>
+      </ClickAwayListener>
     );
   }
 );
@@ -389,6 +374,26 @@ function getSearchButtonOrImage(isHome: boolean, isLoading: boolean) {
         "Find Now"
       ) : (
         <Image src={"/search_white.svg"} alt="icon" width="20" height="20" />
+      )}
+    </div>
+  );
+}
+
+function getValidationMessage(addressErr: boolean, isLoading: boolean) {
+  return (
+    <div
+      className={`text-sm pl-3 pt-1 min-h-6 ${
+        isLoading || addressErr ? "visible" : "invisible"
+      }`}
+    >
+      {isLoading && (
+        <div className="flex items-center text-gray-500">
+          <Spinner />
+          <span className="ml-2">Validating address</span>
+        </div>
+      )}
+      {addressErr && !isLoading && (
+        <div className={"text-red-500"}>Enter a valid address</div>
       )}
     </div>
   );
