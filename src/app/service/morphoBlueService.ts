@@ -167,8 +167,10 @@ export async function getBorrowRecommendations(
   debtTokenCollateralCombo.forEach((combo) => {
     const matchingMarkets = markets.filter(
       (market) =>
-        market.debtToken.address === combo.debtToken.address &&
-        market.collateralToken.address === combo.collateral.token.address
+        market.debtToken.address.toLowerCase() ===
+          combo.debtToken.address.toLowerCase() &&
+        market.collateralToken.address.toLowerCase() ===
+          combo.collateral.token.address.toLowerCase()
     );
 
     matchingMarkets.forEach((market) => {
@@ -179,6 +181,9 @@ export async function getBorrowRecommendations(
   // check if the utilization ratio is small enough and non-zero
   const matchedMarkets = Array.from(marketCollateralMap.entries()).filter(
     ([matchedMarket, collateral]) => {
+      // console.log(
+      //   `Morpho Market: ${matchedMarket.debtToken.symbol} - ${matchedMarket.collateralToken.symbol}, Utilization Ratio: ${matchedMarket.utilizationRatio}`
+      // );
       return isUtilizationRatioSmallEnough(matchedMarket.utilizationRatio);
     }
   );

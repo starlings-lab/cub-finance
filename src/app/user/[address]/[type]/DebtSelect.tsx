@@ -24,6 +24,24 @@ export const TickIconBox = ({ isSelected }: { isSelected: boolean }) => (
   </span>
 );
 
+export const ChevronDown = () => (
+  <svg className="h-5 w-5 text-gray-400" viewBox="0 0 20 20">
+    <path
+      fill="currentColor"
+      d="M15.854 7.646a.5.5 0 0 1 .001.707l-5.465 5.484a.55.55 0 0 1-.78 0L4.147 8.353a.5.5 0 1 1 .708-.706L10 12.812l5.147-5.165a.5.5 0 0 1 .707-.001"
+    />
+  </svg>
+);
+
+export const ChevronUp = () => (
+  <svg className="h-5 w-5 text-gray-400" viewBox="0 0 32 32">
+    <path
+      fill="currentColor"
+      d="M5.293 20.707a1 1 0 0 0 1.414 0L16 11.414l9.293 9.293a1 1 0 0 0 1.414-1.414l-10-10a1 1 0 0 0-1.414 0l-10 10a1 1 0 0 0 0 1.414"
+    />
+  </svg>
+);
+
 const DebtSelect = ({
   optionsList,
   currentList,
@@ -97,7 +115,7 @@ const DebtSelect = ({
     <div className="relative sm:mx-4 cursor-pointer">
       <button
         type="button"
-        className="relative flex items-center justify-between sm:justify-start w-full cursor-default bg-white py-0.5 text-left text-gray-900 sm:text-sm sm:leading-6 border-b border-black"
+        className="relative flex items-center justify-between sm:justify-start w-full cursor-default bg-white py-0.5 text-left text-gray-900 sm:text-sm sm:leading-6 sm:border-b border-black"
         aria-haspopup="listbox"
         aria-expanded="false"
         aria-labelledby="listbox-label"
@@ -105,43 +123,17 @@ const DebtSelect = ({
           setActiveDropDown(activeDropDown ? "" : "debt");
         }}
       >
-        <span className="text-lg sm:text-xl truncate min-w-32">{displayValueOfDebt}</span>
+        <span className="text-md sm:text-xl truncate min-w-32 sm:min-w-40">
+          {displayValueOfDebt}
+        </span>
         <span className="pointer-events-none right-0 ml-3 flex items-center">
-          {activeDropDown ? (
-            <svg
-              className="h-5 w-5 text-gray-400"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M17.5 17.5L12 9.25L6.5 17.5L5 16.5L12 6L19 16.5L17.5 17.5Z"
-                fill="black"
-              />
-            </svg>
-          ) : (
-            <svg
-              className="h-5 w-5 text-gray-400"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M6.50024 6.5L12.0002 14.75L17.5002 6.5L19.0002 7.5L12.0002 18L5.00024 7.5L6.50024 6.5Z"
-                fill="black"
-              />
-            </svg>
-          )}
+          {activeDropDown ? <ChevronUp /> : <ChevronDown />}
         </span>
       </button>
 
       {activeDropDown && (
         <ul
-          className="absolute z-10 mt-1 max-h-56 min-w-56 overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+          className="absolute z-10 mt-1 max-h-56 min-w-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
           tabIndex={-1}
           role="listbox"
           aria-labelledby="listbox-label"

@@ -137,10 +137,19 @@ export const sUSDe: Token = {
   symbol: "sUSDe"
 };
 
+// LRTs
 export const weETH: Token = {
   address: "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
   name: "Wrapped eETH",
   symbol: "weETH",
+  decimals: 18
+};
+
+// https://etherscan.io/token/0xbf5495Efe5DB9ce00f80364C8B423567e58d2110#readProxyContract
+export const ezETH: Token = {
+  address: "0xbf5495Efe5DB9ce00f80364C8B423567e58d2110",
+  name: "Renzo Restaked ETH",
+  symbol: "ezETH",
   decimals: 18
 };
 
@@ -194,6 +203,7 @@ export const SUPPORTED_COLLATERAL_TOKENS: Token[] = [
   rETH,
   cbETH,
   weETH,
+  ezETH,
   LINK,
   AAVE,
   COMP,
