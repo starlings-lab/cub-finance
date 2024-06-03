@@ -194,9 +194,11 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       addressErr && resetErrors();
     };
 
-    const handleRemoveAddress = () => {
+    const handleRemoveAddress = (e: any) => {
+      e.stopPropagation();
       setAddress("");
       addressErr && resetErrors();
+      inputRef.current?.focus()
     };
 
     const handleInputFocus = () => {
@@ -205,7 +207,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     };
 
     const handleInputBlur = async () => {
-      if (!isHome) {
+      if (!isHome && !errorCheck) {
         await validateAddress();
       }
       setIsInputFocused(false);
@@ -277,7 +279,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                   ? "sm:visible"
                   : "sm:invisible"
               } ${address.length > 0 ? "visible" : "invisible"}`}
-              onClick={handleRemoveAddress}
+              onMouseDown={handleRemoveAddress}
             >
               <Image
                 src={"/cross.svg"}
@@ -330,7 +332,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               className={`py-2 px-0 ${
                 address.length > 0 ? "visible" : "invisible hidden"
               }`}
-              onClick={handleRemoveAddress}
+              onMouseDown={handleRemoveAddress}
             >
               <Image
                 src={"/cross.svg"}
