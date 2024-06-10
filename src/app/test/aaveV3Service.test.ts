@@ -1,6 +1,6 @@
 import { USDC, WETH } from "../contracts/ERC20Tokens";
 import {
-  baseAaveService,
+  baseAaveServiceEthMainNet,
   getBorrowRecommendations,
   getSupportedCollateralTokens,
   getSupportedDebtTokens
@@ -15,7 +15,7 @@ import { verifyAaveOrSparkBorrowRecommendations } from "./testHelper";
 
 describe("aaveService", () => {
   it("creates an instance of baseAaveService", () => {
-    expect(baseAaveService).toBeDefined();
+    expect(baseAaveServiceEthMainNet).toBeDefined();
   });
 
   describe("getSupportedDebtTokens", () => {

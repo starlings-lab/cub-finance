@@ -42,6 +42,7 @@ export class BaseAaveService {
   private poolAddressProviderContract: Contract;
 
   constructor(
+    alchemyProvider: AlchemyProvider,
     protocol: Protocol,
     poolAddressProvider: Address,
     uiPoolDataProvider: Address
@@ -50,10 +51,7 @@ export class BaseAaveService {
     this.poolAddressProvider = poolAddressProvider;
     this.uiPoolDataProvider = uiPoolDataProvider;
 
-    this.provider = new AlchemyProvider(
-      1, // MAINNET
-      process.env.ALCHEMY_API_KEY_ETH_MAINNET
-    );
+    this.provider = alchemyProvider;
 
     this.poolDataProviderContract = new Contract(
       uiPoolDataProvider,
