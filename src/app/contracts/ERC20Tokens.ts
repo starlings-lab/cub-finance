@@ -167,8 +167,14 @@ export const ETH: Token = {
   decimals: 18
 };
 
-export const MORPHO_BLUE_DEBT_STABLECOINS = [USDC, DAI, USDT, PYUSD, USDA];
-export const AAVE_V3_DEBT_STABLECOINS = [
+export const MORPHO_BLUE_DEBT_STABLECOINS_ETH_MAINNET = [
+  USDC,
+  DAI,
+  USDT,
+  PYUSD,
+  USDA
+];
+export const AAVE_V3_DEBT_STABLECOINS_ETH_MAINNET = [
   GHO,
   USDC,
   DAI,
@@ -177,13 +183,13 @@ export const AAVE_V3_DEBT_STABLECOINS = [
   LUSD,
   crvUSD
 ];
-export const COMPOUND_V3_DEBT_STABLECOINS = [USDC];
-export const SPARKFI_DEBT_STABLECOINS = [DAI];
-export const SUPPORTED_DEBT_STABLECOINS = getUniqueTokens([
-  ...MORPHO_BLUE_DEBT_STABLECOINS,
-  ...AAVE_V3_DEBT_STABLECOINS,
-  ...COMPOUND_V3_DEBT_STABLECOINS,
-  ...SPARKFI_DEBT_STABLECOINS
+export const COMPOUND_V3_DEBT_STABLECOINS_ETH_MAINNET = [USDC];
+export const SPARKFI_DEBT_STABLECOINS_ETH_MAINNET = [DAI];
+export const SUPPORTED_DEBT_STABLECOINS_ETH_MAINNET = getUniqueTokens([
+  ...MORPHO_BLUE_DEBT_STABLECOINS_ETH_MAINNET,
+  ...AAVE_V3_DEBT_STABLECOINS_ETH_MAINNET,
+  ...COMPOUND_V3_DEBT_STABLECOINS_ETH_MAINNET,
+  ...SPARKFI_DEBT_STABLECOINS_ETH_MAINNET
 ]);
 
 // this token seems like scam or test token in morpho blue market with same name as USDC
@@ -217,12 +223,12 @@ export const SUPPORTED_COLLATERAL_TOKENS_MAP =
   }, new Map<string, Token>());
 
 // Arbitrum Tokens
-export const DAI_ARB = {
+export const DAI_ARB: Token = {
   ...DAI,
   address: "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1"
 };
 
-export const LINK_ARB = {
+export const LINK_ARB: Token = {
   ...LINK,
   address: "0xf97f4df75117a78c1a5a0dbb814af92458539fb4"
 };
@@ -230,7 +236,7 @@ export const LINK_ARB = {
 // https://arbiscan.io/address/0xff970a61a04b1ca14834a43f5de4533ebddb5cc8
 // USDC.e is the bridged version of USDC on Arbitrum
 // Bridged vs Native USDC: https://www.circle.com/blog/bridged-usdc-standard
-export const USDC_BRIDGED_ARB = {
+export const USDC_BRIDGED_ARB: Token = {
   ...USDC,
   address: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
   symbol: "USDC.e",
@@ -238,78 +244,94 @@ export const USDC_BRIDGED_ARB = {
 };
 
 // https://arbiscan.io/address/0xaf88d065e77c8cc2239327c5edb3a432268e5831
-export const USDC_ARB = {
+export const USDC_ARB: Token = {
   ...USDC,
   address: "0xaf88d065e77c8cc2239327c5edb3a432268e5831" as Address
 };
 
-export const WBTC_ARB = {
+export const WBTC_ARB: Token = {
   ...WBTC,
-  address: "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f"
+  address: "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f" as Address
 };
 
-export const WETH_ARB = {
+export const WETH_ARB: Token = {
   ...WETH,
   address: "0x82af49447d8a07e3bd95bd0d56f35241523fbab1" as Address
 };
 
-export const USDT_ARB = {
+export const USDT_ARB: Token = {
   ...USDT,
-  address: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9"
+  address: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9" as Address
 };
 
-export const EURS = {
-  address: "0xd22a58f79e9481d1a88e00c343885a588b34b68b",
+export const EURS_ARB: Token = {
+  address: "0xd22a58f79e9481d1a88e00c344885a588b34b68b" as Address,
   name: "STASIS EURS Token",
   symbol: "EURS",
   decimals: 2
 };
 
-export const wstETH_ARB = {
+export const wstETH_ARB: Token = {
   ...wstETH,
   address: "0x5979d7b546e38e414f7e9822514be443a4800529" as Address,
   name: "Wrapped liquid staked Ether 2.0"
 };
 
-export const MAI = {
-  address: "0x3f56e0c36d275367b8c502090edf38289b3dea0d",
+export const MAI_ARB: Token = {
+  address: "0x3f56e0c36d275367b8c502090edf38289b3dea0d" as Address,
   name: "Mai Stablecoin",
   symbol: "MAI",
   decimals: 18
 };
 
-export const rETH_ARB = {
+export const rETH_ARB: Token = {
   ...rETH,
-  address: "0xec70dcb4a1efa46b8f2d97c310c9c4790ba5ffa8"
+  address: "0xec70dcb4a1efa46b8f2d97c310c9c4790ba5ffa8" as Address
 };
 
-export const LUSD_ARB = {
+export const LUSD_ARB: Token = {
   ...LUSD,
-  address: "0x93b346b6bc2548da6a1e7d98e9a421b42541425b"
+  address: "0x93b346b6bc2548da6a1e7d98e9a421b42541425b" as Address
 };
 
-export const FRAX_ARB = {
-  address: "0x17fc002b466eec40dae837fc4be5c67993ddbd6f",
+export const FRAX_ARB: Token = {
+  address: "0x17fc002b466eec40dae837fc4be5c67993ddbd6f" as Address,
   name: "Frax",
   symbol: "FRAX",
   decimals: 18
 };
 
-export const ARB = {
-  address: "0x912ce59144191c1204e64559fe8253a0e49e6548",
+export const ARB: Token = {
+  address: "0x912ce59144191c1204e64559fe8253a0e49e6548" as Address,
   name: "Arbitrum",
   symbol: "ARB",
   decimals: 18
 };
 
-export const weETH_ARB = {
-  address: "0x35751007a407ca6feffe80b3cb397736d2cf4dbe",
+export const weETH_ARB: Token = {
+  address: "0x35751007a407ca6feffe80b3cb397736d2cf4dbe" as Address,
   name: "Wrapped eETH",
   symbol: "weETH",
   decimals: 18
 };
 
-export const AAVE_ARB = {
+export const AAVE_ARB: Token = {
   ...AAVE,
-  address: "0xba5ddd1f9d7f570dc94a51479a000e3bce967196"
+  address: "0xba5ddd1f9d7f570dc94a51479a000e3bce967196" as Address
 };
+
+export const AAVE_V3_DEBT_STABLECOINS_ARB_MAINNET = [
+  USDC_ARB,
+  USDC_BRIDGED_ARB,
+  DAI_ARB,
+  USDT_ARB,
+  LUSD_ARB,
+  FRAX_ARB,
+  EURS_ARB,
+  MAI_ARB
+];
+export const COMPOUND_V3_DEBT_STABLECOINS_ARB_MAINNET = [USDC_ARB];
+export const SUPPORTED_DEBT_STABLECOINS_ARB_MAINNET = getUniqueTokens([
+  ...AAVE_V3_DEBT_STABLECOINS_ARB_MAINNET,
+  ...COMPOUND_V3_DEBT_STABLECOINS_ARB_MAINNET
+]);
