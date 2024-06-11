@@ -215,3 +215,101 @@ export const SUPPORTED_COLLATERAL_TOKENS_MAP =
     map.set(obj.address.toLowerCase(), obj);
     return map;
   }, new Map<string, Token>());
+
+// Arbitrum Tokens
+export const DAI_ARB = {
+  ...DAI,
+  address: "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1"
+};
+
+export const LINK_ARB = {
+  ...LINK,
+  address: "0xf97f4df75117a78c1a5a0dbb814af92458539fb4"
+};
+
+// https://arbiscan.io/address/0xff970a61a04b1ca14834a43f5de4533ebddb5cc8
+// USDC.e is the bridged version of USDC on Arbitrum
+// Bridged vs Native USDC: https://www.circle.com/blog/bridged-usdc-standard
+export const USDC_BRIDGED_ARB = {
+  ...USDC,
+  address: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
+  symbol: "USDC.e",
+  name: "USD Coin (Arb1)"
+};
+
+// https://arbiscan.io/address/0xaf88d065e77c8cc2239327c5edb3a432268e5831
+export const USDC_ARB = {
+  ...USDC,
+  address: "0xaf88d065e77c8cc2239327c5edb3a432268e5831" as Address
+};
+
+export const WBTC_ARB = {
+  ...WBTC,
+  address: "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f"
+};
+
+export const WETH_ARB = {
+  ...WETH,
+  address: "0x82af49447d8a07e3bd95bd0d56f35241523fbab1" as Address
+};
+
+export const USDT_ARB = {
+  ...USDT,
+  address: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9"
+};
+
+export const EURS = {
+  address: "0xd22a58f79e9481d1a88e00c343885a588b34b68b",
+  name: "STASIS EURS Token",
+  symbol: "EURS",
+  decimals: 2
+};
+
+export const wstETH_ARB = {
+  ...wstETH,
+  address: "0x5979d7b546e38e414f7e9822514be443a4800529",
+  name: "Wrapped liquid staked Ether 2.0"
+};
+
+export const MAI = {
+  address: "0x3f56e0c36d275367b8c502090edf38289b3dea0d",
+  name: "Mai Stablecoin",
+  symbol: "MAI",
+  decimals: 18
+};
+
+export const rETH_ARB = {
+  ...rETH,
+  address: "0xec70dcb4a1efa46b8f2d97c310c9c4790ba5ffa8"
+};
+
+export const LUSD_ARB = {
+  ...LUSD,
+  address: "0x93b346b6bc2548da6a1e7d98e9a421b42541425b"
+};
+
+export const FRAX_ARB = {
+  address: "0x17fc002b466eec40dae837fc4be5c67993ddbd6f",
+  name: "Frax",
+  symbol: "FRAX",
+  decimals: 18
+};
+
+export const ARB = {
+  address: "0x912ce59144191c1204e64559fe8253a0e49e6548",
+  name: "Arbitrum",
+  symbol: "ARB",
+  decimals: 18
+};
+
+export const weETH_ARB = {
+  address: "0x35751007a407ca6feffe80b3cb397736d2cf4dbe",
+  name: "Wrapped eETH",
+  symbol: "weETH",
+  decimals: 18
+};
+
+export const AAVE_ARB = {
+  ...AAVE,
+  address: "0xba5ddd1f9d7f570dc94a51479a000e3bce967196"
+};
