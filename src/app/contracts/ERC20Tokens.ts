@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { Token } from "../type/type";
+import { Chain, Token } from "../type/type";
 import { getUniqueTokens } from "../utils/utils";
 import { Address } from "abitype";
 
@@ -196,7 +196,7 @@ export const SUPPORTED_DEBT_STABLECOINS_ETH_MAINNET = getUniqueTokens([
 export const USDC_DUPLICATE_OR_SCAM =
   "0xcbfb9B444d9735C345Df3A0F66cd89bD741692E9".toLowerCase();
 
-export const SUPPORTED_COLLATERAL_TOKENS: Token[] = [
+export const SUPPORTED_COLLATERAL_TOKENS_ETH_MAINNET: Token[] = [
   USDC,
   USDT,
   DAI,
@@ -216,8 +216,8 @@ export const SUPPORTED_COLLATERAL_TOKENS: Token[] = [
   UNI
 ];
 
-export const SUPPORTED_COLLATERAL_TOKENS_MAP =
-  SUPPORTED_COLLATERAL_TOKENS.reduce((map, obj) => {
+export const SUPPORTED_COLLATERAL_TOKENS_MAP_ETH_MAINNET =
+  SUPPORTED_COLLATERAL_TOKENS_ETH_MAINNET.reduce((map, obj) => {
     map.set(obj.address.toLowerCase(), obj);
     return map;
   }, new Map<string, Token>());
@@ -335,3 +335,34 @@ export const SUPPORTED_DEBT_STABLECOINS_ARB_MAINNET = getUniqueTokens([
   ...AAVE_V3_DEBT_STABLECOINS_ARB_MAINNET,
   ...COMPOUND_V3_DEBT_STABLECOINS_ARB_MAINNET
 ]);
+
+export const SUPPORTED_COLLATERAL_TOKENS_ARB_MAINNET: Token[] = [
+  USDC_ARB,
+  USDC_BRIDGED_ARB,
+  DAI_ARB,
+  USDT_ARB,
+  WETH_ARB,
+  WBTC_ARB,
+  wstETH_ARB,
+  rETH_ARB,
+  weETH_ARB,
+  LINK_ARB,
+  AAVE_ARB
+  // COMP_ARB,
+  // UNI_ARB
+];
+
+export const SUPPORTED_COLLATERAL_TOKENS_MAP_ARB_MAINNET =
+  SUPPORTED_COLLATERAL_TOKENS_ARB_MAINNET.reduce((map, obj) => {
+    map.set(obj.address.toLowerCase(), obj);
+    return map;
+  }, new Map<string, Token>());
+
+export function getSupportedCollateralTokenMap(chain: Chain) {
+  if (chain === Chain.EthMainNet) {
+    return SUPPORTED_COLLATERAL_TOKENS_MAP_ETH_MAINNET;
+  } else if (chain === Chain.ArbMainNet) {
+    return SUPPORTED_COLLATERAL_TOKENS_MAP_ARB_MAINNET;
+  }
+  throw new Error(`Unsupported chain: ${chain}`);
+}

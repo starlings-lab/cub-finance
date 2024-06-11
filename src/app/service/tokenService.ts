@@ -1,38 +1,44 @@
 import { Address } from "abitype";
-import { ALCHEMY_API_URL } from "../constants";
-import { Token, TokenAmount } from "../type/type";
+import { getAlchemyApiUrl } from "../constants";
+import { Chain, Token, TokenAmount } from "../type/type";
 import { ethers } from "ethers";
 import { getTokenPrice } from "./defiLlamaDataService";
-import { ETH, SUPPORTED_COLLATERAL_TOKENS_MAP } from "../contracts/ERC20Tokens";
+import { ETH, getSupportedCollateralTokenMap } from "../contracts/ERC20Tokens";
 
 /**
  * Provides a list of tokens with non-zero balance owned by an address
  * that are supported as collaterals in the supported protocols
+ *
+ * @param chain a chain of the account
  * @param address an address of account
  * @returns
  */
 export async function getSupportedTokenHoldings(
+  chain: Chain,
   address: Address
 ): Promise<TokenAmount[]> {
-  const tokenBalances = await getTokenHoldings(address);
+  const tokenBalances = await getTokenHoldings(chain, address);
   // console.dir(tokenBalances, { depth: null });
 
   const tokenAmounts = [];
 
   // Get token prices only for supported tokens
+  const supportedTokenMap = getSupportedCollateralTokenMap(chain);
+
   const tokenAddresses = tokenBalances
     .map((tokenData: any) => tokenData.contractAddress)
-    .filter((address: Address) => SUPPORTED_COLLATERAL_TOKENS_MAP.has(address));
+    .filter((address: Address) => supportedTokenMap.has(address));
 
   // Add ETH address to get ETH price
   tokenAddresses.push(ethers.ZeroAddress);
 
   const tokenPriceMap: Map<Address, number> = await getTokenPrice(
+    chain,
     tokenAddresses
   );
 
   // get ETH balance
-  const ethBalance = await getEthBalance(address);
+  const ethBalance = await getEthBalance(chain, address);
 
   if (ethBalance.amount > BigInt(0)) {
     ethBalance.amountInUSD = calculateAmountInUSD(
@@ -52,17 +58,13 @@ export async function getSupportedTokenHoldings(
     if (
       !balance ||
       balance === BigInt(0) ||
-      !SUPPORTED_COLLATERAL_TOKENS_MAP.has(
-        tokenData.contractAddress.toLowerCase()
-      )
+      !supportedTokenMap.has(tokenData.contractAddress.toLowerCase())
     ) {
       continue;
     }
 
     // Get metadata of token
-    const token = SUPPORTED_COLLATERAL_TOKENS_MAP.get(
-      tokenData.contractAddress
-    )!;
+    const token = supportedTokenMap.get(tokenData.contractAddress)!;
     // console.log(metadata);
 
     // calculate amount in USD
@@ -80,6 +82,7 @@ export async function getSupportedTokenHoldings(
 }
 
 export async function getTokenMetadata(
+  chain: Chain,
   contractAddress: Address
 ): Promise<Token> {
   const options = {
@@ -93,7 +96,7 @@ export async function getTokenMetadata(
     })
   };
 
-  return fetch(ALCHEMY_API_URL, options)
+  return fetch(getAlchemyApiUrl(chain), options)
     .then((response: any) => response.json())
     .then((response: any) => {
       return {
@@ -105,7 +108,10 @@ export async function getTokenMetadata(
     });
 }
 
-export async function getEthBalance(address: string): Promise<TokenAmount> {
+export async function getEthBalance(
+  chain: Chain,
+  address: string
+): Promise<TokenAmount> {
   const options = {
     method: "POST",
     headers: { accept: "application/json", "content-type": "application/json" },
@@ -117,11 +123,10 @@ export async function getEthBalance(address: string): Promise<TokenAmount> {
     })
   };
 
-  return fetch(ALCHEMY_API_URL, options).then((response: any) =>
+  const apiUrl = getAlchemyApiUrl(chain);
+  return fetch(apiUrl, options).then((response: any) =>
     response.json().then((response: any) => {
       // console.dir(response, { depth: null });
-
-      let balance = BigInt(response.result);
 
       return {
         token: ETH,
@@ -137,7 +142,7 @@ export async function getEthBalance(address: string): Promise<TokenAmount> {
  * @param address an address of account
  * @returns
  */
-async function getTokenHoldings(address: Address): Promise<any> {
+async function getTokenHoldings(chain: Chain, address: Address): Promise<any> {
   const options = {
     method: "POST",
     headers: { accept: "application/json", "content-type": "application/json" },
@@ -149,7 +154,9 @@ async function getTokenHoldings(address: Address): Promise<any> {
     })
   };
 
-  return fetch(ALCHEMY_API_URL, options)
+  const apiUrl = getAlchemyApiUrl(chain);
+
+  return fetch(apiUrl, options)
     .then((response: any) => response.json())
     .then((response: any) => {
       return response.result.tokenBalances;

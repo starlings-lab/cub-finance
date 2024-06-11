@@ -8,6 +8,7 @@ import {
   getBorrowRecommendations
 } from "../service/morphoBlueService";
 import { DAI, USDT, WETH, WBTC } from "../contracts/ERC20Tokens";
+import { Chain } from "../type/type";
 
 describe("MorphoBlue Service Tests", () => {
   test("getMarkets function should return an array of MorphoBlueMarket", async () => {
@@ -66,6 +67,7 @@ describe("MorphoBlue Service Tests", () => {
       ];
 
       const recommendations = await getBorrowRecommendations(
+        Chain.EthMainNet,
         debtTokens,
         collaterals
       );

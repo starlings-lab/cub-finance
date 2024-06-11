@@ -14,7 +14,10 @@ const BorrowOptionsWrapper = async ({
     Chain.EthMainNet
   );
   const typedUserAddress = userAddress as Address;
-  const collaterals = await getSupportedUserCollaterals(typedUserAddress);
+  const collaterals = await getSupportedUserCollaterals(
+    Chain.EthMainNet,
+    typedUserAddress
+  );
 
   return (
     <div className="w-full mx-auto">

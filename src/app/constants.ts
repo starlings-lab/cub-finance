@@ -1,9 +1,21 @@
 import { gql } from "graphql-request";
 import { Address } from "abitype";
-import { Protocol } from "./type/type";
+import { Chain, Protocol } from "./type/type";
 
 export const ALCHEMY_API_URL = `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY_ETH_MAINNET}`;
 export const ALCHEMY_RPC_URL = `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_ETH_MAINNET}`;
+
+export const ALCHEMY_API_URL_ARB = `https://arb-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY_ARB_MAINNET}`;
+export const ALCHEMY_RPC_URL_ARB = `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_ARB_MAINNET}`;
+
+export function getAlchemyApiUrl(chain: Chain) {
+  if (chain === Chain.EthMainNet) {
+    return ALCHEMY_API_URL;
+  } else if (chain === Chain.ArbMainNet) {
+    return ALCHEMY_API_URL_ARB;
+  }
+  throw new Error(`Unsupported chain: ${chain}`);
+}
 
 // Graph playground: https://thegraph.com/hosted-service/subgraph/messari/aave-v3-ethereum
 export const MESSARI_AAVE_V3_GRAPHQL_URL =
@@ -104,6 +116,11 @@ export const TEST_DEBT_POSITION_ADDRESSES = {
   ensAddress2: "juanvilla.eth",
   ensAddress3: "lozben.eth",
   ethAndWethHolder: "0xcA518c4DB97ECCe85cC82DE3C2B93D8f8b536ca5"
+};
+
+export const TEST_ARB_ADDRESSES = {
+  ETH_HOLDER: "0xc3e5607cd4ca0d5fe51e09b60ed97a0ae6f874dd" as Address,
+  USDC_HOLDER: "0xba35212fe946028543b2978a52fe842212b759dd" as Address
 };
 
 export const ROUTE_BORROW = "borrow";

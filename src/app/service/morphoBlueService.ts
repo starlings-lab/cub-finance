@@ -129,8 +129,14 @@ export async function getSupportedDebtTokens(chain: Chain): Promise<Token[]> {
   }
 }
 
-export async function getSupportedCollateralTokens(): Promise<Token[]> {
-  return getSupportedTokens(MORPHO_SUPPORTED_COLLATERAL_TOKEN_QUERY);
+export async function getSupportedCollateralTokens(
+  chain: Chain
+): Promise<Token[]> {
+  if (chain === Chain.EthMainNet) {
+    return getSupportedTokens(MORPHO_SUPPORTED_COLLATERAL_TOKEN_QUERY);
+  } else {
+    return [];
+  }
 }
 
 function removeDuplicateTokens(tokens: Token[]): Token[] {

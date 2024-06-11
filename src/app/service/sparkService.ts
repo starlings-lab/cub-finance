@@ -29,8 +29,14 @@ export async function getSupportedDebtTokens(chain: Chain): Promise<Token[]> {
 }
 
 // get all collateral tokens supported by protocol
-export async function getSupportedCollateralTokens(): Promise<Token[]> {
-  return baseSparkServiceEthMainNet.getSupportedCollateralTokens();
+export async function getSupportedCollateralTokens(
+  chain: Chain
+): Promise<Token[]> {
+  if (chain === Chain.EthMainNet) {
+    return baseSparkServiceEthMainNet.getSupportedCollateralTokens();
+  } else {
+    return [];
+  }
 }
 
 export async function getBorrowRecommendations(

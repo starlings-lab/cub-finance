@@ -175,8 +175,12 @@ export function getSupportedCollateralTokensByDebtToken(
   }
 }
 
-export function getSupportedCollateralTokens(): Promise<Token[]> {
-  return Promise.resolve(COMPOUND_V3_COLLATERALS);
+export function getSupportedCollateralTokens(chain: Chain): Promise<Token[]> {
+  if (chain === Chain.EthMainNet) {
+    return Promise.resolve(COMPOUND_V3_COLLATERALS);
+  } else {
+    return Promise.resolve([]);
+  }
 }
 
 export function getSupportedDebtTokens(chain: Chain): Promise<Token[]> {

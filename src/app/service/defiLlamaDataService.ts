@@ -7,7 +7,7 @@ import {
   DEFILLAMA_YIELDS_POOLS_API_URL,
   getDefiLlamaLendBorrowDataApi
 } from "../constants";
-import { APYInfo, Protocol } from "../type/type";
+import { APYInfo, Chain, Protocol } from "../type/type";
 import { ETH, WETH } from "../contracts/ERC20Tokens";
 import { kv } from "@vercel/kv";
 
@@ -188,6 +188,7 @@ export async function getProtocolPoolsMap(
 
 const ETHEREUM_CHAIN_PREFIX = "ethereum:";
 const ETHEREUM_COINGECKO_ID = "coingecko:ethereum";
+const ARBITRUM_CHAIN_PREFIX = "arbitrum:";
 
 /**
  * Fetches token prices from DefiLlama API for given token addresses
@@ -195,8 +196,18 @@ const ETHEREUM_COINGECKO_ID = "coingecko:ethereum";
  * @returns Map of token address to token price
  */
 export async function getTokenPrice(
+  chain: Chain,
   tokenAddresses: Address[]
 ): Promise<Map<Address, number>> {
+  let chainPrefix: string;
+  if (chain === Chain.EthMainNet) {
+    chainPrefix = ETHEREUM_CHAIN_PREFIX;
+  } else if (chain === Chain.ArbMainNet) {
+    chainPrefix = ARBITRUM_CHAIN_PREFIX;
+  } else {
+    throw new Error(`Unsupported chain: ${chain}`);
+  }
+
   const tokenPriceMap = new Map<Address, number>();
   return fetch(
     DEFILLAMA_TOKEN_PRICE_API_URL +
@@ -205,7 +216,7 @@ export async function getTokenPrice(
           // use "coingecko:ethereum" for ZERO address which represents ETH
           return address === ETH.address
             ? ETHEREUM_COINGECKO_ID
-            : `${ETHEREUM_CHAIN_PREFIX}${address}`;
+            : `${chainPrefix}${address}`;
         })
         .join(",") +
       "?searchWidth=1h"
@@ -232,9 +243,7 @@ export async function getTokenPrice(
         const tokenAddress =
           key === ETHEREUM_COINGECKO_ID
             ? ETH.address
-            : (key
-                .slice(ETHEREUM_CHAIN_PREFIX.length)
-                .toLowerCase() as Address);
+            : (key.slice(chainPrefix.length).toLowerCase() as Address);
 
         const coinData = response.coins[key];
         tokenPriceMap.set(tokenAddress, coinData.price);
