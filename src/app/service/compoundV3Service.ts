@@ -19,7 +19,8 @@ import {
   CompoundV3DebtPosition,
   Protocol,
   CompoundV3RecommendedDebtDetail,
-  APYInfo
+  APYInfo,
+  Chain
 } from "../type/type";
 import { getTokenByAddress } from "../utils/utils";
 import { get30DayTrailingAPYInfo } from "./defiLlamaDataService";
@@ -178,8 +179,12 @@ export function getSupportedCollateralTokens(): Promise<Token[]> {
   return Promise.resolve(COMPOUND_V3_COLLATERALS);
 }
 
-export function getSupportedDebtTokens(): Promise<Token[]> {
-  return Promise.resolve(COMPOUND_V3_DEBTS);
+export function getSupportedDebtTokens(chain: Chain): Promise<Token[]> {
+  if (chain === Chain.EthMainNet) {
+    return Promise.resolve(COMPOUND_V3_DEBTS);
+  } else {
+    return Promise.resolve([]);
+  }
 }
 
 export async function getCollateralBalance(

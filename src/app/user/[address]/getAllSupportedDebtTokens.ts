@@ -4,7 +4,7 @@ import { getSupportedDebtTokens as getAaveSupportedDebtTokens } from "@/app/serv
 import { getSupportedDebtTokens as getSparkSupportedDebtTokens } from "@/app/service/sparkService";
 import { getSupportedDebtTokens as getCompoundV3SupportedDebtTokens } from "@/app/service/compoundV3Service";
 import { getSupportedDebtTokens as getMorphoBlueSupportedDebtTokens } from "@/app/service/morphoBlueService";
-import { Token, TokenDetail } from "@/app/type/type";
+import { Chain, Token, TokenDetail } from "@/app/type/type";
 import {
   DAI,
   SUPPORTED_DEBT_STABLECOINS,
@@ -18,7 +18,9 @@ import {
   LINK
 } from "@/app/contracts/ERC20Tokens";
 
-export async function getAllSupportedDebtTokens(): Promise<TokenDetail[]> {
+export async function getAllSupportedDebtTokens(
+  chain: Chain
+): Promise<TokenDetail[]> {
   // Return hardcoded values for now until we improve performance of borrow recommendations
   return [
     {
@@ -57,10 +59,10 @@ export async function getAllSupportedDebtTokens(): Promise<TokenDetail[]> {
 
   // Call all protocol services to get supported debt tokens
   return Promise.all([
-    getAaveSupportedDebtTokens(),
-    getSparkSupportedDebtTokens(),
-    getCompoundV3SupportedDebtTokens(),
-    getMorphoBlueSupportedDebtTokens()
+    getAaveSupportedDebtTokens(chain),
+    getSparkSupportedDebtTokens(chain),
+    getCompoundV3SupportedDebtTokens(chain),
+    getMorphoBlueSupportedDebtTokens(chain)
   ]).then((results) => {
     const allSupportedDebtTokens: Map<string, TokenDetail> = new Map();
 

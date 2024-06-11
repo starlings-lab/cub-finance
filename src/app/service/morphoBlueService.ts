@@ -7,7 +7,8 @@ import {
   Protocol,
   MorphoBlueRecommendedDebtDetail,
   TokenAmount,
-  Token
+  Token,
+  Chain
 } from "../type/type";
 import { isZeroOrNegative, isZeroOrPositive } from "../utils/utils";
 import {
@@ -120,8 +121,12 @@ export async function getSupportedTokens(query: any): Promise<Token[]> {
   }
 }
 
-export async function getSupportedDebtTokens(): Promise<Token[]> {
-  return getSupportedTokens(MORPHO_SUPPORTED_DEBT_TOKEN_QUERY);
+export async function getSupportedDebtTokens(chain: Chain): Promise<Token[]> {
+  if (chain === Chain.EthMainNet) {
+    return getSupportedTokens(MORPHO_SUPPORTED_DEBT_TOKEN_QUERY);
+  } else {
+    return [];
+  }
 }
 
 export async function getSupportedCollateralTokens(): Promise<Token[]> {
@@ -143,9 +148,14 @@ function removeDuplicateTokens(tokens: Token[]): Token[] {
 }
 
 export async function getBorrowRecommendations(
+  chain: Chain,
   debtTokens: Token[],
   collaterals: TokenAmount[]
 ): Promise<MorphoBlueRecommendedDebtDetail[]> {
+  if (chain !== Chain.EthMainNet) {
+    return [];
+  }
+
   const markets = await getMarkets();
 
   // Create all possible debtToken-collateral combos

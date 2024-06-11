@@ -1,6 +1,7 @@
 "use client";
 import {
   BorrowRecommendationTableRow,
+  Chain,
   TokenAmount,
   TokenDetail
 } from "@/app/type/type";
@@ -60,6 +61,7 @@ const BorrowRecommendationsWrapper = ({
           collaterals.length > 0
         ) {
           borrowRecommendations = await getBorrowRecommendations(
+            Chain.EthMainNet,
             userAddress,
             debtTokens,
             collaterals

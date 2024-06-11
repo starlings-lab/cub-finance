@@ -1,6 +1,6 @@
 import { DAI, USDC, WETH } from "../contracts/ERC20Tokens";
 import {
-  baseSparkService,
+  baseSparkServiceEthMainNet,
   getBorrowRecommendations,
   getSupportedCollateralTokens,
   getSupportedDebtTokens
@@ -10,7 +10,7 @@ import { verifyAaveOrSparkBorrowRecommendations } from "./testHelper";
 
 describe("sparkService", () => {
   it("creates an instance of baseSparkService", () => {
-    expect(baseSparkService).toBeDefined();
+    expect(baseSparkServiceEthMainNet).toBeDefined();
   });
 
   describe("getSupportedDebtTokens", () => {

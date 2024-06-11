@@ -2,6 +2,7 @@
 
 import {
   BorrowRecommendationTableRow,
+  Chain,
   CompoundV3RecommendedDebtDetail,
   MorphoBlueRecommendedDebtDetail,
   Protocol,
@@ -23,6 +24,7 @@ import { ETH, WETH } from "../contracts/ERC20Tokens";
  * @returns
  */
 export async function getBorrowRecommendations(
+  chain: Chain,
   userAddress: Address,
   debtTokens: Token[],
   collaterals: TokenAmount[]
@@ -42,14 +44,16 @@ export async function getBorrowRecommendations(
 
   // Call all protocol services to get debt recommendations
   return await Promise.all([
-    getAaveBorrowRecommendations(debtTokens, collaterals).then((results) => {
-      console.log(
-        `Time taken to get AAVE v3 borrow recommendations for user ${userAddress}: ${
-          Date.now() - start
-        } ms`
-      );
-      return results;
-    }),
+    getAaveBorrowRecommendations(chain, debtTokens, collaterals).then(
+      (results) => {
+        console.log(
+          `Time taken to get AAVE v3 borrow recommendations for user ${userAddress}: ${
+            Date.now() - start
+          } ms`
+        );
+        return results;
+      }
+    ),
     getCompoundBorrowRecommendations(debtTokens, collaterals).then(
       (results) => {
         console.log(
@@ -60,22 +64,26 @@ export async function getBorrowRecommendations(
         return results;
       }
     ),
-    getSparkBorrowRecommendations(debtTokens, collaterals).then((results) => {
-      console.log(
-        `Time taken to get Spark borrow recommendations for user ${userAddress}: ${
-          Date.now() - start
-        } ms`
-      );
-      return results;
-    }),
-    getMorphoBorrowRecommendations(debtTokens, collaterals).then((results) => {
-      console.log(
-        `Time taken to get Morpho borrow recommendations for user ${userAddress}: ${
-          Date.now() - start
-        } ms`
-      );
-      return results;
-    })
+    getSparkBorrowRecommendations(chain, debtTokens, collaterals).then(
+      (results) => {
+        console.log(
+          `Time taken to get Spark borrow recommendations for user ${userAddress}: ${
+            Date.now() - start
+          } ms`
+        );
+        return results;
+      }
+    ),
+    getMorphoBorrowRecommendations(chain, debtTokens, collaterals).then(
+      (results) => {
+        console.log(
+          `Time taken to get Morpho borrow recommendations for user ${userAddress}: ${
+            Date.now() - start
+          } ms`
+        );
+        return results;
+      }
+    )
   ])
     .then((recommendationResults) => {
       console.log(

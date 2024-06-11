@@ -267,7 +267,7 @@ export const EURS = {
 
 export const wstETH_ARB = {
   ...wstETH,
-  address: "0x5979d7b546e38e414f7e9822514be443a4800529",
+  address: "0x5979d7b546e38e414f7e9822514be443a4800529" as Address,
   name: "Wrapped liquid staked Ether 2.0"
 };
 

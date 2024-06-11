@@ -1,9 +1,10 @@
 import { SUPPORTED_DEBT_STABLECOINS } from "../contracts/ERC20Tokens";
+import { Chain } from "../type/type";
 import { getAllSupportedDebtTokens } from "../user/[address]/getAllSupportedDebtTokens";
 
-describe("getAllSupportedDebtTokens", () => {
+describe("getAllSupportedDebtTokens - EthMainNet", () => {
   it("should return an array of unique debt tokens", async () => {
-    const tokenDetails = await getAllSupportedDebtTokens();
+    const tokenDetails = await getAllSupportedDebtTokens(Chain.EthMainNet);
     // console.log("Supported debt tokens: ", tokenDetails);
 
     // Ensure token addresses are unique

@@ -1,6 +1,6 @@
 import React from "react";
 import { Address } from "abitype";
-import { TokenDetail } from "@/app/type/type";
+import { Chain, TokenDetail } from "@/app/type/type";
 import { getAllSupportedDebtTokens } from "../getAllSupportedDebtTokens";
 import BorrowRecommendationsWrapper from "./BorrowRecommendationsWrapper";
 import { getSupportedUserCollaterals } from "../getSupportedUserCollaterals";
@@ -10,8 +10,9 @@ const BorrowOptionsWrapper = async ({
 }: {
   userAddress: string;
 }) => {
-  const allSupportedDebtTokens: TokenDetail[] =
-    await getAllSupportedDebtTokens();
+  const allSupportedDebtTokens: TokenDetail[] = await getAllSupportedDebtTokens(
+    Chain.EthMainNet
+  );
   const typedUserAddress = userAddress as Address;
   const collaterals = await getSupportedUserCollaterals(typedUserAddress);
 
