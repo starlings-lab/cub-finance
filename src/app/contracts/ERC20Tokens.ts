@@ -320,6 +320,19 @@ export const AAVE_ARB: Token = {
   address: "0xba5ddd1f9d7f570dc94a51479a000e3bce967196" as Address
 };
 
+export const COMP_ARB: Token = {
+  ...COMP,
+  address: "0x354A6dA3fcde098F8389cad84b0182725c6C91dE" as Address
+};
+
+// GMX (Arbitrum): https://arbiscan.io/address/0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a
+export const GMX_ARB: Token = {
+  address: "0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a" as Address,
+  name: "GMX",
+  symbol: "GMX",
+  decimals: 18
+};
+
 export const AAVE_V3_DEBT_STABLECOINS_ARB_MAINNET = [
   USDC_ARB,
   USDC_BRIDGED_ARB,

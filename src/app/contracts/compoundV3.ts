@@ -1,7 +1,10 @@
 import { Address } from "abitype";
 import { ethers, Contract } from "ethers";
-import { ALCHEMY_API_URL_ETH_MAINNET } from "../constants";
-import { Token } from "../type/type";
+import {
+  ALCHEMY_API_URL_ARB_MAINNET,
+  ALCHEMY_API_URL_ETH_MAINNET
+} from "../constants";
+import { Chain, Token } from "../type/type";
 import {
   COMP,
   WBTC,
@@ -11,29 +14,39 @@ import {
   LINK,
   cbETH,
   wstETH,
-  rETH
+  rETH,
+  WBTC_ARB,
+  WETH_ARB,
+  ARB,
+  GMX_ARB,
+  USDC_ARB,
+  USDC_BRIDGED_ARB
 } from "./ERC20Tokens";
 
-export const COMPOUND_V3_CUSDC_ADDRESS = `0x${"c3d688B66703497DAA19211EEdff47f25384cdc3"}`;
-export const COMPOUND_V3_CWETH_ADDRESS = `0x${"A17581A9E3356d9A858b789D68B4d866e593aE94"}`;
+export const COMPOUND_V3_CUSDC_ADDRESS_ETH_MAINNET = `0x${"c3d688B66703497DAA19211EEdff47f25384cdc3"}`;
+export const COMPOUND_V3_CWETH_ADDRESS_ETH_MAINNET = `0x${"A17581A9E3356d9A858b789D68B4d866e593aE94"}`;
 
-export const COMPOUND_V3_CUSDC_COLLATERALS: Token[] = [
+export const COMPOUND_V3_CUSDC_COLLATERALS_ETH_MAINNET: Token[] = [
   COMP,
   WBTC,
   WETH,
   UNI,
   LINK
 ];
-export const COMPOUND_V3_CWETH_COLLATERALS: Token[] = [cbETH, wstETH, rETH];
-
-export const COMPOUND_V3_COLLATERALS: Token[] = [
-  ...COMPOUND_V3_CUSDC_COLLATERALS,
-  ...COMPOUND_V3_CWETH_COLLATERALS
+export const COMPOUND_V3_CWETH_COLLATERALS_ETH_MAINNET: Token[] = [
+  cbETH,
+  wstETH,
+  rETH
 ];
 
-export const COMPOUND_V3_DEBTS: Token[] = [USDC, WETH];
+export const COMPOUND_V3_COLLATERALS_ETH_MAINNET: Token[] = [
+  ...COMPOUND_V3_CUSDC_COLLATERALS_ETH_MAINNET,
+  ...COMPOUND_V3_CWETH_COLLATERALS_ETH_MAINNET
+];
 
-export const COMPOUND_V3_PRICEFEEDS = {
+export const COMPOUND_V3_DEBTS_ETH_MAINNET: Token[] = [USDC, WETH];
+
+export const COMPOUND_V3_PRICEFEEDS_ETH_MAINNET = {
   USDC: `0x${"8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6"}` as Address,
   ETH: `0x${"5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"}` as Address,
   COMP: `0x${"dbd020CAeF83eFd542f4De03e3cF0C28A4428bd5"}` as Address,
@@ -42,9 +55,9 @@ export const COMPOUND_V3_PRICEFEEDS = {
   LINK: `0x${"2c1d072e956AFFC0D435Cb7AC38EF18d24d9127c"}` as Address,
   // Following price feeds returns price in ETH, e.g. 1 wstETH = 1.1 ETH
   WETH: `0x${"D72ac1bCE9177CFe7aEb5d0516a38c88a64cE0AB"}` as Address,
-  cbETH: `0x${"23a982b74a3236A5F2297856d4391B2edBBB5549"}` as Address,
-  wstETH: `0x${"4F67e4d9BD67eFa28236013288737D39AeF48e79"}` as Address,
-  rETH: `0x${"A3A7fB5963D1d69B95EEC4957f77678EF073Ba08"}` as Address
+  CBETH: `0x${"23a982b74a3236A5F2297856d4391B2edBBB5549"}` as Address,
+  WSTETH: `0x${"4F67e4d9BD67eFa28236013288737D39AeF48e79"}` as Address,
+  RETH: `0x${"A3A7fB5963D1d69B95EEC4957f77678EF073Ba08"}` as Address
 };
 
 export const COMPOUND_V3_ABI: object[] = [
@@ -1120,16 +1133,171 @@ export const COMPOUND_V3_ABI: object[] = [
   }
 ];
 
-const provider = new ethers.JsonRpcProvider(ALCHEMY_API_URL_ETH_MAINNET);
+const PROVIDER_ETH_MAINNET = new ethers.JsonRpcProvider(
+  ALCHEMY_API_URL_ETH_MAINNET
+);
 
 export const COMPOUND_V3_CUSDC_CONTRACT = new Contract(
-  COMPOUND_V3_CUSDC_ADDRESS,
+  COMPOUND_V3_CUSDC_ADDRESS_ETH_MAINNET,
   COMPOUND_V3_ABI,
-  provider
+  PROVIDER_ETH_MAINNET
 );
 
 export const COMPOUND_V3_CWETH_CONTRACT = new Contract(
-  COMPOUND_V3_CWETH_ADDRESS,
+  COMPOUND_V3_CWETH_ADDRESS_ETH_MAINNET,
   COMPOUND_V3_ABI,
-  provider
+  PROVIDER_ETH_MAINNET
 );
+
+// USDC.e (Bridged): https://arbiscan.io/address/0xA5EDBDD9646f8dFF606d7448e414884C7d905dCA
+// https://app.compound.finance/markets/usdc.e-arb
+export const COMPOUND_V3_CUSDC_BRIDGED_ADDRESS_ARB_MAINNET =
+  "0xA5EDBDD9646f8dFF606d7448e414884C7d905dCA" as Address;
+export const COMPOUND_V3_CUSDC_BRIDGED_COLLATERALS_ARB_MAINNET: Token[] = [
+  WBTC_ARB,
+  WETH_ARB,
+  ARB,
+  GMX_ARB
+];
+
+// USDC (Native): https://arbiscan.io/address/0x9c4ec768c28520B50860ea7a15bd7213a9fF58bf
+// https://app.compound.finance/markets/usdc-arb
+export const COMPOUND_V3_CUSDC_ADDRESS_ARB_MAINNET =
+  "0x9c4ec768c28520B50860ea7a15bd7213a9fF58bf" as Address;
+
+export const COMPOUND_V3_CUSDC_COLLATERALS_ARB_MAINNET: Token[] = [
+  ...COMPOUND_V3_CUSDC_BRIDGED_COLLATERALS_ARB_MAINNET
+];
+
+export const COMPOUND_V3_COLLATERALS_ARB_MAINNET: Token[] = [
+  ...COMPOUND_V3_CUSDC_COLLATERALS_ARB_MAINNET
+];
+
+export const COMPOUND_V3_DEBTS_ARB_MAINNET: Token[] = [
+  USDC_ARB,
+  USDC_BRIDGED_ARB
+];
+
+const PROVIDER_ARB_MAINNET = new ethers.JsonRpcProvider(
+  ALCHEMY_API_URL_ARB_MAINNET
+);
+
+export const COMPOUND_V3_CUSDC_CONTRACT_ARB_MAINNET = new Contract(
+  COMPOUND_V3_CUSDC_ADDRESS_ARB_MAINNET,
+  COMPOUND_V3_ABI,
+  PROVIDER_ARB_MAINNET
+);
+
+export const COMPOUND_V3_CUSDC_BRIDGED_CONTRACT_ARB_MAINNET = new Contract(
+  COMPOUND_V3_CUSDC_BRIDGED_ADDRESS_ARB_MAINNET,
+  COMPOUND_V3_ABI,
+  PROVIDER_ARB_MAINNET
+);
+
+function getTokenId(chain: Chain, debtTokenAddress: Address): string {
+  return `${chain}-${debtTokenAddress}.toLowerCase()`;
+}
+
+const COMPOUND_V3_CONTRACT_MAP: Map<string, Contract> = new Map([
+  [getTokenId(Chain.EthMainNet, WETH.address), COMPOUND_V3_CWETH_CONTRACT],
+  [getTokenId(Chain.EthMainNet, USDC.address), COMPOUND_V3_CUSDC_CONTRACT],
+  [
+    getTokenId(Chain.ArbMainNet, USDC_ARB.address),
+    COMPOUND_V3_CUSDC_CONTRACT_ARB_MAINNET
+  ],
+  [
+    getTokenId(Chain.ArbMainNet, USDC_BRIDGED_ARB.address),
+    COMPOUND_V3_CUSDC_BRIDGED_CONTRACT_ARB_MAINNET
+  ]
+]);
+
+/**
+ * Returns the Compound V3 market contract for a given chain and debt token address.
+ * @param chain
+ * @param debtTokenAddress
+ * @returns
+ */
+export function getCompoundV3MarketContract(
+  chain: Chain,
+  debtTokenAddress: Address
+) {
+  const contract = COMPOUND_V3_CONTRACT_MAP.get(
+    getTokenId(chain, debtTokenAddress)
+  );
+
+  if (!contract) {
+    throw new Error(
+      `No Compound V3 market contract found for ${chain} and ${debtTokenAddress}`
+    );
+  }
+
+  return contract;
+}
+
+const COMPOUND_V3_COLLATERAL_MAP: Map<string, Token[]> = new Map([
+  [
+    getTokenId(Chain.EthMainNet, USDC.address),
+    COMPOUND_V3_CUSDC_COLLATERALS_ETH_MAINNET
+  ],
+  [
+    getTokenId(Chain.EthMainNet, WETH.address),
+    COMPOUND_V3_CWETH_COLLATERALS_ETH_MAINNET
+  ],
+  [
+    getTokenId(Chain.ArbMainNet, USDC_ARB.address),
+    COMPOUND_V3_CUSDC_COLLATERALS_ARB_MAINNET
+  ],
+  [
+    getTokenId(Chain.ArbMainNet, USDC_BRIDGED_ARB.address),
+    COMPOUND_V3_CUSDC_BRIDGED_COLLATERALS_ARB_MAINNET
+  ]
+]);
+
+export function getSupportedCollateralsByDebtToken(
+  chain: Chain,
+  debtTokenAddress: Address
+) {
+  const collateralTokens = COMPOUND_V3_COLLATERAL_MAP.get(
+    getTokenId(chain, debtTokenAddress)
+  );
+
+  if (!collateralTokens) {
+    throw new Error(
+      `No supported collateral tokens found for ${chain} and ${debtTokenAddress}`
+    );
+  }
+
+  return [...collateralTokens];
+}
+
+// Price feed from: https://raw.githubusercontent.com/compound-finance/compound-js/master/src/comet-artifacts/comet-constants.json
+const COMPOUND_V3_PRICEFEEDS_ARB_MAINNET = {
+  ARB: "0xb2A824043730FE05F3DA2efaFa1CBbe83fa548D6" as Address,
+  GMX: "0xDB98056FecFff59D032aB628337A4887110df3dB" as Address,
+  WETH: "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612" as Address,
+  WBTC: "0xd0C7101eACbB49F3deCcCc166d238410D6D46d57" as Address,
+  USDC: "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3" as Address
+};
+
+export function getPriceFeedFromTokenSymbol(
+  chain: Chain,
+  tokenSymbol: string
+): Address {
+  let priceFeeds;
+  if (chain === Chain.EthMainNet) {
+    priceFeeds = COMPOUND_V3_PRICEFEEDS_ETH_MAINNET;
+  } else if (chain === Chain.ArbMainNet) {
+    priceFeeds = COMPOUND_V3_PRICEFEEDS_ARB_MAINNET;
+  } else {
+    throw new Error("Unsupported chain: " + chain);
+  }
+
+  const tokenSymbolUpper = tokenSymbol.toUpperCase();
+  if (tokenSymbolUpper in priceFeeds) {
+    return priceFeeds[tokenSymbolUpper as keyof typeof priceFeeds];
+  } else {
+    throw new Error(
+      `Price feed not found for token symbol: ${tokenSymbol} for chain: ${chain}`
+    );
+  }
+}

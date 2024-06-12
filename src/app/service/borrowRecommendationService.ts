@@ -54,7 +54,7 @@ export async function getBorrowRecommendations(
         return results;
       }
     ),
-    getCompoundBorrowRecommendations(debtTokens, collaterals).then(
+    getCompoundBorrowRecommendations(chain, debtTokens, collaterals).then(
       (results) => {
         console.log(
           `Time taken to get Compound borrow recommendations for user ${userAddress}: ${
