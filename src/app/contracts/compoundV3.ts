@@ -1292,7 +1292,12 @@ export function getPriceFeedFromTokenSymbol(
     throw new Error("Unsupported chain: " + chain);
   }
 
-  const tokenSymbolUpper = tokenSymbol.toUpperCase();
+  let tokenSymbolUpper = tokenSymbol.toUpperCase();
+  if (tokenSymbolUpper === USDC_BRIDGED_ARB.symbol.toUpperCase()) {
+    // price feed for bridged and native USDC on Arbitrum is the same
+    tokenSymbolUpper = USDC_ARB.symbol.toUpperCase();
+  }
+
   if (tokenSymbolUpper in priceFeeds) {
     return priceFeeds[tokenSymbolUpper as keyof typeof priceFeeds];
   } else {
