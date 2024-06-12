@@ -1,4 +1,5 @@
 "use client";
+import { trackEvent } from "fathom-client";
 import Image from "next/image";
 import React, { useContext } from "react";
 import { StoreContext } from "./context/context";
@@ -66,6 +67,7 @@ const ChainSelect = ({
         aria-expanded="false"
         aria-labelledby="listbox-label"
         onClick={() => {
+          trackEvent("Switch Networks");
           setIsOpen(!isOpen);
         }}
       >
