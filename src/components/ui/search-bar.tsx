@@ -11,8 +11,14 @@ import { isValidEnsAddress, EOAFromENS } from "../../app/service/ensService";
 import { useRouter } from "next/navigation";
 import { isAddress } from "ethers";
 import { useToast } from "./use-toast";
-import { ROUTE_BORROW, TEST_DEBT_POSITION_ADDRESSES } from "@/app/constants";
+import {
+  ROUTE_BORROW,
+  TEST_ARB_ADDRESSES,
+  TEST_DEBT_POSITION_ADDRESSES
+} from "@/app/constants";
 import ClickAwayListener from "./click-away-listener";
+import { StoreContext } from "@/app/context/context";
+import { Chain } from "@/app/type/type";
 
 export interface SearchBarProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -21,7 +27,7 @@ export interface SearchBarProps
   routeType?: string;
 }
 
-const TEST_ADDRESS_MAP = [
+const TEST_ADDRESS_MAP_ETH = [
   {
     address: TEST_DEBT_POSITION_ADDRESSES.ensAddress3,
     protocol: "aavev3"
@@ -40,6 +46,17 @@ const TEST_ADDRESS_MAP = [
   }
 ];
 
+const TEST_ADDRESS_MAP_ARB = [
+  {
+    address: TEST_ARB_ADDRESSES.ETH_HOLDER,
+    protocol: "aavev3"
+  },
+  {
+    address: TEST_ARB_ADDRESSES.USDC_HOLDER,
+    protocol: "compoundv3"
+  }
+];
+
 const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
   ({ className, routeType, defaultUserAddress, isHome, ...props }, ref) => {
     const router = useRouter();
@@ -55,6 +72,12 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     const [showRecentSearches, setShowRecentSearches] =
       useState<boolean>(false);
     const [userRecentSearches, setUserRecentSearches] = useState<string[]>([]);
+    const { selectedChain } = React.useContext(StoreContext);
+
+    const EXAMPLES_CONFIG =
+      selectedChain?.value === Chain.ArbMainNet
+        ? TEST_ADDRESS_MAP_ARB
+        : TEST_ADDRESS_MAP_ETH;
 
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -96,7 +119,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           ) > -1;
         if (!checkIfTheAddressIsAlreadyThere) {
           const checkIfTheAddressIsTest =
-            TEST_ADDRESS_MAP.findIndex(
+            EXAMPLES_CONFIG.findIndex(
               (testAddress) => testAddress.address === address
             ) === -1;
           if (checkIfTheAddressIsTest) {
@@ -118,7 +141,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
         }
       } else {
         const checkIfTheAddressIsTest =
-          TEST_ADDRESS_MAP.findIndex(
+          EXAMPLES_CONFIG.findIndex(
             (testAddress) => testAddress.address === address
           ) === -1;
         if (checkIfTheAddressIsTest) {
@@ -139,7 +162,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     ) => {
       setAddressErr(!isValidAddress);
       if (isValidAddress) {
-        if(isHome){
+        if (isHome) {
           setButtonDisabled(true);
           updateLocalStorageRecentSearches(resolvedAddress);
         }
@@ -151,8 +174,8 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     };
 
     const validateAddress = async () => {
-      if(address === defaultUserAddress){
-        return
+      if (address === defaultUserAddress) {
+        return;
       }
       preValidationStateUpdate(debouncedAddress);
       const isValidEns = await isValidEnsAddress(debouncedAddress);
@@ -198,7 +221,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       e.stopPropagation();
       setAddress("");
       addressErr && resetErrors();
-      inputRef.current?.focus()
+      inputRef.current?.focus();
     };
 
     const handleInputFocus = () => {
@@ -302,6 +325,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             <RecentSearchesDropdown
               userRecentSearches={userRecentSearches}
               handleAddressSelect={handleAddressSelect}
+              exampleAddresses={EXAMPLES_CONFIG}
             />
           )}
           {getValidationMessage(addressErr, isLoading)}
@@ -346,6 +370,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             <RecentSearchesDropdown
               userRecentSearches={userRecentSearches}
               handleAddressSelect={handleAddressSelect}
+              exampleAddresses={EXAMPLES_CONFIG}
             />
           )}
           {getValidationMessage(addressErr, isLoading)}
@@ -403,10 +428,15 @@ function getValidationMessage(addressErr: boolean, isLoading: boolean) {
 
 function RecentSearchesDropdown({
   userRecentSearches,
-  handleAddressSelect
+  handleAddressSelect,
+  exampleAddresses
 }: {
   userRecentSearches: string[];
   handleAddressSelect: (val: string) => void;
+  exampleAddresses: {
+    address: string;
+    protocol: string;
+  }[];
 }) {
   return (
     <div className="bg-white h-30 absolute top-12 mt-1 px-4 border-x border-b  right-0 left-0 shadow-lg border-slate-100 z-50 max-h-64 overflow-y-scroll rounded-md">
@@ -432,7 +462,7 @@ function RecentSearchesDropdown({
         <div className="text-xs sm:text-sm text-slate-500 pb-2">
           Example Searches
         </div>
-        {TEST_ADDRESS_MAP.map((address) => (
+        {exampleAddresses.map((address) => (
           <div
             onClick={() => {
               handleAddressSelect(address.address);
