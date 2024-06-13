@@ -119,10 +119,13 @@ describe("borrowRecommendationService - ArbMainNet", () => {
 
       expect(borrowRecommendations).toBeDefined();
 
-      // there should be only 1 recommendation, from Aave V3 protocol
-      expect(borrowRecommendations.length).toBe(1);
+      // there should be 2 recommendations, from Aave V3 and Compound V3 protocol
+      expect(borrowRecommendations.length).toBe(2);
       expect(
         borrowRecommendations.find((r) => r.protocol === Protocol.AaveV3)
+      ).toBeDefined();
+      expect(
+        borrowRecommendations.find((r) => r.protocol === Protocol.CompoundV3)
       ).toBeDefined();
 
       borrowRecommendations.forEach((recommendation) => {
