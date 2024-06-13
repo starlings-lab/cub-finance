@@ -1,16 +1,12 @@
 import { Dispatch, SetStateAction, createContext } from "react";
 import { IChain } from "../ChainSelect";
-import { Chain } from "../type/type";
 
 interface IContext {
-  selectedChain: IChain;
-  setSelectedChain: Dispatch<SetStateAction<IChain>>;
+  selectedChain: IChain | undefined;
+  setSelectedChain: Dispatch<SetStateAction<IChain | undefined>>;
 }
 
 export const StoreContext = createContext<IContext>({
-  selectedChain: {
-    name: "Ethereum",
-    value: Chain.EthMainNet
-  },
+  selectedChain: undefined,
   setSelectedChain: () => {}
 });

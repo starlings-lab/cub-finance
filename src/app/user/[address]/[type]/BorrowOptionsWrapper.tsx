@@ -83,8 +83,10 @@ const BorrowOptionsWrapper = ({ userAddress }: { userAddress: string }) => {
   );
 
   useEffect(() => {
-    fetchAllDebtTokens(selectedChain.value);
-    fetchAllCollaterals(selectedChain.value, typedUserAddress);
+    if (selectedChain) {
+      fetchAllDebtTokens(selectedChain.value);
+      fetchAllCollaterals(selectedChain.value, typedUserAddress);
+    }
   }, [
     typedUserAddress,
     selectedChain,

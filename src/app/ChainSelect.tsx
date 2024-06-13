@@ -73,14 +73,14 @@ const ChainSelect = ({
       >
         <div className="flex flex-row items-center">
           <Image
-            src={`/${selectedChain.name.toLowerCase()}.png`}
+            src={`/${selectedChain!.name.toLowerCase()}.png`}
             alt=""
             width={20}
             height={20}
             className="h-5 w-5 flex-shrink-0 rounded-full"
           />
           <span className="text-xs sm:text-sm truncate min-w-12 sm:min-w-16 ml-2">
-            {selectedChain.name}
+            {selectedChain!.name}
           </span>
         </div>
 
@@ -119,7 +119,7 @@ const ChainSelect = ({
                 </span>
               </div>
 
-              <TickIconBox isSelected={selectedChain.name === chain.name} />
+              <TickIconBox isSelected={selectedChain!.name === chain.name} />
             </li>
           ))}
         </ul>

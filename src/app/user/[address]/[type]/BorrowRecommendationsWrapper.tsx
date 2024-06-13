@@ -69,7 +69,7 @@ const BorrowRecommendationsWrapper = ({
           collaterals.length > 0
         ) {
           borrowRecommendations = await getBorrowRecommendations(
-            selectedChain.value,
+            selectedChain!.value,
             userAddress,
             debtTokens,
             collaterals
@@ -96,7 +96,7 @@ const BorrowRecommendationsWrapper = ({
         setError(errorMessage);
       }
     },
-    [selectedChain.value]
+    [selectedChain!.value]
   );
 
   useEffect(() => {

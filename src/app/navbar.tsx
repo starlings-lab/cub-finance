@@ -3,10 +3,11 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { trackEvent } from "fathom-client";
-import ChainSelect, { IChain } from "./ChainSelect";
-import { useState } from "react";
+import ChainSelect from "./ChainSelect";
+import { useContext, useState } from "react";
 import ClickAwayListener from "@/components/ui/click-away-listener";
 import { Chain } from "./type/type";
+import { StoreContext } from "./context/context";
 
 const SupportIcon = () => (
   <svg
@@ -31,6 +32,7 @@ const SupportIcon = () => (
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { selectedChain } = useContext(StoreContext);
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
@@ -41,17 +43,19 @@ export default function Navbar() {
           </Link>
           <div className="flex items-center">
             <ClickAwayListener onClickAway={() => setIsOpen(false)}>
-              <ChainSelect
-                isOpen={isOpen}
-                setIsOpen={setIsOpen}
-                chains={[
-                  {
-                    name: "Ethereum",
-                    value: Chain.EthMainNet
-                  },
-                  { name: "Arbitrum", value: Chain.ArbMainNet }
-                ]}
-              />
+              {selectedChain && (
+                <ChainSelect
+                  isOpen={isOpen}
+                  setIsOpen={setIsOpen}
+                  chains={[
+                    {
+                      name: "Ethereum",
+                      value: Chain.EthMainNet
+                    },
+                    { name: "Arbitrum", value: Chain.ArbMainNet }
+                  ]}
+                />
+              )}
             </ClickAwayListener>
             <Button
               className="bg-[#009DC4] text-white rounded-2xl py-4 px-3 sm:px-6 transition-opacity hover:bg-[#009DC4] hover:opacity-80"

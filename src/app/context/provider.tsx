@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StoreContext } from "./context";
 import { Tabs } from "@/components/ui/tabs";
 import { IChain } from "../ChainSelect";
@@ -11,16 +11,28 @@ export default function StoreProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [selectedChain, setSelectedChain] = useState<IChain>({
-    name: "Ethereum",
-    value: Chain.EthMainNet
-  });
+  const [selectedChain, setSelectedChain] = useState<IChain | undefined>();
 
+  useEffect(() => {
+    const selectedChainFromLocal = localStorage.getItem("selectedChain");
+    if (selectedChainFromLocal) {
+      setSelectedChain(JSON.parse(selectedChainFromLocal));
+    } else {
+      setSelectedChain({
+        name: "Ethereum",
+        value: Chain.EthMainNet
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedChain) {
+      localStorage.setItem("selectedChain", JSON.stringify(selectedChain));
+    }
+  }, [selectedChain]);
 
   return (
-    <StoreContext.Provider
-      value={{ selectedChain, setSelectedChain }}
-    >
+    <StoreContext.Provider value={{ selectedChain, setSelectedChain }}>
       {children}
     </StoreContext.Provider>
   );
