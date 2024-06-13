@@ -1,9 +1,7 @@
 import { AlchemyProvider, Contract } from "ethers";
 import {
-  CompoundV3DebtPosition,
-  DebtPosition,
+  Chain,
   Market,
-  MorphoBlueDebtPosition,
   Protocol,
   RecommendedDebtDetail,
   Token,
@@ -24,6 +22,7 @@ import {
   calculateAmountInBaseCurrency
 } from "./baseAaveServiceHelper";
 import { get30DayTrailingAPYInfo } from "./defiLlamaDataService";
+import { getAlchemyApiKey } from "../constants";
 
 export interface AaveMarket extends Market {
   priceInMarketReferenceCurrency: number;
@@ -34,6 +33,7 @@ export interface BaseCurrencyInfo {
 }
 
 export class BaseAaveService {
+  private chain: Chain;
   private protocol: Protocol;
   private poolAddressProvider: Address;
   private uiPoolDataProvider: Address;
@@ -42,16 +42,20 @@ export class BaseAaveService {
   private poolAddressProviderContract: Contract;
 
   constructor(
-    alchemyProvider: AlchemyProvider,
+    chain: Chain,
     protocol: Protocol,
     poolAddressProvider: Address,
     uiPoolDataProvider: Address
   ) {
+    this.chain = chain;
     this.protocol = protocol;
     this.poolAddressProvider = poolAddressProvider;
     this.uiPoolDataProvider = uiPoolDataProvider;
 
-    this.provider = alchemyProvider;
+    this.provider = new AlchemyProvider(
+      chain.valueOf(), // MAINNET or ARBITRUM
+      getAlchemyApiKey(chain)
+    );
 
     this.poolDataProviderContract = new Contract(
       uiPoolDataProvider,
@@ -392,6 +396,7 @@ export class BaseAaveService {
     }
 
     return get30DayTrailingAPYInfo(
+      this.chain,
       this.protocol,
       underlyingAssetToken.symbol
     ).then((apyInfo) => {
@@ -423,52 +428,4 @@ function isReserveBorrowingEnabled(reserve: any): unknown {
 
 function isReserveActive(reserve: any) {
   return reserve && reserve.isActive && !reserve.isPaused;
-}
-
-function getExistingDebtAndCollateralInfo(
-  existingProtocol: Protocol,
-  debtPosition: DebtPosition | MorphoBlueDebtPosition | CompoundV3DebtPosition
-) {
-  let existingDebtAmount: TokenAmount;
-  let existingCollateralAmountByToken = new Map<Token, TokenAmount>();
-  let existingNetBorrowingApy = 0;
-
-  switch (existingProtocol) {
-    case Protocol.AaveV3:
-    case Protocol.Spark:
-      const convertedDebtPosition = debtPosition as DebtPosition;
-      existingDebtAmount = convertedDebtPosition.debts[0];
-      existingNetBorrowingApy =
-        convertedDebtPosition.trailing30DaysNetBorrowingAPY;
-      convertedDebtPosition.collaterals.forEach((collateral) => {
-        existingCollateralAmountByToken.set(collateral.token, collateral);
-      });
-      break;
-    case Protocol.MorphoBlue:
-      const morphoBlueDebtPosition = debtPosition as MorphoBlueDebtPosition;
-      existingDebtAmount = morphoBlueDebtPosition.debt;
-      existingNetBorrowingApy =
-        morphoBlueDebtPosition.trailing30DaysNetBorrowingAPY;
-      existingCollateralAmountByToken.set(
-        morphoBlueDebtPosition.collateral.token,
-        morphoBlueDebtPosition.collateral
-      );
-      break;
-    case Protocol.CompoundV3:
-      const compoundV3DebtPosition = debtPosition as CompoundV3DebtPosition;
-      existingDebtAmount = compoundV3DebtPosition.debt;
-      compoundV3DebtPosition.collaterals.forEach((collateral) => {
-        existingCollateralAmountByToken.set(collateral.token, collateral);
-      });
-      existingNetBorrowingApy =
-        compoundV3DebtPosition.trailing30DaysNetBorrowingAPY;
-      break;
-    default:
-      throw new Error("Unsupported protocol");
-  }
-  return {
-    existingDebtAmount,
-    existingCollateralAmountByToken,
-    existingNetBorrowingApy
-  };
 }

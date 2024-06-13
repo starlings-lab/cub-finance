@@ -17,6 +17,15 @@ export function getAlchemyApiUrl(chain: Chain) {
   throw new Error(`Unsupported chain: ${chain}`);
 }
 
+export function getAlchemyApiKey(chain: Chain) {
+  if (chain === Chain.EthMainNet) {
+    return process.env.ALCHEMY_API_KEY_ETH_MAINNET;
+  } else if (chain === Chain.ArbMainNet) {
+    return process.env.ALCHEMY_API_KEY_ARB_MAINNET;
+  }
+  throw new Error(`Unsupported chain: ${chain}`);
+}
+
 // Graph playground: https://thegraph.com/hosted-service/subgraph/messari/aave-v3-ethereum
 export const MESSARI_AAVE_V3_GRAPHQL_URL =
   "https://api.thegraph.com/subgraphs/name/messari/aave-v3-ethereum";

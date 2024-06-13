@@ -32,7 +32,7 @@ async function getAllCompoundV3Markets(
 ): Promise<Map<Address, CompoundV3Market>> {
   return getSupportedDebtTokens(chain).then((supportedDebtTokens) => {
     return Promise.all([
-      getBorrowingAPYsByTokenSymbol(supportedDebtTokens),
+      getBorrowingAPYsByTokenSymbol(chain, supportedDebtTokens),
       getUtilizationRatioMapByDebtTokenAddress(chain, supportedDebtTokens)
     ]).then((data) => {
       const apyInfoMap = data[0];
@@ -78,11 +78,13 @@ export async function getUtilizationRatioMapByDebtTokenAddress(
 
 // Fetches 30 days trailing borrowing APYs for supported CompoundV3 debt tokens
 async function getBorrowingAPYsByTokenSymbol(
+  chain: Chain,
   supportedDebtTokens: Token[]
 ): Promise<Map<string, APYInfo>> {
   const borrowingAPYs = new Map<string, APYInfo>();
   for (const debtToken of supportedDebtTokens) {
     const apyInfo = await get30DayTrailingAPYInfo(
+      chain,
       Protocol.CompoundV3,
       // ETH symbol is used in DefiLlama for WETH
       debtToken.symbol == WETH.symbol ? ETH.symbol : debtToken.symbol

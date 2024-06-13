@@ -6,14 +6,10 @@ import {
   Token,
   TokenAmount
 } from "../type/type";
-import { AlchemyProvider } from "ethers";
 
 // Contract addresses are used from https://docs.sparkprotocol.io/developers/deployed-contracts/mainnet-addresses
 export const baseSparkServiceEthMainNet = new BaseAaveService(
-  new AlchemyProvider(
-    1, // MAINNET
-    process.env.ALCHEMY_API_KEY_ETH_MAINNET
-  ),
+  Chain.EthMainNet,
   Protocol.Spark,
   "0x02C3eA4e34C0cBd694D2adFa2c690EECbC1793eE", //POOL_ADDRESSES_PROVIDER,
   "0xF028c2F4b19898718fD0F77b9b881CbfdAa5e8Bb" //UI_POOL_DATA_PROVIDER

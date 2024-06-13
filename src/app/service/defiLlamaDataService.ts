@@ -10,8 +10,10 @@ import {
 import { APYInfo, Chain, Protocol } from "../type/type";
 import { ETH, WETH } from "../contracts/ERC20Tokens";
 import { kv } from "@vercel/kv";
+import { getApyCacheKey } from "../utils/utils";
 
 export async function get30DayTrailingAPYInfo(
+  chain: Chain,
   protocol: Protocol,
   tokenSymbol: string
 ): Promise<APYInfo> {
@@ -28,9 +30,11 @@ export async function get30DayTrailingAPYInfo(
     // if tokenSymbol is ETH, we need to use WETH as the key for all non-compound protocols
     tokenSymbolToUse = tokenSymbol === ETH.symbol ? WETH.symbol : tokenSymbol;
   }
-  const poolKey = `${DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL.get(
-    protocol
-  )}-${tokenSymbolToUse}`.toUpperCase();
+  const poolKey = getApyCacheKey(
+    chain,
+    DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL.get(protocol)!,
+    tokenSymbolToUse
+  );
   const cachedData = await kv.hgetall(poolKey);
 
   if (!cachedData) {
