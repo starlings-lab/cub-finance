@@ -8,7 +8,12 @@ import {
   getDefiLlamaLendBorrowDataApi
 } from "../constants";
 import { APYInfo, Chain, Protocol } from "../type/type";
-import { ETH, WETH } from "../contracts/ERC20Tokens";
+import {
+  ETH,
+  USDC_ARB,
+  USDC_BRIDGED_ARB,
+  WETH
+} from "../contracts/ERC20Tokens";
 import { kv } from "@vercel/kv";
 import { getApyCacheKey } from "../utils/utils";
 
@@ -18,18 +23,26 @@ export async function get30DayTrailingAPYInfo(
   tokenSymbol: string
 ): Promise<APYInfo> {
   // check if data is already stored in vercel KV
-  // poolKey is in the format: <protocol_slug>-<token_symbol>
-  let tokenSymbolToUse = tokenSymbol;
+  // poolKey is in the format: <chain>-<protocol_slug>-<token_symbol>.toUpperCase()
+  let tokenSymbolToUse = tokenSymbol.toUpperCase();
   if (protocol === Protocol.CompoundV3) {
     // if tokenSymbol is ETH or WETH, we need to use ETH as the key for Compound protocol
     tokenSymbolToUse =
       tokenSymbol === ETH.symbol || tokenSymbol === WETH.symbol
         ? ETH.symbol
-        : tokenSymbol;
+        : tokenSymbol.toUpperCase();
   } else {
     // if tokenSymbol is ETH, we need to use WETH as the key for all non-compound protocols
-    tokenSymbolToUse = tokenSymbol === ETH.symbol ? WETH.symbol : tokenSymbol;
+    tokenSymbolToUse =
+      tokenSymbol === ETH.symbol ? WETH.symbol : tokenSymbol.toUpperCase();
   }
+
+  // if symbol is USDC.E, use USDC
+  tokenSymbolToUse =
+    tokenSymbolToUse === USDC_BRIDGED_ARB.symbol.toUpperCase()
+      ? USDC_ARB.symbol.toUpperCase()
+      : tokenSymbolToUse;
+
   const poolKey = getApyCacheKey(
     chain,
     DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL.get(protocol)!,
