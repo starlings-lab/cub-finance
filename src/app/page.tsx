@@ -7,7 +7,10 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { SearchBar } from "@/components/ui/search-bar";
-import { TEST_DEBT_POSITION_ADDRESSES } from "@/app/constants";
+import {
+  TEST_ARB_ADDRESSES,
+  TEST_DEBT_POSITION_ADDRESSES
+} from "@/app/constants";
 
 // eslint-disable-next-line @next/next/no-async-client-component
 export default function Home() {
@@ -28,7 +31,7 @@ export default function Home() {
           <SearchBar
             className="mt-16"
             isHome={true}
-            defaultUserAddress={''}
+            defaultUserAddress={TEST_ARB_ADDRESSES.ARB_ETH_HOLDER}
           />
         </CardContent>
       </Card>

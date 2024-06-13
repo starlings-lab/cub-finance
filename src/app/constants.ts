@@ -100,7 +100,9 @@ export const TEST_DEBT_POSITION_ADDRESSES = {
 
 export const TEST_ARB_ADDRESSES = {
   ETH_HOLDER: "0xc3e5607cd4ca0d5fe51e09b60ed97a0ae6f874dd" as Address,
-  USDC_HOLDER: "0xba35212fe946028543b2978a52fe842212b759dd" as Address
+  USDC_HOLDER: "0xba35212fe946028543b2978a52fe842212b759dd" as Address,
+  USDC_BRIDGED_HOLDER: "0x205e33536c0861e8a2f1f98b1d58b20e14d3a121" as Address,
+  ARB_ETH_HOLDER: "0x1ab4973a48dc892cd9971ece8e01dcc7688f8f23" as Address
 };
 
 export const ROUTE_BORROW = "borrow";
