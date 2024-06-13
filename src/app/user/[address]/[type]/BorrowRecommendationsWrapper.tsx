@@ -1,11 +1,16 @@
 "use client";
 import {
   BorrowRecommendationTableRow,
-  Chain,
   TokenAmount,
   TokenDetail
 } from "@/app/type/type";
-import React, { memo, useCallback, useEffect, useState } from "react";
+import React, {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useState
+} from "react";
 import { getBorrowRecommendations } from "@/app/service/borrowRecommendationService";
 import BorrowRecommendations from "./BorrowRecommendations";
 import CollateralSelect from "./CollateralSelect";
@@ -13,6 +18,7 @@ import DebtSelect from "./DebtSelect";
 import { useToast } from "../../../../components/ui/use-toast";
 import { Address } from "abitype";
 import ClickAwayListener from "@/components/ui/click-away-listener";
+import { StoreContext } from "@/app/context/context";
 
 const BorrowRecommendationsWrapper = ({
   collaterals,
@@ -38,6 +44,8 @@ const BorrowRecommendationsWrapper = ({
   const [selectedCollaterals, setSelectedCollaterals] =
     useState<TokenAmount[]>(collaterals);
 
+  const { selectedChain } = useContext(StoreContext);
+
   // add error state
   const [error, setError] = useState<string | undefined>(undefined);
   const { toast } = useToast();
@@ -61,7 +69,7 @@ const BorrowRecommendationsWrapper = ({
           collaterals.length > 0
         ) {
           borrowRecommendations = await getBorrowRecommendations(
-            Chain.EthMainNet,
+            selectedChain!.value,
             userAddress,
             debtTokens,
             collaterals
@@ -88,7 +96,7 @@ const BorrowRecommendationsWrapper = ({
         setError(errorMessage);
       }
     },
-    []
+    [selectedChain!.value]
   );
 
   useEffect(() => {
