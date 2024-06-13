@@ -28,11 +28,7 @@ export default function Home() {
           <CardDescription className="home-desc text-lg font-notoSerif sm:text-center sm:mx-auto sm:-mt-8 tracking-wide sm:w-6/12">
             We analyze your token holdings to find the best terms.
           </CardDescription>
-          <SearchBar
-            className="mt-16"
-            isHome={true}
-            defaultUserAddress={TEST_ARB_ADDRESSES.ARB_ETH_HOLDER}
-          />
+          <SearchBar className="mt-16" isHome={true} defaultUserAddress={""} />
         </CardContent>
       </Card>
     </div>

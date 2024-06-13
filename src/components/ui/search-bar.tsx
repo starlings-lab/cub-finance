@@ -48,11 +48,15 @@ const TEST_ADDRESS_MAP_ETH = [
 
 const TEST_ADDRESS_MAP_ARB = [
   {
-    address: TEST_ARB_ADDRESSES.ETH_HOLDER,
+    address: TEST_ARB_ADDRESSES.ARB_ETH_HOLDER,
     protocol: "aavev3"
   },
   {
     address: TEST_ARB_ADDRESSES.USDC_HOLDER,
+    protocol: "compoundv3"
+  },
+  {
+    address: TEST_ARB_ADDRESSES.USDC_BRIDGED_HOLDER,
     protocol: "compoundv3"
   }
 ];
