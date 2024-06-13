@@ -62,7 +62,7 @@ const ChainSelect = ({
     <div className="relative sm:mx-4 cursor-pointer mr-2">
       <button
         type="button"
-        className="relative flex items-center justify-between sm:justify-start w-full cursor-default bg-white py-0.5 text-left text-gray-900 sm:text-sm sm:leading-6"
+        className="relative flex items-center justify-between sm:justify-start w-full cursor-pointer bg-white py-0.5 text-left text-gray-900 sm:text-sm sm:leading-6"
         aria-haspopup="listbox"
         aria-expanded="false"
         aria-labelledby="listbox-label"
