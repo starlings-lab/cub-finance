@@ -175,9 +175,6 @@ const BorrowRecommendationsWrapper = ({
 
   return (
     <div>
-      <div className="text-3xl hidden sm:flex items-center mb-12 mx-auto justify-center">
-        Find the best borrowing terms
-      </div>
       <ClickAwayListener onClickAway={() => setActiveDropDown("")}>
         <div className="hidden sm:flex items-center mb-8 mx-auto justify-center">
           <div className="text-xl">I want to borrow</div>
