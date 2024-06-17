@@ -360,7 +360,9 @@ export const SUPPORTED_COLLATERAL_TOKENS_ARB_MAINNET: Token[] = [
   rETH_ARB,
   weETH_ARB,
   LINK_ARB,
-  AAVE_ARB
+  AAVE_ARB,
+  LUSD_ARB,
+  ARB
   // COMP_ARB,
   // UNI_ARB
 ];

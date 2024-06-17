@@ -82,10 +82,6 @@ const ARB_MAINNET_SUPPORTED_DEBT_TOKENS = [
     stable: true
   },
   {
-    token: FRAX_ARB,
-    stable: true
-  },
-  {
     token: WETH_ARB,
     stable: false
   },
