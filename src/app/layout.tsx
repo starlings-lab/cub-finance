@@ -9,6 +9,7 @@ import Fathom from "../components/fathom";
 
 import dotenv from "dotenv";
 import { hkGrotesk, notoSerif } from "./fonts";
+import StoreProvider from "./context/provider";
 dotenv.config();
 
 export const metadata: Metadata = {
@@ -33,20 +34,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${notoSerif.className} ${notoSerif.variable} ${hkGrotesk.className} ${hkGrotesk.variable}`}
-      >
-        <Fathom />
-        <Suspense fallback={<div className="font-notoSerif">Loading...</div>}>
-          <Navbar />
-        </Suspense>
-        <main className="bg-hero-pattern bg-white">
-          <div className="flex min-h-screen max-w-screen-xl sm:max-w-4/5 mx-auto flex-col px-4">
-            {children}
-          </div>
-        </main>
-        <Toaster />
-      </body>
+      <StoreProvider>
+        <body
+          className={`${notoSerif.className} ${notoSerif.variable} ${hkGrotesk.className} ${hkGrotesk.variable}`}
+        >
+          <Fathom />
+          <Suspense fallback={<div className="font-notoSerif">Loading...</div>}>
+            <Navbar />
+          </Suspense>
+          <main className="bg-hero-pattern bg-white">
+            <div className="flex min-h-screen max-w-screen-xl sm:max-w-4/5 mx-auto flex-col px-4">
+              {children}
+            </div>
+          </main>
+          <Toaster />
+        </body>
+      </StoreProvider>
     </html>
   );
 }

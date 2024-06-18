@@ -7,7 +7,10 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { SearchBar } from "@/components/ui/search-bar";
-import { TEST_DEBT_POSITION_ADDRESSES } from "@/app/constants";
+import {
+  TEST_ARB_ADDRESSES,
+  TEST_DEBT_POSITION_ADDRESSES
+} from "@/app/constants";
 
 // eslint-disable-next-line @next/next/no-async-client-component
 export default function Home() {
@@ -25,11 +28,7 @@ export default function Home() {
           <CardDescription className="home-desc text-lg font-notoSerif sm:text-center sm:mx-auto sm:-mt-8 tracking-wide sm:w-6/12">
             We analyze your token holdings to find the best terms.
           </CardDescription>
-          <SearchBar
-            className="mt-16"
-            isHome={true}
-            defaultUserAddress={''}
-          />
+          <SearchBar className="mt-16" isHome={true} defaultUserAddress={""} />
         </CardContent>
       </Card>
     </div>

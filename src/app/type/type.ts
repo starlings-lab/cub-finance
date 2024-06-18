@@ -1,5 +1,10 @@
 import { Address } from "abitype";
 
+export enum Chain {
+  EthMainNet = 1,
+  ArbMainNet = 42161
+}
+
 export enum Protocol {
   AaveV3 = "AaveV3",
   CompoundV3 = "CompoundV3",

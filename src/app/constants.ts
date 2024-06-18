@@ -1,9 +1,30 @@
 import { gql } from "graphql-request";
 import { Address } from "abitype";
-import { Protocol } from "./type/type";
+import { Chain, Protocol } from "./type/type";
 
-export const ALCHEMY_API_URL = `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY_ETH_MAINNET}`;
-export const ALCHEMY_RPC_URL = `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_ETH_MAINNET}`;
+export const ALCHEMY_API_URL_ETH_MAINNET = `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY_ETH_MAINNET}`;
+export const ALCHEMY_RPC_URL_ETH_MAINNET = `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_ETH_MAINNET}`;
+
+export const ALCHEMY_API_URL_ARB_MAINNET = `https://arb-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY_ARB_MAINNET}`;
+export const ALCHEMY_RPC_URL_ARB_MAINNET = `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_ARB_MAINNET}`;
+
+export function getAlchemyApiUrl(chain: Chain) {
+  if (chain === Chain.EthMainNet) {
+    return ALCHEMY_API_URL_ETH_MAINNET;
+  } else if (chain === Chain.ArbMainNet) {
+    return ALCHEMY_API_URL_ARB_MAINNET;
+  }
+  throw new Error(`Unsupported chain: ${chain}`);
+}
+
+export function getAlchemyApiKey(chain: Chain) {
+  if (chain === Chain.EthMainNet) {
+    return process.env.ALCHEMY_API_KEY_ETH_MAINNET;
+  } else if (chain === Chain.ArbMainNet) {
+    return process.env.ALCHEMY_API_KEY_ARB_MAINNET;
+  }
+  throw new Error(`Unsupported chain: ${chain}`);
+}
 
 // Graph playground: https://thegraph.com/hosted-service/subgraph/messari/aave-v3-ethereum
 export const MESSARI_AAVE_V3_GRAPHQL_URL =
@@ -51,38 +72,9 @@ export const DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL = new Map<Protocol, string>([
   [Protocol.Spark, "spark"]
 ]);
 
-// App: https://defillama.com/yields/pool/85c57261-b75b-4447-a115-d79b1a7de8ed
-// API: https://yields.llama.fi/chartLendBorrow/85c57261-b75b-4447-a115-d79b1a7de8ed
-export const DEFILLAMA_COMPOUND_ETH_POOL_ID =
-  "85c57261-b75b-4447-a115-d79b1a7de8ed";
-
-// App: https://defillama.com/yields/pool/7da72d09-56ca-4ec5-a45f-59114353e487
-// API: https://yields.llama.fi/chartLendBorrow/7da72d09-56ca-4ec5-a45f-59114353e487
-export const DEFILLAMA_COMPOUND_USDC_POOL_ID =
-  "7da72d09-56ca-4ec5-a45f-59114353e487";
-
 export const getDefiLlamaLendBorrowDataApi = (poolId: string) => {
   return `${DEFILLAMA_YIELDS_API_URL}/chartLendBorrow/${poolId}`;
 };
-
-export const DEFILLAMA_SPARK_POOL_IDS = {
-  // https://defillama.com/yields/pool/3b45941c-16cb-48c5-a490-16c6c4f1d86a
-  WSTETH: "3b45941c-16cb-48c5-a490-16c6c4f1d86a",
-  // https://defillama.com/yields/pool/24195b31-d749-445f-bf9e-b65aa025ebdd
-  WETH: "24195b31-d749-445f-bf9e-b65aa025ebdd",
-  // https://defillama.com/yields/pool/03406d3a-fcc4-4fe3-8809-7a95222951b6
-  WBTC: "03406d3a-fcc4-4fe3-8809-7a95222951b6",
-  // https://defillama.com/yields/pool/8751078b-6be1-403b-ac44-9f11fe87d400
-  RETH: "8751078b-6be1-403b-ac44-9f11fe87d400",
-  // https://defillama.com/yields/pool/e26ce7d9-db75-4aa4-b1db-cc21ae17bdfb
-  DAI: "e26ce7d9-db75-4aa4-b1db-cc21ae17bdfb",
-  // https://defillama.com/yields/pool/65ce8276-b4d9-41ba-9f6f-21fc374cf9bc
-  USDC: "65ce8276-b4d9-41ba-9f6f-21fc374cf9bc",
-  // https://defillama.com/yields/pool/8fbe28b8-140d-4e37-8804-5d2aba4daded
-  USDT: "8fbe28b8-140d-4e37-8804-5d2aba4daded"
-};
-
-export const DEFILLAMA_AAVE_V3_POOL_IDS = {};
 
 export const TEST_DEBT_POSITION_ADDRESSES = {
   aaveUser1: `0x00171ab2f44c1c9b21c7696eb1a5c601f05a9167` as Address,
@@ -104,6 +96,13 @@ export const TEST_DEBT_POSITION_ADDRESSES = {
   ensAddress2: "juanvilla.eth",
   ensAddress3: "lozben.eth",
   ethAndWethHolder: "0xcA518c4DB97ECCe85cC82DE3C2B93D8f8b536ca5"
+};
+
+export const TEST_ARB_ADDRESSES = {
+  ETH_HOLDER: "0xc3e5607cd4ca0d5fe51e09b60ed97a0ae6f874dd" as Address,
+  USDC_HOLDER: "0xba35212fe946028543b2978a52fe842212b759dd" as Address,
+  USDC_BRIDGED_HOLDER: "0x205e33536c0861e8a2f1f98b1d58b20e14d3a121" as Address,
+  ARB_ETH_HOLDER: "0x1ab4973a48dc892cd9971ece8e01dcc7688f8f23" as Address
 };
 
 export const ROUTE_BORROW = "borrow";

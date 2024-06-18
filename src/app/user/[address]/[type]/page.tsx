@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { SearchBar } from "@/components/ui/search-bar";
 import { Suspense } from "react";
-import StoreProvider from "./provider";
 import Loading from "./loadingTable";
 import BorrowOptionsWrapper from "./BorrowOptionsWrapper";
 import { ROUTE_BORROW } from "@/app/constants";
@@ -33,26 +32,23 @@ export default async function DebtPage({
     : params.address;
 
   return (
-    <StoreProvider>
-      {}
-      <div className="mt-24 mb-32 sm:mt-28">
-        {params.type === ROUTE_BORROW ? (
-          <>
-            <SearchBar
-              isHome={false}
-              routeType={params.type as string}
-              defaultUserAddress={(params!.address as string) ?? ""}
-            />
-            <div className="pt-2 sm:pt-5">
-              <Suspense fallback={<Loading />}>
-                <BorrowOptionsWrapper userAddress={userAddress} />
-              </Suspense>
-            </div>
-          </>
-        ) : (
-          <div>Sorry, Refinancing options are not supported anymore.</div>
-        )}
-      </div>
-    </StoreProvider>
+    <div className="mt-24 mb-32 sm:mt-28">
+      {params.type === ROUTE_BORROW ? (
+        <>
+          <SearchBar
+            isHome={false}
+            routeType={params.type as string}
+            defaultUserAddress={(params!.address as string) ?? ""}
+          />
+          <div className="pt-2 sm:pt-5">
+            <Suspense fallback={<Loading />}>
+              <BorrowOptionsWrapper userAddress={userAddress} />
+            </Suspense>
+          </div>
+        </>
+      ) : (
+        <div>Sorry, Refinancing options are not supported anymore.</div>
+      )}
+    </div>
   );
 }

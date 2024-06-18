@@ -4,18 +4,19 @@ import { getSupportedCollateralTokens as getAaveSupportedCollateralTokens } from
 import { getSupportedCollateralTokens as getSparkSupportedCollateralTokens } from "@/app/service/sparkService";
 import { getSupportedCollateralTokens as getCompoundV3SupportedCOllateralTokens } from "@/app/service/compoundV3Service";
 import { getSupportedCollateralTokens as getMorphoBlueSupportedCollateralTokens } from "@/app/service/morphoBlueService";
-import { Token, TokenAmount } from "@/app/type/type";
+import { Chain, Token, TokenAmount } from "@/app/type/type";
 import { USDC_DUPLICATE_OR_SCAM } from "@/app/contracts/ERC20Tokens";
 import { Address } from "abitype";
 import { getSupportedTokenHoldings } from "@/app/service/tokenService";
 
 // This function should be used until we fix borrow recommendation performance
 export async function getSupportedUserCollaterals(
+  chain: Chain,
   userAddress: Address
 ): Promise<TokenAmount[]> {
   const MIN_TOKEN_AMOUNT_IN_USD = 100;
 
-  return getSupportedTokenHoldings(userAddress).then((userHoldings) => {
+  return getSupportedTokenHoldings(chain, userAddress).then((userHoldings) => {
     if (!userHoldings || userHoldings.length === 0) {
       return [];
     }
@@ -42,9 +43,10 @@ export async function getSupportedUserCollaterals(
  * @Remarks This function should not be used until we fix borrow recommendation performance
  */
 export async function getSupportedUserCollaterals_Old(
+  chain: Chain,
   userAddress: Address
 ): Promise<TokenAmount[]> {
-  return getSupportedTokenHoldings(userAddress).then((userHoldings) => {
+  return getSupportedTokenHoldings(chain, userAddress).then((userHoldings) => {
     // console.log("userHoldings", userHoldings);
 
     if (!userHoldings || userHoldings.length === 0) {
@@ -52,10 +54,10 @@ export async function getSupportedUserCollaterals_Old(
     }
 
     return Promise.all([
-      getAaveSupportedCollateralTokens(),
-      getSparkSupportedCollateralTokens(),
-      getCompoundV3SupportedCOllateralTokens(),
-      getMorphoBlueSupportedCollateralTokens()
+      getAaveSupportedCollateralTokens(chain),
+      getSparkSupportedCollateralTokens(chain),
+      getCompoundV3SupportedCOllateralTokens(chain),
+      getMorphoBlueSupportedCollateralTokens(chain)
     ]).then((results) => {
       const allSupportedCollateralTokens: Map<string, Token> = new Map();
 

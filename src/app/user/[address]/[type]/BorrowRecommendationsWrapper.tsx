@@ -4,7 +4,13 @@ import {
   TokenAmount,
   TokenDetail
 } from "@/app/type/type";
-import React, { memo, useCallback, useEffect, useState } from "react";
+import React, {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useState
+} from "react";
 import { getBorrowRecommendations } from "@/app/service/borrowRecommendationService";
 import BorrowRecommendations from "./BorrowRecommendations";
 import CollateralSelect from "./CollateralSelect";
@@ -12,6 +18,7 @@ import DebtSelect from "./DebtSelect";
 import { useToast } from "../../../../components/ui/use-toast";
 import { Address } from "abitype";
 import ClickAwayListener from "@/components/ui/click-away-listener";
+import { StoreContext } from "@/app/context/context";
 
 const BorrowRecommendationsWrapper = ({
   collaterals,
@@ -37,6 +44,8 @@ const BorrowRecommendationsWrapper = ({
   const [selectedCollaterals, setSelectedCollaterals] =
     useState<TokenAmount[]>(collaterals);
 
+  const { selectedChain } = useContext(StoreContext);
+
   // add error state
   const [error, setError] = useState<string | undefined>(undefined);
   const { toast } = useToast();
@@ -60,6 +69,7 @@ const BorrowRecommendationsWrapper = ({
           collaterals.length > 0
         ) {
           borrowRecommendations = await getBorrowRecommendations(
+            selectedChain!.value,
             userAddress,
             debtTokens,
             collaterals
@@ -86,7 +96,7 @@ const BorrowRecommendationsWrapper = ({
         setError(errorMessage);
       }
     },
-    []
+    [selectedChain!.value]
   );
 
   useEffect(() => {
@@ -165,9 +175,6 @@ const BorrowRecommendationsWrapper = ({
 
   return (
     <div>
-      <div className="text-3xl hidden sm:flex items-center mb-12 mx-auto justify-center">
-        Find the best borrowing terms
-      </div>
       <ClickAwayListener onClickAway={() => setActiveDropDown("")}>
         <div className="hidden sm:flex items-center mb-8 mx-auto justify-center">
           <div className="text-xl">I want to borrow</div>

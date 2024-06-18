@@ -7,30 +7,47 @@ import {
   DEFILLAMA_YIELDS_POOLS_API_URL,
   getDefiLlamaLendBorrowDataApi
 } from "../constants";
-import { APYInfo, Protocol } from "../type/type";
-import { ETH, WETH } from "../contracts/ERC20Tokens";
+import { APYInfo, Chain, Protocol } from "../type/type";
+import {
+  ETH,
+  USDC_ARB,
+  USDC_BRIDGED_ARB,
+  WETH
+} from "../contracts/ERC20Tokens";
 import { kv } from "@vercel/kv";
+import { getApyCacheKey } from "../utils/utils";
 
 export async function get30DayTrailingAPYInfo(
+  chain: Chain,
   protocol: Protocol,
   tokenSymbol: string
 ): Promise<APYInfo> {
   // check if data is already stored in vercel KV
-  // poolKey is in the format: <protocol_slug>-<token_symbol>
-  let tokenSymbolToUse = tokenSymbol;
+  // poolKey is in the format: <chain>-<protocol_slug>-<token_symbol>.toUpperCase()
+  let tokenSymbolToUse = tokenSymbol.toUpperCase();
   if (protocol === Protocol.CompoundV3) {
     // if tokenSymbol is ETH or WETH, we need to use ETH as the key for Compound protocol
     tokenSymbolToUse =
       tokenSymbol === ETH.symbol || tokenSymbol === WETH.symbol
         ? ETH.symbol
-        : tokenSymbol;
+        : tokenSymbol.toUpperCase();
   } else {
     // if tokenSymbol is ETH, we need to use WETH as the key for all non-compound protocols
-    tokenSymbolToUse = tokenSymbol === ETH.symbol ? WETH.symbol : tokenSymbol;
+    tokenSymbolToUse =
+      tokenSymbol === ETH.symbol ? WETH.symbol : tokenSymbol.toUpperCase();
   }
-  const poolKey = `${DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL.get(
-    protocol
-  )}-${tokenSymbolToUse}`.toUpperCase();
+
+  // if symbol is USDC.E, use USDC
+  tokenSymbolToUse =
+    tokenSymbolToUse === USDC_BRIDGED_ARB.symbol.toUpperCase()
+      ? USDC_ARB.symbol.toUpperCase()
+      : tokenSymbolToUse;
+
+  const poolKey = getApyCacheKey(
+    chain,
+    DEFILLAMA_PROJECT_SLUG_BY_PROTOCOL.get(protocol)!,
+    tokenSymbolToUse
+  );
   const cachedData = await kv.hgetall(poolKey);
 
   if (!cachedData) {
@@ -188,6 +205,7 @@ export async function getProtocolPoolsMap(
 
 const ETHEREUM_CHAIN_PREFIX = "ethereum:";
 const ETHEREUM_COINGECKO_ID = "coingecko:ethereum";
+const ARBITRUM_CHAIN_PREFIX = "arbitrum:";
 
 /**
  * Fetches token prices from DefiLlama API for given token addresses
@@ -195,8 +213,18 @@ const ETHEREUM_COINGECKO_ID = "coingecko:ethereum";
  * @returns Map of token address to token price
  */
 export async function getTokenPrice(
+  chain: Chain,
   tokenAddresses: Address[]
 ): Promise<Map<Address, number>> {
+  let chainPrefix: string;
+  if (chain === Chain.EthMainNet) {
+    chainPrefix = ETHEREUM_CHAIN_PREFIX;
+  } else if (chain === Chain.ArbMainNet) {
+    chainPrefix = ARBITRUM_CHAIN_PREFIX;
+  } else {
+    throw new Error(`Unsupported chain: ${chain}`);
+  }
+
   const tokenPriceMap = new Map<Address, number>();
   return fetch(
     DEFILLAMA_TOKEN_PRICE_API_URL +
@@ -205,7 +233,7 @@ export async function getTokenPrice(
           // use "coingecko:ethereum" for ZERO address which represents ETH
           return address === ETH.address
             ? ETHEREUM_COINGECKO_ID
-            : `${ETHEREUM_CHAIN_PREFIX}${address}`;
+            : `${chainPrefix}${address}`;
         })
         .join(",") +
       "?searchWidth=1h"
@@ -232,9 +260,7 @@ export async function getTokenPrice(
         const tokenAddress =
           key === ETHEREUM_COINGECKO_ID
             ? ETH.address
-            : (key
-                .slice(ETHEREUM_CHAIN_PREFIX.length)
-                .toLowerCase() as Address);
+            : (key.slice(chainPrefix.length).toLowerCase() as Address);
 
         const coinData = response.coins[key];
         tokenPriceMap.set(tokenAddress, coinData.price);

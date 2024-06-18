@@ -4,10 +4,10 @@ import { getSupportedDebtTokens as getAaveSupportedDebtTokens } from "@/app/serv
 import { getSupportedDebtTokens as getSparkSupportedDebtTokens } from "@/app/service/sparkService";
 import { getSupportedDebtTokens as getCompoundV3SupportedDebtTokens } from "@/app/service/compoundV3Service";
 import { getSupportedDebtTokens as getMorphoBlueSupportedDebtTokens } from "@/app/service/morphoBlueService";
-import { Token, TokenDetail } from "@/app/type/type";
+import { Chain, Token, TokenDetail } from "@/app/type/type";
 import {
   DAI,
-  SUPPORTED_DEBT_STABLECOINS,
+  SUPPORTED_DEBT_STABLECOINS_ETH_MAINNET,
   USDC,
   USDC_DUPLICATE_OR_SCAM,
   USDT,
@@ -15,53 +15,117 @@ import {
   WETH,
   weETH,
   rETH,
-  LINK
+  LINK,
+  USDC_ARB,
+  USDT_ARB,
+  DAI_ARB,
+  WETH_ARB,
+  WBTC_ARB,
+  weETH_ARB,
+  rETH_ARB,
+  LINK_ARB,
+  USDC_BRIDGED_ARB,
+  FRAX_ARB,
+  SUPPORTED_DEBT_STABLECOINS_ARB_MAINNET
 } from "@/app/contracts/ERC20Tokens";
 
-export async function getAllSupportedDebtTokens(): Promise<TokenDetail[]> {
-  // Return hardcoded values for now until we improve performance of borrow recommendations
-  return [
-    {
-      token: USDC,
-      stable: true
-    },
-    {
-      token: USDT,
-      stable: true
-    },
-    {
-      token: DAI,
-      stable: true
-    },
-    {
-      token: WETH,
-      stable: false
-    },
-    {
-      token: WBTC,
-      stable: false
-    },
-    {
-      token: weETH,
-      stable: false
-    },
-    {
-      token: rETH,
-      stable: false
-    },
-    {
-      token: LINK,
-      stable: false
-    }
-  ];
+const ETH_MAINNET_SUPPORTED_DEBT_TOKENS = [
+  {
+    token: USDC,
+    stable: true
+  },
+  {
+    token: USDT,
+    stable: true
+  },
+  {
+    token: DAI,
+    stable: true
+  },
+  {
+    token: WETH,
+    stable: false
+  },
+  {
+    token: WBTC,
+    stable: false
+  },
+  {
+    token: weETH,
+    stable: false
+  },
+  {
+    token: rETH,
+    stable: false
+  },
+  {
+    token: LINK,
+    stable: false
+  }
+];
+
+const ARB_MAINNET_SUPPORTED_DEBT_TOKENS = [
+  {
+    token: USDC_ARB,
+    stable: true
+  },
+  {
+    token: USDT_ARB,
+    stable: true
+  },
+  {
+    token: DAI_ARB,
+    stable: true
+  },
+  {
+    token: USDC_BRIDGED_ARB,
+    stable: true
+  },
+  {
+    token: WETH_ARB,
+    stable: false
+  },
+  {
+    token: WBTC_ARB,
+    stable: false
+  },
+  {
+    token: weETH_ARB,
+    stable: false
+  },
+  {
+    token: rETH_ARB,
+    stable: false
+  },
+  {
+    token: LINK_ARB,
+    stable: false
+  }
+];
+
+export async function getAllSupportedDebtTokens(
+  chain: Chain
+): Promise<TokenDetail[]> {
+  if (chain === Chain.EthMainNet) {
+    return ETH_MAINNET_SUPPORTED_DEBT_TOKENS;
+  } else if (chain === Chain.ArbMainNet) {
+    return ARB_MAINNET_SUPPORTED_DEBT_TOKENS;
+  } else {
+    throw new Error(`Unsupported chain: ${chain}`);
+  }
 
   // Call all protocol services to get supported debt tokens
   return Promise.all([
-    getAaveSupportedDebtTokens(),
-    getSparkSupportedDebtTokens(),
-    getCompoundV3SupportedDebtTokens(),
-    getMorphoBlueSupportedDebtTokens()
+    getAaveSupportedDebtTokens(chain),
+    getSparkSupportedDebtTokens(chain),
+    getCompoundV3SupportedDebtTokens(chain),
+    getMorphoBlueSupportedDebtTokens(chain)
   ]).then((results) => {
+    const supportedDebtStablecoins =
+      chain === Chain.EthMainNet
+        ? SUPPORTED_DEBT_STABLECOINS_ETH_MAINNET
+        : SUPPORTED_DEBT_STABLECOINS_ARB_MAINNET;
+
     const allSupportedDebtTokens: Map<string, TokenDetail> = new Map();
 
     // Filter out null debt positions
@@ -78,7 +142,7 @@ export async function getAllSupportedDebtTokens(): Promise<TokenDetail[]> {
 
           allSupportedDebtTokens.set(address, {
             token,
-            stable: SUPPORTED_DEBT_STABLECOINS.some(
+            stable: supportedDebtStablecoins.some(
               (stableCoin) => stableCoin.address.toLowerCase() === address
             )
           });

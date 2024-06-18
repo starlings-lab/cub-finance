@@ -1,5 +1,5 @@
 import { Address } from "abitype";
-import { Token } from "../type/type";
+import { Chain, Token } from "../type/type";
 import {
   USDC,
   DAI,
@@ -75,6 +75,13 @@ export function getUniqueTokens(tokens: Token[]): Token[] {
 
 export function getFormattedTokenAmount(token: Token, amount: bigint): string {
   const amountFormatted = Number(ethers.formatUnits(amount, token.decimals));
-  const preciseAmount = amountFormatted.toFixed(amountFormatted > 1 ? 2 : 6);
-  return preciseAmount.toString();
+  const fractionDigits = amountFormatted > 1 ? 2 : 6;
+  return amountFormatted.toLocaleString("en-US", {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits
+  });
+}
+
+export function getApyCacheKey(chain: Chain, project: string, symbol: string) {
+  return `${chain}-${project}-${symbol}`.toUpperCase();
 }
